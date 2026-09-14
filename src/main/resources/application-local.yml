@@ -6,6 +6,9 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:5433/geupjido}
     username: ${DB_USERNAME:geupjido}
     password: ${DB_PASSWORD:geupjido-local}
+  flyway:
+    baseline-on-migrate: true
+    baseline-version: 0
   data:
     redis:
       host: ${REDIS_HOST:localhost}
