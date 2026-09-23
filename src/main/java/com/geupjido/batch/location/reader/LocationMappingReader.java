@@ -1,7 +1,9 @@
-package com.geupjido.batch.location;
+package com.geupjido.batch.location.reader;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.geupjido.batch.location.exception.LocationMappingException;
+import com.geupjido.batch.location.model.LocationMapping;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;

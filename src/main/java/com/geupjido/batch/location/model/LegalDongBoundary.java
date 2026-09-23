@@ -1,4 +1,4 @@
-package com.geupjido.batch.location;
+package com.geupjido.batch.location.model;
 
 /**
  * GeoJSON에서 읽은 법정동 코드와 경계 도형을 나타낸다.

@@ -1,4 +1,4 @@
-package com.geupjido.batch.location;
+package com.geupjido.batch.location.exception;
 
 /**
  * 지역·권역 매핑 데이터가 올바르지 않을 때 발생한다.

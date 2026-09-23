@@ -1,5 +1,6 @@
-package com.geupjido.batch.location;
+package com.geupjido.batch.location.model;
 
+import com.geupjido.batch.location.exception.LocationMappingException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

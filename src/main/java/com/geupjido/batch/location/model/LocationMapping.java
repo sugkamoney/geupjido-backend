@@ -1,4 +1,6 @@
-package com.geupjido.batch.location;
+package com.geupjido.batch.location.model;
+
+import com.geupjido.batch.location.exception.LocationMappingException;
 
 import java.util.HashSet;
 import java.util.List;

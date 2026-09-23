@@ -1,6 +1,8 @@
-package com.geupjido.batch.location;
+package com.geupjido.batch.location.reader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.geupjido.batch.location.exception.LocationMappingException;
+import com.geupjido.batch.location.model.LocationMapping;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
