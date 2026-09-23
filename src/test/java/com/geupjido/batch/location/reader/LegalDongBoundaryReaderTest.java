@@ -31,7 +31,7 @@ class LegalDongBoundaryReaderTest {
 			    {
 			      "type": "Feature",
 			      "properties": {
-			        "EMD_CD": "1168010700",
+			        "EMD_CD": "1168011000",
 			        "EMD_NM": "압구정동"
 			      },
 			      "geometry": {
@@ -58,7 +58,7 @@ class LegalDongBoundaryReaderTest {
 
 		assertThat(boundaries).hasSize(1);
 		assertThat(boundaries.get(0).dongCode())
-			.isEqualTo("1168010700");
+			.isEqualTo("1168011000");
 		assertThat(boundaries.get(0).geometryJson())
 			.contains("\"type\":\"Polygon\"");
 	}

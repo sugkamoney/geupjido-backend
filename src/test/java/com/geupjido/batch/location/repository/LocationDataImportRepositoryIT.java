@@ -12,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import com.geupjido.batch.location.model.LocationMapping.ZoneDefinition;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -172,7 +173,8 @@ class LocationDataImportRepositoryIT {
 					List.of(
 						"1168010700",
 						"1168010400"
-					)
+					),
+					new BigDecimal("1.1")
 				)
 			)
 		);
@@ -183,6 +185,7 @@ class LocationDataImportRepositoryIT {
 				FROM zone
 				WHERE id = ?
 					AND city_id = ?
+					AND tier = 1.1
 					AND cardinality(dong_codes) = 2
 					AND dong_codes @> ARRAY[
 						'1168010700',

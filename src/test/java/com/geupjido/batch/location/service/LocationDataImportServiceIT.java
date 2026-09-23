@@ -68,8 +68,9 @@ class LocationDataImportServiceIT {
 			      "cityId": "11680",
 			      "name": "통합 테스트 권역",
 			      "dongCodes": [
-			        "1168010700"
-			      ]
+			        "1168011000"
+			      ],
+			       "initialTier": 1.1
 			    }
 			  ]
 			}
@@ -82,7 +83,7 @@ class LocationDataImportServiceIT {
 			    {
 			      "type": "Feature",
 			      "properties": {
-			        "EMD_CD": "1168010700",
+			        "EMD_CD": "1168011000",
 			        "EMD_NM": "압구정동"
 			      },
 			      "geometry": {
@@ -117,8 +118,9 @@ class LocationDataImportServiceIT {
 				JOIN region r
 					ON r.code = c.region_code
 				WHERE z.id = ?
+					AND z.tier = 1.1
 					AND z.dong_codes = ARRAY[
-						'1168010700'
+						'1168011000'
 					]::VARCHAR[]
 					AND ST_GeometryType(z.polygon)
 						= 'ST_MultiPolygon'
@@ -169,7 +171,8 @@ class LocationDataImportServiceIT {
 			      "dongCodes": [
 			        "1171010100",
 			        "1171010200"
-			      ]
+			      ],
+			      "initialTier": 2.7
 			    }
 			  ]
 			}

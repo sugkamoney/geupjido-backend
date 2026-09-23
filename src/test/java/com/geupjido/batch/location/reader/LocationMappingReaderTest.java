@@ -47,7 +47,8 @@ class LocationMappingReaderTest {
 			      "id": "gangnam-apgujeong",
 			      "cityId": "11680",
 			      "name": "압구정",
-			      "dongCodes": ["1168010700"]
+			      "dongCodes": ["1168011000"],
+			      "initialTier": 1.1
 			    }
 			  ]
 			}
@@ -59,7 +60,7 @@ class LocationMappingReaderTest {
 		assertThat(mapping.cities()).hasSize(1);
 		assertThat(mapping.zones()).hasSize(1);
 		assertThat(mapping.zones().get(0).dongCodes())
-			.containsExactly("1168010700");
+			.containsExactly("1168011000");
 	}
 
 	@Test
@@ -88,7 +89,8 @@ class LocationMappingReaderTest {
 		      "id": "gangnam-apgujeong",
 		      "cityId": "11680",
 		      "name": "압구정",
-		      "dongCodes": ["1168010700"]
+		      "dongCodes": ["1168011000"],
+		      "initialTier": 1.1
 		    }
 		  ],
 		  "unknownField": true

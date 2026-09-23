@@ -3,6 +3,7 @@ package com.geupjido.batch.location.model;
 import com.geupjido.batch.location.exception.LocationMappingException;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -32,13 +33,15 @@ class LocationMappingTest {
 					"gangnam-apgujeong",
 					"11680",
 					"압구정",
-					List.of("1168010700")
+					List.of("1168011000"),
+					new BigDecimal("1.1")
 				),
 				new LocationMapping.ZoneDefinition(
-					"gangnam-cheongdam",
+					"gangnam-apgujeong-duplicate",
 					"11680",
-					"청담",
-					List.of("1168010700")
+					"압구정 중복",
+					List.of("1168011000"),
+					new BigDecimal("1.2")
 				)
 			)
 		);

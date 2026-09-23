@@ -2,6 +2,7 @@ package com.geupjido.batch.location.model;
 
 import com.geupjido.batch.location.exception.LocationMappingException;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,6 +17,9 @@ public record LocationMapping(
 ) {
 	private static final String CITY_CODE_PATTERN = "\\d{5}";
 	private static final String DONG_CODE_PATTERN = "\\d{10}";
+	private static final BigDecimal MIN_TIER = new BigDecimal("1.0");
+	private static final BigDecimal MAX_TIER = new BigDecimal("5.9");
+
 
 	public void validate() {
 		if (regions == null || regions.isEmpty()) {
@@ -80,6 +84,23 @@ public record LocationMapping(
 				);
 			}
 
+			if (zone.initialTier() == null
+				|| zone.initialTier().compareTo(MIN_TIER) < 0
+				|| zone.initialTier().compareTo(MAX_TIER) > 0
+			) {
+				throw new LocationMappingException(
+					"초기 급지는 1.0 이상 5.9 이하여야 합니다: "
+					+ zone.id()
+				);
+			}
+
+			if (zone.initialTier().stripTrailingZeros().scale() > 1) {
+				throw new LocationMappingException(
+					"초기 급지는 소수점 첫째 자리까지만 사용할 수 있습니다: "
+						+ zone.id()
+				);
+			}
+
 			if (zone.dongCodes() == null || zone.dongCodes().isEmpty()) {
 				throw new LocationMappingException(
 					"zone에는 법정동 코드가 하나 이상 필요합니다: " + zone.id()
@@ -126,14 +147,12 @@ public record LocationMapping(
 		}
 	}
 
-
 	public record RegionDefinition(
 		String code,
 		String name,
 		boolean active,
 		int displayOrder
 	) {
-
 	}
 
 	public record CityDefinition(
@@ -147,7 +166,8 @@ public record LocationMapping(
 		String id,
 		String cityId,
 		String name,
-		List<String> dongCodes
+		List<String> dongCodes,
+		BigDecimal initialTier
 	) {
 	}
 }
