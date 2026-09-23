@@ -4,6 +4,7 @@ import com.geupjido.batch.location.model.LegalDongBoundary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+
 import java.util.List;
 
 /**

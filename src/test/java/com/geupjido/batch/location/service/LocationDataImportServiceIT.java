@@ -1,0 +1,134 @@
+package com.geupjido.batch.location.service;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.api.io.TempDir;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@EnabledIfEnvironmentVariable(
+	named = "RUN_POSTGIS_IT",
+	matches = "true"
+)
+@SpringBootTest
+@ActiveProfiles("local")
+@Transactional
+class LocationDataImportServiceIT {
+
+	@TempDir
+	Path tempDirectory;
+
+	@Autowired
+	private LocationDataImportService service;
+
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
+	@Test
+	void 매핑_JSON과_GeoJSON을_읽어_지역_데이터를_저장한다()
+		throws IOException {
+		Path mappingPath = tempDirectory.resolve(
+			"location-mapping.json"
+		);
+		Path boundaryPath = tempDirectory.resolve(
+			"legal-dong-boundary.geojson"
+		);
+
+		Files.writeString(mappingPath, """
+			{
+			  "regions": [
+			    {
+			      "code": "seoul",
+			      "name": "서울",
+			      "active": true,
+			      "displayOrder": 1
+			    }
+			  ],
+			  "cities": [
+			    {
+			      "id": "11680",
+			      "regionCode": "seoul",
+			      "name": "강남구"
+			    }
+			  ],
+			  "zones": [
+			    {
+			      "id": "integration-test-zone",
+			      "cityId": "11680",
+			      "name": "통합 테스트 권역",
+			      "dongCodes": [
+			        "1168010700"
+			      ]
+			    }
+			  ]
+			}
+			""");
+
+		Files.writeString(boundaryPath, """
+			{
+			  "type": "FeatureCollection",
+			  "features": [
+			    {
+			      "type": "Feature",
+			      "properties": {
+			        "EMD_CD": "1168010700",
+			        "EMD_NM": "압구정동"
+			      },
+			      "geometry": {
+			        "type": "Polygon",
+			        "coordinates": [
+			          [
+			            [127.00, 37.50],
+			            [127.01, 37.50],
+			            [127.01, 37.51],
+			            [127.00, 37.51],
+			            [127.00, 37.50]
+			          ]
+			        ]
+			      }
+			    }
+			  ]
+			}
+			""");
+
+		service.importLocationData(
+			mappingPath,
+			boundaryPath,
+			"EMD_CD"
+		);
+
+		Integer importedZoneCount = jdbcTemplate.queryForObject(
+			"""
+				SELECT COUNT(*)
+				FROM zone z
+				JOIN city c
+					ON c.id = z.city_id
+				JOIN region r
+					ON r.code = c.region_code
+				WHERE z.id = ?
+					AND z.dong_codes = ARRAY[
+						'1168010700'
+					]::VARCHAR[]
+					AND ST_GeometryType(z.polygon)
+						= 'ST_MultiPolygon'
+					AND ST_SRID(z.polygon) = 4326
+					AND ST_Covers(z.polygon, z.center)
+					AND c.name = '강남구'
+					AND r.name = '서울'
+				""",
+			Integer.class,
+			"integration-test-zone"
+		);
+
+		assertThat(importedZoneCount).isEqualTo(1);
+	}
+}
