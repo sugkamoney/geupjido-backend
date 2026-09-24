@@ -1,0 +1,163 @@
+initial_tier	zone_name	region_hint	city_hint	zone_id	city_id	dong_codes	status	note
+1.1	압구정	seoul	강남구	gangnam-apgujeong	11680	1168011000	confirmed	공식 법정동명 1:1 매칭
+1.2	반포	seoul	서초구	seocho-banpo	11650	1165010700	confirmed	공식 법정동명 1:1 매칭
+1.2	삼성	seoul	강남구	gangnam-samseong	11680	1168010500	confirmed	공식 법정동명 1:1 매칭
+1.2	청담	seoul	강남구	gangnam-cheongdam	11680	1168010400	confirmed	공식 법정동명 1:1 매칭
+1.4	신사	seoul	강남구	gangnam-sinsa	11680	1168010700	confirmed	1급지 문맥에 따라 은평구 신사동이 아닌 강남구 신사동 선택
+1.4	잠원	seoul	서초구	seocho-jamwon	11650	1165010600	confirmed	공식 법정동명 1:1 매칭
+1.5	대치	seoul	강남구	gangnam-daechi	11680	1168010600	confirmed	공식 법정동명 1:1 매칭
+1.5	서초	seoul	서초구	seocho-seocho	11650	1165010800	confirmed	공식 법정동명 1:1 매칭
+1.6	도곡	seoul	강남구	gangnam-dogok	11680	1168011800	confirmed	공식 법정동명 1:1 매칭
+1.6	역삼	seoul	강남구	gangnam-yeoksam	11680	1168010100	confirmed	공식 법정동명 1:1 매칭
+1.7	개포	seoul	강남구	gangnam-gaepo	11680	1168010300	confirmed	공식 법정동명 1:1 매칭
+1.7	논현	seoul	강남구	gangnam-nonhyeon	11680	1168010800	confirmed	공식 법정동명 1:1 매칭
+1.7	방배	seoul	서초구	seocho-bangbae	11650	1165010100	confirmed	공식 법정동명 1:1 매칭
+1.7	여의도	seoul	영등포구	yeongdeungpo-yeouido	11560	1156011000	confirmed	공식 법정동명 1:1 매칭
+1.7	이촌	seoul	용산구	yongsan-ichon	11170	1117012900	confirmed	공식 법정동명 1:1 매칭
+1.7	잠실	seoul	송파구	songpa-jamsil	11710	1171010100	confirmed	공식 법정동명 1:1 매칭
+1.7	한남	seoul	용산구	yongsan-hannam	11170	1117013100	confirmed	공식 법정동명 1:1 매칭
+1.9	수서	seoul	강남구	gangnam-suseo	11680	1168011500	confirmed	공식 법정동명 1:1 매칭
+1.9	신천	seoul	송파구	songpa-sincheon	11710	1171010200	confirmed	공식 법정동명 1:1 매칭
+1.9	일원	seoul	강남구	gangnam-irwon	11680	1168011400	confirmed	공식 법정동명 1:1 매칭
+2.0	목동	seoul	양천구	yangcheon-mokdong	11470	1147010200	confirmed	공식 법정동명 1:1 매칭
+2.1	성수	seoul	성동구	seongdong-seongsu	11200	1120011400,1120011500	confirmed	성수동1가·성수동2가를 하나의 성수 권역으로 통합
+2.2	서빙고	seoul	용산구	yongsan-seobinggo	11170	1117013300	confirmed	공식 법정동명 1:1 매칭
+2.2	한강로	seoul	용산구	yongsan-hangangro	11170	1117012400,1117012500,1117012800	confirmed	한강로1가~3가를 하나의 한강로 권역으로 통합
+2.3	회현	seoul	중구	jung-hoehyeon	11140	1114012100,1114012200,1114012300	confirmed	회현동1가~3가를 하나의 회현 권역으로 통합
+2.3	판교	gyeonggi	분당구	bundang-pangyo	41135	4113510800,4113510900,4113511000,4113511500	confirmed	판교동·삼평동·백현동·운중동을 판교 생활권으로 통합
+2.4	내곡	seoul	서초구	seocho-naegok	11650	1165010900	confirmed	공식 법정동명 1:1 매칭
+2.4	세곡	seoul	강남구	gangnam-segok	11680	1168011100	confirmed	공식 법정동명 1:1 매칭
+2.4	과천중앙	gyeonggi	과천시	gwacheon-gwacheonjungang	41290	4129010700	confirmed	공식 법정동명 1:1 매칭
+2.5	양재	seoul	서초구	seocho-yangjae	11650	1165010200	confirmed	공식 법정동명 1:1 매칭
+2.6	공덕	seoul	마포구	mapo-gongdeok	11440	1144010200	confirmed	공식 법정동명 1:1 매칭
+2.6	광장	seoul	광진구	gwangjin-gwangjang	11215	1121510400	confirmed	공식 법정동명 1:1 매칭
+2.6	구의	seoul	광진구	gwangjin-guui	11215	1121510300	confirmed	공식 법정동명 1:1 매칭
+2.6	방이	seoul	송파구	songpa-bangi	11710	1171011100	confirmed	공식 법정동명 1:1 매칭
+2.6	사직	seoul	종로구	jongro-sajik	11110	1111011500	confirmed	공식 법정동명 1:1 매칭
+2.6	송파	seoul	송파구	songpa-songpa	11710	1171010400	confirmed	공식 법정동명 1:1 매칭
+2.6	아현	seoul	마포구	mapo-ahyeon	11440	1144010100	confirmed	공식 법정동명 1:1 매칭
+2.6	옥수	seoul	성동구	seongdong-oksu	11200	1120011300	confirmed	공식 법정동명 1:1 매칭
+2.6	갈현·문원	gyeonggi	과천시	gwacheon-galhyeon-munwon	41290	4129010300,4129010200	confirmed	복합 권역명을 구성하는 법정동 각각 매칭
+2.7	가락	seoul	송파구	songpa-garak	11710	1171010700	confirmed	공식 법정동명 1:1 매칭
+2.7	망원·합정	seoul	마포구	mapo-mangwon-hapjeong	11440	1144012300,1144012200	confirmed	복합 권역명을 구성하는 법정동 각각 매칭
+2.7	문정	seoul	송파구	songpa-munjeong	11710	1171010800	confirmed	공식 법정동명 1:1 매칭
+2.7	오금	seoul	송파구	songpa-ogeum	11710	1171011200	confirmed	공식 법정동명 1:1 매칭
+2.7	왕십리	seoul	성동구	seongdong-wangsimni	11200	1120010100,1120010200	confirmed	상왕십리동·하왕십리동을 하나의 왕십리 권역으로 통합
+2.7	원효	seoul	용산구	yongsan-wonhyo	11170	1117011200,1117011300,1117011700,1117011800	confirmed	원효로1가~4가를 하나의 원효 권역으로 통합
+2.7	흑석	seoul	동작구	dongjak-heukseok	11590	1159010500	confirmed	공식 법정동명 1:1 매칭
+2.7	감일·위례	gyeonggi	하남시	hanam-gamil-wirye	41450	4145011400,4145011600	confirmed	감일동·학암동을 하남 감일·위례 생활권으로 통합
+2.7	수내	gyeonggi	분당구	bundang-sunae	41135	4113510200	confirmed	공식 법정동명 1:1 매칭
+2.7	위례성남	gyeonggi	수정구	sujeong-wirye-seongnam	41131	4113110800	confirmed	성남 위례 생활권을 창곡동으로 매핑
+2.7	정자	gyeonggi	분당구	bundang-jeongja	41135	4113510300	confirmed	공식 법정동명 1:1 매칭
+2.8	고덕	seoul	강동구	gangdong-godeok	11740	1174010200	confirmed	공식 법정동명 1:1 매칭
+2.8	명일	seoul	강동구	gangdong-myeongil	11740	1174010100	confirmed	공식 법정동명 1:1 매칭
+2.8	서현	gyeonggi	분당구	bundang-seohyeon	41135	4113510500	confirmed	공식 법정동명 1:1 매칭
+2.9	분당동	gyeonggi	분당구	bundang-bundangdong	41135	4113510100	confirmed	공식 법정동명 1:1 매칭
+3.0	노량진	seoul	동작구	dongjak-noryangjin	11590	1159010100	confirmed	공식 법정동명 1:1 매칭
+3.0	답십리	seoul	동대문구	dongdaemun-dapsipri	11230	1123010500	confirmed	공식 법정동명 1:1 매칭
+3.0	당산	seoul	영등포구	yeongdeungpo-dangsan	11560	1156011700,1156011100,1156011200,1156011300,1156011400,1156011500,1156011600	confirmed	당산동과 당산동1가~6가를 하나의 당산 권역으로 통합
+3.0	북아현	seoul	서대문구	seodaemun-bukahyeon	11410	1141011000	confirmed	공식 법정동명 1:1 매칭
+3.0	신도림	seoul	구로구	guro-sindorim	11530	1153010100	confirmed	공식 법정동명 1:1 매칭
+3.0	청량리	seoul	동대문구	dongdaemun-cheongryangri	11230	1123010700	confirmed	공식 법정동명 1:1 매칭
+3.1	금호	seoul	성동구	seongdong-geumho	11200	1120010900,1120011000,1120011100,1120011200	confirmed	금호동1가~4가를 하나의 금호 권역으로 통합
+3.1	사당	seoul	동작구	dongjak-sadang	11590	1159010700	confirmed	공식 법정동명 1:1 매칭
+3.1	상도	seoul	동작구	dongjak-sangdo	11590	1159010200,1159010300	confirmed	상도동·상도1동을 하나의 상도 권역으로 통합
+3.1	장지	seoul	송파구	songpa-jangji	11710	1171010900	confirmed	공식 법정동명 1:1 매칭
+3.2	둔촌	seoul	강동구	gangdong-dunchon	11740	1174010600	confirmed	공식 법정동명 1:1 매칭
+3.2	마곡	seoul	강서구	gangseo-magok	11500	1150010500	confirmed	공식 법정동명 1:1 매칭
+3.2	신길	seoul	영등포구	yeongdeungpo-singil	11560	1156013200	confirmed	공식 법정동명 1:1 매칭
+3.2	영등포	seoul	영등포구	yeongdeungpo-yeongdeungpo	11560	1156010100,1156010200,1156010300,1156010400,1156010500,1156010600,1156010700,1156010800,1156010900	confirmed	영등포동과 영등포동1가~8가를 하나의 영등포 권역으로 통합
+3.2	자양	seoul	광진구	gwangjin-jayang	11215	1121510500	confirmed	공식 법정동명 1:1 매칭
+3.2	후암	seoul	용산구	yongsan-huam	11170	1117010100	confirmed	공식 법정동명 1:1 매칭
+3.3	길음	seoul	성북구	seongbuk-gileum	11290	1129013400	confirmed	공식 법정동명 1:1 매칭
+3.3	신정	seoul	양천구	yangcheon-sinjeong	11470	1147010100	confirmed	양천구 신정동을 선택하고 마포구 신정동은 제외
+3.3	천호	seoul	강동구	gangdong-cheonho	11740	1174010900	confirmed	공식 법정동명 1:1 매칭
+3.3	행당	seoul	성동구	seongdong-haengdang	11200	1120010700	confirmed	공식 법정동명 1:1 매칭
+3.3	광교	gyeonggi	영통구	yeongtong-gwanggyo	41117	4111710200,4111710300,4111710400	confirmed	원천동·이의동·하동을 광교 생활권으로 통합하고 상·하광교동은 제외
+3.4	남가좌	seoul	서대문구	seodaemun-namgajwa	11410	1141012000	confirmed	공식 법정동명 1:1 매칭
+3.4	상암	seoul	마포구	mapo-sangam	11440	1144012700	confirmed	공식 법정동명 1:1 매칭
+3.4	성내	seoul	강동구	gangdong-seongnae	11740	1174010800	confirmed	공식 법정동명 1:1 매칭
+3.4	성산	seoul	마포구	mapo-seongsan	11440	1144012500	confirmed	공식 법정동명 1:1 매칭
+3.4	신대방	seoul	동작구	dongjak-sindaebang	11590	1159010900	confirmed	공식 법정동명 1:1 매칭
+3.4	암사	seoul	강동구	gangdong-amsa	11740	1174010700	confirmed	공식 법정동명 1:1 매칭
+3.4	염창	seoul	강서구	gangseo-yeomchang	11500	1150010100	confirmed	공식 법정동명 1:1 매칭
+3.4	중계	seoul	노원구	nowon-junggye	11350	1135010600	confirmed	공식 법정동명 1:1 매칭
+3.4	평창	seoul	종로구	jongro-pyeongchang	11110	1111018300	confirmed	공식 법정동명 1:1 매칭
+3.4	미사	gyeonggi	하남시	hanam-misa	41450	4145011100	confirmed	공식 법정동명 1:1 매칭
+3.4	철산	gyeonggi	광명시	gwangmyeong-cheolsan	41210	4121010200	confirmed	공식 법정동명 1:1 매칭
+3.5	가양	seoul	강서구	gangseo-gayang	11500	1150010400	confirmed	공식 법정동명 1:1 매칭
+3.5	신당	seoul	중구	jung-sindang	11140	1114016200	confirmed	공식 법정동명 1:1 매칭
+3.5	연희	seoul	서대문구	seodaemun-yeonhui	11410	1141011700	confirmed	공식 법정동명 1:1 매칭
+3.5	풍납	seoul	송파구	songpa-pungnap	11710	1171010300	confirmed	공식 법정동명 1:1 매칭
+3.5	황학	seoul	중구	jung-hwanghak	11140	1114016500	confirmed	공식 법정동명 1:1 매칭
+3.5	송도	incheon	연수구	yeonsu-songdo	28185	2818510600	confirmed	공식 법정동명 1:1 매칭
+3.5	평촌	gyeonggi	동안구	dongan-pyeongchon	41173	4117310300	confirmed	공식 법정동명 1:1 매칭
+3.6	거여·마천	seoul	송파구	songpa-geoyeo-macheon	11710	1171011300,1171011400	confirmed	복합 권역명을 구성하는 법정동 각각 매칭
+3.6	길동	seoul	강동구	gangdong-gildong	11740	1174010500	confirmed	공식 법정동명 1:1 매칭
+3.6	문래	seoul	영등포구	yeongdeungpo-mullae	11560	1156011900,1156012000,1156012100,1156012200,1156012300,1156012400	confirmed	문래동1가~6가를 하나의 문래 권역으로 통합
+3.6	수색·증산	seoul	은평구	eunpyeong-susaek-jeungsan	11380	1138010100,1138011000	confirmed	복합 권역명을 구성하는 법정동 각각 매칭
+3.6	장위	seoul	성북구	seongbuk-jangwi	11290	1129013800	confirmed	공식 법정동명 1:1 매칭
+3.6	홍제	seoul	서대문구	seodaemun-hongje	11410	1141011100	confirmed	공식 법정동명 1:1 매칭
+3.6	관양	gyeonggi	동안구	dongan-gwanyang	41173	4117310200	confirmed	공식 법정동명 1:1 매칭
+3.6	구미	gyeonggi	분당구	bundang-gumi	41135	4113511400	confirmed	공식 법정동명 1:1 매칭
+3.6	내손	gyeonggi	의왕시	uiwang-naeson	41430	4143010700	confirmed	공식 법정동명 1:1 매칭
+3.7	등촌	seoul	강서구	gangseo-deungchon	11500	1150010200	confirmed	공식 법정동명 1:1 매칭
+3.7	미아	seoul	강북구	gangbuk-mia	11305	1130510100	confirmed	공식 법정동명 1:1 매칭
+3.7	석관	seoul	성북구	seongbuk-seokgwan	11290	1129013900	confirmed	공식 법정동명 1:1 매칭
+3.7	이문·휘경	seoul	동대문구	dongdaemun-imun-hwigyeong	11230	1123011000,1123010900	confirmed	복합 권역명을 구성하는 법정동 각각 매칭
+3.7	종암	seoul	성북구	seongbuk-jongam	11290	1129013500	confirmed	공식 법정동명 1:1 매칭
+3.7	창동	seoul	도봉구	dobong-changdong	11320	1132010700	confirmed	공식 법정동명 1:1 매칭
+3.7	하계	seoul	노원구	nowon-hagye	11350	1135010400	confirmed	공식 법정동명 1:1 매칭
+3.7	화양·군자	seoul	광진구	gwangjin-hwayang-gunja	11215	1121510700,1121510900	confirmed	복합 권역명을 구성하는 법정동 각각 매칭
+3.7	야탑	gyeonggi	분당구	bundang-yatap	41135	4113510700	confirmed	공식 법정동명 1:1 매칭
+3.7	죽전	gyeonggi	수지구	suji-jukjeon	41465	4146510200	confirmed	공식 법정동명 1:1 매칭
+3.8	대림	seoul	영등포구	yeongdeungpo-daerim	11560	1156013300	confirmed	공식 법정동명 1:1 매칭
+3.8	불광	seoul	은평구	eunpyeong-bulgwang	11380	1138010300	confirmed	공식 법정동명 1:1 매칭
+3.8	상계	seoul	노원구	nowon-sanggye	11350	1135010500	confirmed	공식 법정동명 1:1 매칭
+3.8	상일	seoul	강동구	gangdong-sangil	11740	1174010300	confirmed	공식 법정동명 1:1 매칭
+3.8	월곡	seoul	성북구	seongbuk-wolgok	11290	1129013600,1129013700	confirmed	하월곡동·상월곡동을 하나의 월곡 권역으로 통합
+3.8	진관	seoul	은평구	eunpyeong-jingwan	11380	1138011400	confirmed	공식 법정동명 1:1 매칭
+3.9	봉천	seoul	관악구	gwanak-bongcheon	11620	1162010100	confirmed	공식 법정동명 1:1 매칭
+3.9	응암	seoul	은평구	eunpyeong-eungam	11380	1138010700	confirmed	공식 법정동명 1:1 매칭
+3.9	장안	seoul	동대문구	dongdaemun-jangan	11230	1123010600	confirmed	공식 법정동명 1:1 매칭
+3.9	동탄	gyeonggi	동탄구	dongtan-dongtan	41597	4159710100,4159710200,4159710300,4159710500,4159710600,4159710700,4159710800,4159710900,4159711000,4159711100,4159711200,4159711300,4159711400,4159711500	confirmed	동탄구의 현재 법정동 14개를 하나의 동탄 권역으로 통합
+3.9	비산	gyeonggi	동안구	dongan-bisan	41173	4117310100	confirmed	공식 법정동명 1:1 매칭
+3.9	수지	gyeonggi	수지구	suji-suji	41465	4146510100,4146510300,4146510400,4146510500,4146510600,4146510700	confirmed	수지구 법정동 중 별도 권역인 죽전동을 제외한 6개 동을 통합
+4.0	돈암	seoul	성북구	seongbuk-donam	11290	1129010300	confirmed	공식 법정동명 1:1 매칭
+4.0	상봉·중화	seoul	중랑구	jungrang-sangbong-junghwa	11260	1126010200,1126010300	confirmed	복합 권역명을 구성하는 법정동 각각 매칭
+4.0	월계	seoul	노원구	nowon-wolgye	11350	1135010200	confirmed	공식 법정동명 1:1 매칭
+4.1	구로	seoul	구로구	guro-guro	11530	1153010200	confirmed	공식 법정동명 1:1 매칭
+4.1	소하	gyeonggi	광명시	gwangmyeong-soha	41210	4121010400	confirmed	공식 법정동명 1:1 매칭
+4.2	공릉	seoul	노원구	nowon-gongreung	11350	1135010300	confirmed	공식 법정동명 1:1 매칭
+4.2	독산	seoul	금천구	geumcheon-doksan	11545	1154510200	confirmed	공식 법정동명 1:1 매칭
+4.2	묵동	seoul	중랑구	jungrang-mukdong	11260	1126010400	confirmed	공식 법정동명 1:1 매칭
+4.2	정릉	seoul	성북구	seongbuk-jeongreung	11290	1129013300	confirmed	공식 법정동명 1:1 매칭
+4.2	중곡	seoul	광진구	gwangjin-junggok	11215	1121510100	confirmed	공식 법정동명 1:1 매칭
+4.2	화곡	seoul	강서구	gangseo-hwagok	11500	1150010300	confirmed	공식 법정동명 1:1 매칭
+4.2	하안	gyeonggi	광명시	gwangmyeong-haan	41210	4121010300	confirmed	공식 법정동명 1:1 매칭
+4.3	고척	seoul	구로구	guro-gocheok	11530	1153010600	confirmed	공식 법정동명 1:1 매칭
+4.3	방학	seoul	도봉구	dobong-banghak	11320	1132010600	confirmed	공식 법정동명 1:1 매칭
+4.3	신월	seoul	양천구	yangcheon-sinwol	11470	1147010300	confirmed	공식 법정동명 1:1 매칭
+4.3	창신·숭인	seoul	종로구	jongro-changsin-sungin	11110	1111017400,1111017500	confirmed	복합 권역명을 구성하는 법정동 각각 매칭
+4.3	광명동	gyeonggi	광명시	gwangmyeong-gwangmyeongdong	41210	4121010100	confirmed	공식 법정동명 1:1 매칭
+4.4	가산	seoul	금천구	geumcheon-gasan	11545	1154510100	confirmed	공식 법정동명 1:1 매칭
+4.4	망우	seoul	중랑구	jungrang-mangu	11260	1126010500	confirmed	공식 법정동명 1:1 매칭
+4.4	면목	seoul	중랑구	jungrang-myeonmok	11260	1126010100	confirmed	공식 법정동명 1:1 매칭
+4.4	수유	seoul	강북구	gangbuk-suyu	11305	1130510300	confirmed	공식 법정동명 1:1 매칭
+4.4	신림	seoul	관악구	gwanak-sinrim	11620	1162010200	confirmed	공식 법정동명 1:1 매칭
+4.4	오류	seoul	구로구	guro-oryu	11530	1153010800	confirmed	공식 법정동명 1:1 매칭
+4.4	영통	gyeonggi	영통구	yeongtong-yeongtong	41117	4111710500	confirmed	공식 법정동명 1:1 매칭
+4.5	개봉	seoul	구로구	guro-gaebong	11530	1153010700	confirmed	공식 법정동명 1:1 매칭
+4.5	방화	seoul	강서구	gangseo-banghwa	11500	1150010900	confirmed	공식 법정동명 1:1 매칭
+4.5	쌍문	seoul	도봉구	dobong-ssangmun	11320	1132010500	confirmed	공식 법정동명 1:1 매칭
+4.5	검단	incheon	검단구	geomdan-geomdan	28290	2829010100,2829010200,2829010300,2829010400,2829010500,2829010600,2829010700,2829010800,2829010900,2829011000	confirmed	검단구의 현재 법정동 10개를 하나의 검단 권역으로 통합
+4.5	청라	incheon	서해구	seohae-cheongra	28275	2827511100	confirmed	공식 법정동명 1:1 매칭
+4.6	번동	seoul	강북구	gangbuk-beondong	11305	1130510200	confirmed	공식 법정동명 1:1 매칭
+4.6	신내	seoul	중랑구	jungrang-sinnae	11260	1126010600	confirmed	공식 법정동명 1:1 매칭
+4.8	갈현	seoul	은평구	eunpyeong-galhyeon	11380	1138010400	confirmed	공식 법정동명 1:1 매칭
+4.8	공항	seoul	강서구	gangseo-gonghang	11500	1150010800	confirmed	공식 법정동명 1:1 매칭
+4.8	도봉	seoul	도봉구	dobong-dobong	11320	1132010800	confirmed	공식 법정동명 1:1 매칭
+4.8	우이	seoul	강북구	gangbuk-ui	11305	1130510400	confirmed	공식 법정동명 1:1 매칭
+4.9	시흥	seoul	금천구	geumcheon-siheung	11545	1154510300	confirmed	공식 법정동명 1:1 매칭
+5.1	기흥	gyeonggi	기흥구	giheung-giheung	41463	4146310100,4146310200,4146310300,4146310400,4146310500,4146310600,4146310700,4146310800,4146310900,4146311000,4146311100,4146311200,4146311300,4146311400,4146311500,4146311600,4146311700,4146311800	confirmed	기흥구의 현재 법정동 18개를 하나의 기흥 권역으로 통합
+5.4	병점	gyeonggi	병점구	byeongjeom-byeongjeom	41595	4159510200	confirmed	공식 법정동명 1:1 매칭

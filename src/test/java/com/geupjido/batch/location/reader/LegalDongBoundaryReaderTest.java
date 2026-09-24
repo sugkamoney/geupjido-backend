@@ -62,4 +62,44 @@ class LegalDongBoundaryReaderTest {
 		assertThat(boundaries.get(0).geometryJson())
 			.contains("\"type\":\"Polygon\"");
 	}
+
+	@Test
+	void 경계_코드_8자리를_10자리_법정동_코드로_정규화한다()
+		throws IOException {
+
+		Path path = tempDirectory.resolve("eight-digit-code.geojson");
+
+		Files.writeString(path, """
+		{
+		  "type": "FeatureCollection",
+		  "features": [
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "emd_cd": "11680110"
+		      },
+		      "geometry": {
+		        "type": "Polygon",
+		        "coordinates": [
+		          [
+		            [127.00, 37.50],
+		            [127.01, 37.50],
+		            [127.01, 37.51],
+		            [127.00, 37.50]
+		          ]
+		        ]
+		      }
+		    }
+		  ]
+		}
+		""");
+
+		List<LegalDongBoundary> boundaries = reader.read(
+			path,
+			"emd_cd"
+		);
+
+		assertThat(boundaries.get(0).dongCode())
+			.isEqualTo("1168011000");
+	}
 }

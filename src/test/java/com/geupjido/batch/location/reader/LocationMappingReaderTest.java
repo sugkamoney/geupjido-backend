@@ -64,6 +64,24 @@ class LocationMappingReaderTest {
 	}
 
 	@Test
+	void 실제_지역_매핑_파일을_읽는다() {
+		Path path = Path.of(
+			"data/location/mapping/location-mapping.json"
+		);
+
+		LocationMapping mapping = reader.read(path);
+
+		int assignedDongCodeCount = mapping.zones().stream()
+			.mapToInt(zone -> zone.dongCodes().size())
+			.sum();
+
+		assertThat(mapping.regions()).hasSize(3);
+		assertThat(mapping.cities()).hasSize(40);
+		assertThat(mapping.zones()).hasSize(162);
+		assertThat(assignedDongCodeCount).isEqualTo(253);
+	}
+
+	@Test
 	void 알_수_없는_JSON_필드가_있으면_실패한다() throws IOException {
 		Path path = tempDirectory.resolve("invalid-location-mapping.json");
 

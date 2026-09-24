@@ -19,6 +19,7 @@ import java.util.Set;
 @Component
 public class LegalDongBoundaryReader {
 
+	private static final String EMD_CODE_PATTERN = "\\d{8}";
 	private static final String DONG_CODE_PATTERN = "\\d{10}";
 
 	private final ObjectMapper objectMapper;
@@ -96,16 +97,11 @@ public class LegalDongBoundaryReader {
 			);
 		}
 
-		String dongCode = feature.path("properties")
-			.path(codeProperty)
-			.asText();
-
-		if (!dongCode.matches(DONG_CODE_PATTERN)) {
-			throw new LocationMappingException(
-				"GeoJSON의 법정동 코드는 10자리 숫자여야 합니다: "
-					+ dongCode
-			);
-		}
+		String dongCode = normalizeDongCode(
+			feature.path("properties")
+				.path(codeProperty)
+				.asText()
+		);
 
 		JsonNode geometry = feature.path("geometry");
 		String geometryType = geometry.path("type").asText();
@@ -128,6 +124,21 @@ public class LegalDongBoundaryReader {
 		return new LegalDongBoundary(
 			dongCode,
 			geometry.toString()
+		);
+	}
+
+	private static String normalizeDongCode(String dongCode) {
+		if (dongCode.matches(DONG_CODE_PATTERN)) {
+			return dongCode;
+		}
+
+		if (dongCode.matches(EMD_CODE_PATTERN)) {
+			return dongCode + "00";
+		}
+
+		throw new LocationMappingException(
+			"GeoJSON의 법정동 코드는 8자리 또는 10자리 숫자여야 합니다: "
+				+ dongCode
 		);
 	}
 }
