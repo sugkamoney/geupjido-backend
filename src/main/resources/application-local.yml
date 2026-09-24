@@ -22,3 +22,10 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
+
+app:
+  location-import:
+    enabled: ${LOCATION_IMPORT_ENABLED:false}
+    mapping-path: ${LOCATION_MAPPING_PATH:}
+    boundary-path: ${LOCATION_BOUNDARY_PATH:}
+    code-property: ${LOCATION_CODE_PROPERTY:}
