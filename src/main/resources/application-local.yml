@@ -29,3 +29,9 @@ app:
     mapping-path: ${LOCATION_MAPPING_PATH:}
     boundary-path: ${LOCATION_BOUNDARY_PATH:}
     code-property: ${LOCATION_CODE_PROPERTY:}
+
+  external:
+    complex-list:
+      enabled: ${DATA_GO_KR_APT_LIST_ENABLED:false}
+      base-url: ${DATA_GO_KR_APT_LIST_BASE_URL:}
+      service-key: ${DATA_GO_KR_SERVICE_KEY:}
