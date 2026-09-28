@@ -32,6 +32,7 @@ public class ComplexBasicInfoMapper {
 			item.kaptName(),
 			item.kaptAddr(),
 			normalizeNullableText(item.doroJuso()),
+			item.bjdCode(),
 			toHouseholds(item.kaptdaCnt()),
 			toBuildingCount(item.kaptDongCnt()),
 			toApprovalDate(item.kaptUsedate())
