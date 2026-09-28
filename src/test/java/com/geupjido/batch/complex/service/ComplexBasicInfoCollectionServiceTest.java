@@ -54,6 +54,7 @@ class ComplexBasicInfoCollectionServiceTest {
 			"괴정 경성스마트W아파트",
 			"부산광역시 사하구 괴정동 258",
 			"부산광역시 사하구 낙동대로 180",
+			"2638010100",
 			182,
 			3,
 			LocalDate.of(2015, 8, 6)

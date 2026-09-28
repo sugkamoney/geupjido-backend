@@ -58,6 +58,8 @@ class ComplexBasicInfoImportServiceE2ETest {
 			);
 		assertThat(savedComplex.getAddressRoad())
 			.isEqualTo("부산광역시 사하구 낙동대로 180");
+		assertThat(savedComplex.getLegalDongCode())
+			.isEqualTo("2638010100");
 		assertThat(savedComplex.getHouseholds())
 			.isEqualTo(182);
 		assertThat(savedComplex.getBuildingCount())

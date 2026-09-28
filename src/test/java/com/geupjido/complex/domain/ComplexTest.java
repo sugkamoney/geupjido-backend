@@ -18,6 +18,7 @@ class ComplexTest {
 			"괴정 경성스마트W아파트",
 			"부산광역시 사하구 괴정동 258",
 			"부산광역시 사하구 낙동대로 180",
+			"2638010100",
 			182,
 			3,
 			approvalDate
@@ -30,6 +31,8 @@ class ComplexTest {
 			.isEqualTo("부산광역시 사하구 괴정동 258");
 		assertThat(complex.getAddressRoad())
 			.isEqualTo("부산광역시 사하구 낙동대로 180");
+		assertThat(complex.getLegalDongCode())
+			.isEqualTo("2638010100");
 		assertThat(complex.getHouseholds()).isEqualTo(182);
 		assertThat(complex.getBuildingCount()).isEqualTo(3);
 		assertThat(complex.getApprovalDate()).isEqualTo(approvalDate);
@@ -49,6 +52,7 @@ class ComplexTest {
 				" ",
 				"부산광역시 사하구 괴정동 258",
 				null,
+				"2638010100",
 				182,
 				3,
 				null
@@ -66,6 +70,7 @@ class ComplexTest {
 				"테스트아파트",
 				"부산광역시 사하구 괴정동 258",
 				null,
+				"2638010100",
 				-1,
 				3,
 				null
@@ -83,6 +88,7 @@ class ComplexTest {
 				"테스트아파트",
 				"부산광역시 사하구 괴정동 258",
 				null,
+				"2638010100",
 				182,
 				0,
 				null
@@ -90,5 +96,25 @@ class ComplexTest {
 		)
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("동 수는 1 이상");
+	}
+
+	@Test
+	void 법정동_코드가_숫자_10자리가_아니면_생성할_수_없다() {
+		assertThatThrownBy(
+			() -> new Complex(
+				"A10027875",
+				"테스트아파트",
+				"부산광역시 사하구 괴정동 258",
+				null,
+				"263801010",
+				182,
+				3,
+				null
+			)
+		)
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining(
+				"법정동 코드는 숫자 10자리"
+			);
 	}
 }
