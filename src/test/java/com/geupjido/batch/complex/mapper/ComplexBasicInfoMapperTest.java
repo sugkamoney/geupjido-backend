@@ -41,6 +41,8 @@ class ComplexBasicInfoMapperTest {
 			.isEqualTo("부산광역시 사하구 괴정동 258");
 		assertThat(complex.getAddressRoad())
 			.isEqualTo("부산광역시 사하구 낙동대로 180");
+		assertThat(complex.getLegalDongCode())
+			.isEqualTo("2638010100");
 		assertThat(complex.getHouseholds()).isEqualTo(182);
 		assertThat(complex.getBuildingCount()).isEqualTo(3);
 		assertThat(complex.getApprovalDate())
@@ -170,6 +172,27 @@ class ComplexBasicInfoMapperTest {
 			)
 			.hasMessageContaining(
 				"변환할 공동주택 기본정보가 없습니다"
+			);
+	}
+
+	@Test
+	void 법정동_코드_형식이_잘못되면_변환할_수_없다() {
+		ComplexBasicInfoApiItem item =
+			new ComplexBasicInfoApiItem(
+				"A10027875",
+				"괴정 경성스마트W아파트",
+				"부산광역시 사하구 괴정동 258",
+				null,
+				"3",
+				new BigDecimal("182"),
+				"20150806",
+				"263801010"
+			);
+
+		assertThatThrownBy(() -> mapper.map(item))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining(
+				"법정동 코드는 숫자 10자리"
 			);
 	}
 }

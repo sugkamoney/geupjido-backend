@@ -37,6 +37,7 @@ class ComplexRepositoryIT {
 			"통합테스트아파트",
 			"서울특별시 강남구 테스트동 1",
 			"서울특별시 강남구 테스트로 1",
+			"1168010100",
 			182,
 			3,
 			LocalDate.of(2015, 8, 6)
@@ -54,6 +55,8 @@ class ComplexRepositoryIT {
 			.isEqualTo("서울특별시 강남구 테스트동 1");
 		assertThat(found.getAddressRoad())
 			.isEqualTo("서울특별시 강남구 테스트로 1");
+		assertThat(found.getLegalDongCode())
+			.isEqualTo("1168010100");
 		assertThat(found.getHouseholds()).isEqualTo(182);
 		assertThat(found.getBuildingCount()).isEqualTo(3);
 		assertThat(found.getApprovalDate())

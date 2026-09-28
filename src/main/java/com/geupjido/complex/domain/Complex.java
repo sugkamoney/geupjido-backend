@@ -2,6 +2,7 @@ package com.geupjido.complex.domain;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.regex.Pattern;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,6 +23,9 @@ import com.geupjido.zone.domain.Zone;
 @Table(name = "complex")
 public class Complex {
 
+	private static final Pattern LEGAL_DONG_CODE_PATTERN =
+		Pattern.compile("[0-9]{10}");
+
 	@Id
 	@Column(name = "id", length = 20, nullable = false)
 	private String id;
@@ -38,6 +42,9 @@ public class Complex {
 
 	@Column(name = "address_road", length = 200)
 	private String addressRoad;
+
+	@Column(name = "legal_dong_code", length = 10)
+	private String legalDongCode;
 
 	@Column(
 		name = "location",
@@ -84,6 +91,7 @@ public class Complex {
 		String name,
 		String addressJibun,
 		String addressRoad,
+		String legalDongCode,
 		int households,
 		Integer buildingCount,
 		LocalDate approvalDate
@@ -92,6 +100,8 @@ public class Complex {
 		this.name = requireText(name, "단지명");
 		this.addressJibun = requireText(addressJibun, "법정동 주소");
 		this.addressRoad = addressRoad;
+		this.legalDongCode =
+			requireLegalDongCode(legalDongCode);
 
 		if (households < 0) {
 			throw new IllegalArgumentException(
@@ -129,6 +139,10 @@ public class Complex {
 
 	public String getAddressRoad() {
 		return addressRoad;
+	}
+
+	public String getLegalDongCode() {
+		return legalDongCode;
 	}
 
 	public Point getLocation() {
@@ -169,6 +183,19 @@ public class Complex {
 
 	public boolean isActive() {
 		return active;
+	}
+
+	private static String requireLegalDongCode(String value) {
+		if (
+			value == null
+				|| !LEGAL_DONG_CODE_PATTERN.matcher(value).matches()
+		) {
+			throw new IllegalArgumentException(
+				"법정동 코드는 숫자 10자리여야 합니다."
+			);
+		}
+
+		return value;
 	}
 
 	private static String requireText(
