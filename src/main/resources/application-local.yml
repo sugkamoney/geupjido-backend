@@ -30,6 +30,10 @@ app:
     boundary-path: ${LOCATION_BOUNDARY_PATH:}
     code-property: ${LOCATION_CODE_PROPERTY:}
 
+  complex-import:
+    enabled: ${COMPLEX_IMPORT_ENABLED:false}
+    mapping-path: ${COMPLEX_IMPORT_MAPPING_PATH:data/location/mapping/location-mapping.json}
+
   external:
     complex-list:
       enabled: ${DATA_GO_KR_APT_LIST_ENABLED:false}
