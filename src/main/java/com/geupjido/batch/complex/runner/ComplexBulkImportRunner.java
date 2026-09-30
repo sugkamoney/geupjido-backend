@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import com.geupjido.batch.complex.config.ComplexBulkImportProperties;
 import com.geupjido.batch.complex.model.ComplexBulkImportResult;
+import com.geupjido.batch.complex.model.ComplexImportFailure;
 import com.geupjido.batch.complex.service.ComplexBulkImportService;
 import com.geupjido.batch.location.model.LocationMapping;
 import com.geupjido.batch.location.reader.LocationMappingReader;
@@ -66,12 +67,23 @@ public class ComplexBulkImportRunner implements ApplicationRunner {
 				legalDongCodes
 			);
 
+		for (ComplexImportFailure failure : result.failures()) {
+			log.warn(
+				"공동주택 기본정보 적재에 실패했습니다. "
+					+ "단지코드={}, 유형={}, 사유={}",
+				failure.complexCode(),
+				failure.type(),
+				failure.reason()
+			);
+		}
+
 		log.info(
 			"공동주택 기본정보 초기 적재를 완료했습니다. "
-				+ "전체={}, 신규={}, 건너뛰기={}",
+				+ "전체={}, 신규={}, 건너뛰기={}, 실패={}",
 			result.totalCount(),
 			result.createdCount(),
-			result.skippedCount()
+			result.skippedCount(),
+			result.failedCount()
 		);
 	}
 
