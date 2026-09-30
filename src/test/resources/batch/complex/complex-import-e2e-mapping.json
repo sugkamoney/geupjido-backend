@@ -1,0 +1,28 @@
+{
+  "regions": [
+    {
+      "code": "seoul",
+      "name": "서울",
+      "active": true,
+      "displayOrder": 1
+    }
+  ],
+  "cities": [
+    {
+      "id": "11170",
+      "regionCode": "seoul",
+      "name": "용산구"
+    }
+  ],
+  "zones": [
+    {
+      "id": "yongsan-hannam",
+      "cityId": "11170",
+      "name": "한남",
+      "dongCodes": [
+        "1117013100"
+      ],
+      "initialTier": 1.7
+    }
+  ]
+}
