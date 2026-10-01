@@ -18,7 +18,10 @@ import com.geupjido.batch.complex.model.ComplexImportFailureType;
 import com.geupjido.batch.complex.model.ComplexImportStatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -143,6 +146,116 @@ class ComplexBulkImportServiceTest {
 	}
 
 	@Test
+	void API_호출이_한_번_실패한_뒤_성공하면_신규_건수로_집계한다() {
+		List<String> legalDongCodes =
+			List.of("1117013100");
+
+		ComplexListApiItem complex =
+			new ComplexListApiItem(
+				"A10000001",
+				"한남 테스트 아파트",
+				"1117013100"
+			);
+
+		when(
+			listCollectionService.collectByLegalDongCodes(
+				legalDongCodes
+			)
+		).thenReturn(List.of(complex));
+
+		when(
+			basicInfoImportService.importIfAbsent("A10000001")
+		)
+			.thenThrow(
+				new ComplexBasicInfoApiException(
+					"첫 번째 API 호출에 실패했습니다."
+				)
+			)
+			.thenReturn(ComplexImportStatus.CREATED);
+
+		ComplexBulkImportResult result =
+			service.importByLegalDongCodes(legalDongCodes);
+
+		assertThat(result)
+			.isEqualTo(
+				new ComplexBulkImportResult(
+					1,
+					1,
+					0
+				)
+			);
+
+		InOrder inOrder = inOrder(
+			listCollectionService,
+			basicInfoImportService
+		);
+		inOrder.verify(listCollectionService)
+			.collectByLegalDongCodes(legalDongCodes);
+		inOrder.verify(
+			basicInfoImportService,
+			times(2)
+		)
+			.importIfAbsent("A10000001");
+
+		verifyNoMoreInteractions(
+			listCollectionService,
+			basicInfoImportService
+		);
+	}
+
+	@Test
+	void API_호출이_두_번_실패한_뒤_성공하면_건너뛰기_건수로_집계한다() {
+		List<String> legalDongCodes =
+			List.of("1117013100");
+
+		ComplexListApiItem complex =
+			new ComplexListApiItem(
+				"A10000001",
+				"한남 기존 아파트",
+				"1117013100"
+			);
+
+		when(
+			listCollectionService.collectByLegalDongCodes(
+				legalDongCodes
+			)
+		).thenReturn(List.of(complex));
+
+		when(
+			basicInfoImportService.importIfAbsent("A10000001")
+		)
+			.thenThrow(
+				new ComplexBasicInfoApiException(
+					"첫 번째 API 호출에 실패했습니다."
+				),
+				new ComplexBasicInfoApiException(
+					"두 번째 API 호출에 실패했습니다."
+				)
+			)
+			.thenReturn(
+				ComplexImportStatus.SKIPPED_ALREADY_EXISTS
+			);
+
+		ComplexBulkImportResult result =
+			service.importByLegalDongCodes(legalDongCodes);
+
+		assertThat(result)
+			.isEqualTo(
+				new ComplexBulkImportResult(
+					1,
+					0,
+					1
+				)
+			);
+
+		verify(
+			basicInfoImportService,
+			times(3)
+		)
+			.importIfAbsent("A10000001");
+	}
+
+	@Test
 	void 중간_단지_API_호출이_실패해도_이후_단지를_처리한다() {
 		List<String> legalDongCodes =
 			List.of("1117013100");
@@ -223,7 +336,10 @@ class ComplexBulkImportServiceTest {
 			.collectByLegalDongCodes(legalDongCodes);
 		inOrder.verify(basicInfoImportService)
 			.importIfAbsent("A10000001");
-		inOrder.verify(basicInfoImportService)
+		inOrder.verify(
+			basicInfoImportService,
+			times(3)
+		)
 			.importIfAbsent("A10000002");
 		inOrder.verify(basicInfoImportService)
 			.importIfAbsent("A10000003");
@@ -368,5 +484,48 @@ class ComplexBulkImportServiceTest {
 					)
 				)
 			);
+	}
+
+	@Test
+	void 예상하지_못한_오류는_재시도하지_않고_상위로_전파한다() {
+		List<String> legalDongCodes =
+			List.of("1117013100");
+
+		ComplexListApiItem complex =
+			new ComplexListApiItem(
+				"A10000001",
+				"한남 테스트 아파트",
+				"1117013100"
+			);
+
+		when(
+			listCollectionService.collectByLegalDongCodes(
+				legalDongCodes
+			)
+		).thenReturn(List.of(complex));
+
+		when(
+			basicInfoImportService.importIfAbsent("A10000001")
+		).thenThrow(
+			new IllegalStateException(
+				"예상하지 못한 저장 오류입니다."
+			)
+		);
+
+		assertThatThrownBy(
+			() -> service.importByLegalDongCodes(
+				legalDongCodes
+			)
+		)
+			.isInstanceOf(IllegalStateException.class)
+			.hasMessage(
+				"예상하지 못한 저장 오류입니다."
+			);
+
+		verify(
+			basicInfoImportService,
+			times(1)
+		)
+			.importIfAbsent("A10000001");
 	}
 }
