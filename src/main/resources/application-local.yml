@@ -43,3 +43,7 @@ app:
       enabled: ${DATA_GO_KR_APT_BASIC_INFO_ENABLED:false}
       base-url: ${DATA_GO_KR_APT_BASIC_INFO_BASE_URL:}
       service-key: ${DATA_GO_KR_SERVICE_KEY:}
+    apartment-trade:
+      enabled: ${DATA_GO_KR_APT_TRADE_ENABLED:false}
+      base-url: ${DATA_GO_KR_APT_TRADE_BASE_URL:}
+      service-key: ${DATA_GO_KR_SERVICE_KEY:}
