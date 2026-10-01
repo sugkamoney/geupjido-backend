@@ -29,6 +29,8 @@ import com.geupjido.batch.complex.model.ComplexImportStatus;
 )
 public class ComplexBulkImportService {
 
+	private static final int MAX_API_ATTEMPTS = 3;
+
 	private final ComplexListCollectionService listCollectionService;
 	private final ComplexBasicInfoImportService basicInfoImportService;
 
@@ -60,7 +62,7 @@ public class ComplexBulkImportService {
 		for (ComplexListApiItem complexItem : complexItems) {
 			try {
 				ComplexImportStatus status =
-					basicInfoImportService.importIfAbsent(
+					importWithRetry(
 						complexItem.kaptCode()
 					);
 
@@ -95,6 +97,30 @@ public class ComplexBulkImportService {
 			createdCount,
 			skippedCount,
 			failures
+		);
+	}
+
+	private ComplexImportStatus importWithRetry(
+		String complexCode
+	) {
+		for (
+			int attempt = 1;
+			attempt <= MAX_API_ATTEMPTS;
+			attempt++
+		) {
+			try {
+				return basicInfoImportService.importIfAbsent(
+					complexCode
+				);
+			} catch (ComplexBasicInfoApiException exception) {
+				if (attempt == MAX_API_ATTEMPTS) {
+					throw exception;
+				}
+			}
+		}
+
+		throw new IllegalStateException(
+			"공동주택 기본정보 API 재시도 상태가 올바르지 않습니다."
 		);
 	}
 
