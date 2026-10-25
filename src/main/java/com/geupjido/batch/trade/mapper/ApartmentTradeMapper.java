@@ -120,6 +120,11 @@ public class ApartmentTradeMapper {
 					"전용면적은 0보다 커야 합니다: " + value
 				);
 			}
+			if (area.stripTrailingZeros().scale() > 6) {
+				throw new ApartmentTradeMappingException(
+					"전용면적은 소수 6자리를 초과할 수 없습니다: " + value
+				);
+			}
 
 			return area;
 		} catch (NumberFormatException exception) {

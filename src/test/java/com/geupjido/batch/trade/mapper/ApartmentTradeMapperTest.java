@@ -142,10 +142,42 @@ class ApartmentTradeMapperTest {
 			);
 	}
 
+	@Test
+	void 전용면적_소수_6자리를_그대로_변환한다() {
+		ApartmentTradeApiItem item = createItem(
+			"250,000", null, null, "59.123456"
+		);
+
+		assertThat(mapper.map(item).exclusiveArea())
+			.isEqualByComparingTo(new BigDecimal("59.123456"));
+	}
+
+	@Test
+	void 전용면적_소수_6자리를_초과하면_실패한다() {
+		ApartmentTradeApiItem item = createItem(
+			"250,000", null, null, "59.1234567"
+		);
+
+		assertThatThrownBy(() -> mapper.map(item))
+			.isInstanceOf(ApartmentTradeMappingException.class)
+			.hasMessageContaining("전용면적은 소수 6자리를 초과");
+	}
+
 	private ApartmentTradeApiItem createItem(
 		String dealAmount,
 		String cancellationDate,
 		String cancellationType
+	) {
+		return createItem(
+			dealAmount, cancellationDate, cancellationType, "59.98"
+		);
+	}
+
+	private ApartmentTradeApiItem createItem(
+		String dealAmount,
+		String cancellationDate,
+		String cancellationType,
+		String exclusiveArea
 	) {
 		return new ApartmentTradeApiItem(
 			"101",
@@ -160,7 +192,7 @@ class ApartmentTradeMapperTest {
 			"2026",
 			"중개거래",
 			null,
-			"59.98",
+			exclusiveArea,
 			"12",
 			"810",
 			null,

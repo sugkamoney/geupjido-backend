@@ -87,6 +87,71 @@ class ApartmentTradeTest {
 			.hasMessage("해제일은 계약일보다 빠를 수 없습니다.");
 	}
 
+	@Test
+	void 정상_거래에_해제를_반영한다() {
+		ApartmentTrade trade = createTrade(false, null);
+		LocalDate cancellationDate = LocalDate.of(2026, 9, 20);
+
+		trade.markCanceled(cancellationDate);
+
+		assertThat(trade.isCanceled()).isTrue();
+		assertThat(trade.getCancellationDate()).isEqualTo(cancellationDate);
+	}
+
+	@Test
+	void 같은_해제일을_다시_반영하면_상태를_유지한다() {
+		LocalDate cancellationDate = LocalDate.of(2026, 9, 20);
+		ApartmentTrade trade = createTrade(true, cancellationDate);
+
+		trade.markCanceled(cancellationDate);
+
+		assertThat(trade.isCanceled()).isTrue();
+		assertThat(trade.getCancellationDate()).isEqualTo(cancellationDate);
+	}
+
+	@Test
+	void 이미_해제된_거래에_다른_해제일이_오면_상태를_유지하고_실패한다() {
+		ApartmentTrade trade = createTrade(
+			true, LocalDate.of(2026, 9, 20)
+		);
+
+		assertThatThrownBy(() ->
+			trade.markCanceled(LocalDate.of(2026, 9, 21))
+		)
+			.isInstanceOf(IllegalStateException.class)
+			.hasMessageContaining("해제일");
+
+		assertThat(trade.getCancellationDate())
+			.isEqualTo(LocalDate.of(2026, 9, 20));
+	}
+
+	@Test
+	void 해제일이_없거나_계약일보다_빠르면_해제를_반영하지_않는다() {
+		ApartmentTrade trade = createTrade(false, null);
+
+		assertThatThrownBy(() -> trade.markCanceled(null))
+			.isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() ->
+			trade.markCanceled(LocalDate.of(2026, 9, 14))
+		)
+			.isInstanceOf(IllegalArgumentException.class);
+
+		assertThat(trade.isCanceled()).isFalse();
+		assertThat(trade.getCancellationDate()).isNull();
+	}
+
+	@Test
+	void 직접_생성한_거래도_전용면적_소수_6자리_초과를_거부한다() {
+		assertThatThrownBy(() -> new ApartmentTrade(
+			LocalDate.of(2026, 9, 15), 150_000L,
+			new BigDecimal("59.1234567"), (short) 12, (short) 2011,
+			"11170", "한남동", "한남테스트아파트", "810",
+			"101동", "중개거래", false, null
+		))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("전용면적은 소수 6자리를 초과");
+	}
+
 	private ApartmentTrade createTrade(
 		boolean canceled,
 		LocalDate cancellationDate

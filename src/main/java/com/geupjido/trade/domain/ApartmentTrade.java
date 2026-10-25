@@ -50,8 +50,8 @@ public class ApartmentTrade {
 
 	@Column(
 		name = "exclusive_area",
-		precision = 8,
-		scale = 2
+		precision = 12,
+		scale = 6
 	)
 	private BigDecimal exclusiveArea;
 
@@ -211,6 +211,11 @@ public class ApartmentTrade {
 				"전용면적은 0보다 커야 합니다."
 			);
 		}
+		if (value != null && value.stripTrailingZeros().scale() > 6) {
+			throw new IllegalArgumentException(
+				"전용면적은 소수 6자리를 초과할 수 없습니다."
+			);
+		}
 
 		return value;
 	}
@@ -250,6 +255,21 @@ public class ApartmentTrade {
 				"해제일은 계약일보다 빠를 수 없습니다."
 			);
 		}
+	}
+
+	public void markCanceled(LocalDate date) {
+		validateCancellation(dealDate, true, date);
+
+		if (canceled) {
+			if (!cancellationDate.equals(date)) {
+				throw new IllegalStateException(
+					"이미 해제된 거래의 해제일과 새 해제일이 다릅니다."
+				);
+			}
+			return;
+		}
+		canceled = true;
+		cancellationDate = date;
 	}
 
 	public Long getId() {

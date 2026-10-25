@@ -75,5 +75,34 @@ class ApartmentTradeRepositoryIT {
 		assertThat(found.getComplex()).isNull();
 		assertThat(found.getZone()).isNull();
 		assertThat(found.getCreatedAt()).isNotNull();
+
+		assertThat(apartmentTradeRepository.findBySourceKey(
+			"11170", "한남동", "통합테스트아파트",
+			LocalDate.of(2026, 9, 15), new BigDecimal("59.98"),
+			(short) 12, 250_000L
+		)).hasValueSatisfying(sourceTrade ->
+			assertThat(sourceTrade.getId()).isEqualTo(savedId)
+		);
+	}
+
+	@Test
+	void 선택값이_null인_거래도_원본_키로_조회한다() {
+		ApartmentTrade saved = apartmentTradeRepository.saveAndFlush(
+			new ApartmentTrade(
+				LocalDate.of(2026, 9, 16), 260_000L,
+				null, null, null, "11170", "한남동",
+				"선택값없는아파트", null, null, null,
+				false, null
+			)
+		);
+
+		entityManager.clear();
+
+		assertThat(apartmentTradeRepository.findBySourceKey(
+			"11170", "한남동", "선택값없는아파트",
+			LocalDate.of(2026, 9, 16), null, null, 260_000L
+		)).hasValueSatisfying(sourceTrade ->
+			assertThat(sourceTrade.getId()).isEqualTo(saved.getId())
+		);
 	}
 }
