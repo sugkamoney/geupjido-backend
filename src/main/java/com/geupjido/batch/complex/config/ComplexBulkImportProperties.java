@@ -1,6 +1,7 @@
 package com.geupjido.batch.complex.config;
 
 import java.nio.file.Path;
+import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -10,6 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "app.complex-import")
 public record ComplexBulkImportProperties(
 	boolean enabled,
-	Path mappingPath
+	Path mappingPath,
+	List<String> legalDongCodes
 ) {
 }

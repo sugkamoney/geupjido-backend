@@ -24,6 +24,7 @@ import com.geupjido.batch.location.reader.LocationMappingReader;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -50,7 +51,8 @@ class ComplexBulkImportRunnerTest {
 		ComplexBulkImportProperties properties =
 			new ComplexBulkImportProperties(
 				true,
-				mappingPath
+				mappingPath,
+				List.of()
 			);
 
 		ComplexBulkImportRunner runner =
@@ -121,11 +123,89 @@ class ComplexBulkImportRunnerTest {
 	}
 
 	@Test
+	void 설정한_법정동_코드만_적재한다() throws IOException {
+		List<String> selectedCodes = List.of("1117013100");
+		when(importService.importByLegalDongCodes(selectedCodes))
+			.thenReturn(new ComplexBulkImportResult(0, 0, 0));
+
+		runWithSelection(selectedCodes);
+
+		verify(importService)
+			.importByLegalDongCodes(selectedCodes);
+	}
+
+	@Test
+	void 법정동_코드_형식이_잘못되면_API_호출_전에_중단한다() {
+		assertThatThrownBy(
+			() -> runWithSelection(List.of("11170"))
+		)
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("숫자 10자리");
+
+		verifyNoInteractions(importService);
+	}
+
+	@Test
+	void 중복_선택은_API_호출_전에_중단한다() {
+		assertThatThrownBy(
+			() -> runWithSelection(
+				List.of("1117013100", "1117013100")
+			)
+		)
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("중복된 법정동 코드");
+
+		verifyNoInteractions(importService);
+	}
+
+	@Test
+	void 매핑에_없는_법정동은_API_호출_전에_중단한다() {
+		assertThatThrownBy(
+			() -> runWithSelection(List.of("1117010100"))
+		)
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("권역 매핑에 없는 법정동 코드");
+
+		verifyNoInteractions(importService);
+	}
+
+	private void runWithSelection(List<String> selectedCodes)
+		throws IOException {
+		Path mappingPath = tempDir.resolve("selected-mapping.json");
+		Files.writeString(mappingPath, "{}");
+
+		LocationMapping mapping = new LocationMapping(
+			List.of(),
+			List.of(),
+			List.of(new ZoneDefinition(
+				"yongsan-hannam",
+				"11170",
+				"한남",
+				List.of("1117013100"),
+				new BigDecimal("1.5")
+			))
+		);
+
+		when(mappingReader.read(mappingPath)).thenReturn(mapping);
+
+		new ComplexBulkImportRunner(
+			new ComplexBulkImportProperties(
+				true,
+				mappingPath,
+				selectedCodes
+			),
+			mappingReader,
+			importService
+		).run(null);
+	}
+
+	@Test
 	void 매핑_파일_경로가_없으면_실행하지_않는다() {
 		ComplexBulkImportProperties properties =
 			new ComplexBulkImportProperties(
 				true,
-				null
+				null,
+				List.of()
 			);
 
 		ComplexBulkImportRunner runner =
@@ -157,7 +237,8 @@ class ComplexBulkImportRunnerTest {
 		ComplexBulkImportProperties properties =
 			new ComplexBulkImportProperties(
 				true,
-				missingMappingPath
+				missingMappingPath,
+				List.of()
 			);
 
 		ComplexBulkImportRunner runner =
