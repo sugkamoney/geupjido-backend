@@ -1,6 +1,7 @@
 package com.geupjido.batch.complex.runner;
 
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -66,7 +67,8 @@ class ComplexBulkImportRunnerE2ETest {
 		ComplexBulkImportProperties properties =
 			new ComplexBulkImportProperties(
 				true,
-				MAPPING_PATH
+				MAPPING_PATH,
+				List.of()
 			);
 
 		ComplexBulkImportRunner runner =
