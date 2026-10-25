@@ -100,7 +100,7 @@ initial_tier	zone_name	region_hint	city_hint	zone_id	city_id	dong_codes	status	n
 3.6	홍제	seoul	서대문구	seodaemun-hongje	11410	1141011100	confirmed	공식 법정동명 1:1 매칭
 3.6	관양	gyeonggi	동안구	dongan-gwanyang	41173	4117310200	confirmed	공식 법정동명 1:1 매칭
 3.6	구미	gyeonggi	분당구	bundang-gumi	41135	4113511400	confirmed	공식 법정동명 1:1 매칭
-3.6	내손	gyeonggi	의왕시	uiwang-naeson	41430	4143010700	confirmed	공식 법정동명 1:1 매칭
+3.6	포일/내손	gyeonggi	의왕시	uiwang-naeson	41430	4143010700,4143010900	confirmed	기준 배치표의 포일/내손을 한 권역으로 통합
 3.7	등촌	seoul	강서구	gangseo-deungchon	11500	1150010200	confirmed	공식 법정동명 1:1 매칭
 3.7	미아	seoul	강북구	gangbuk-mia	11305	1130510100	confirmed	공식 법정동명 1:1 매칭
 3.7	석관	seoul	성북구	seongbuk-seokgwan	11290	1129013900	confirmed	공식 법정동명 1:1 매칭

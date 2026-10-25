@@ -1,5 +1,6 @@
 package com.geupjido.batch.location.service;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.io.TempDir;
@@ -36,7 +37,7 @@ class LocationDataImportServiceIT {
 	private JdbcTemplate jdbcTemplate;
 
 	@Test
-	void 매핑_JSON과_GeoJSON을_읽어_지역_데이터를_저장한다()
+	void 포일동과_내손동_경계를_한_권역으로_합쳐_저장한다()
 		throws IOException {
 		Path mappingPath = tempDirectory.resolve(
 			"location-mapping.json"
@@ -49,28 +50,29 @@ class LocationDataImportServiceIT {
 			{
 			  "regions": [
 			    {
-			      "code": "seoul",
-			      "name": "서울",
+		      "code": "gyeonggi",
+		      "name": "경기",
 			      "active": true,
 			      "displayOrder": 1
 			    }
 			  ],
 			  "cities": [
 			    {
-			      "id": "11680",
-			      "regionCode": "seoul",
-			      "name": "강남구"
+		      "id": "41430",
+		      "regionCode": "gyeonggi",
+		      "name": "의왕시"
 			    }
 			  ],
 			  "zones": [
 			    {
-			      "id": "integration-test-zone",
-			      "cityId": "11680",
-			      "name": "통합 테스트 권역",
+		      "id": "integration-test-poil-naeson",
+		      "cityId": "41430",
+		      "name": "포일/내손",
 			      "dongCodes": [
-			        "1168011000"
+		        "4143010700",
+		        "4143010900"
 			      ],
-			       "initialTier": 1.1
+		       "initialTier": 3.6
 			    }
 			  ]
 			}
@@ -83,21 +85,40 @@ class LocationDataImportServiceIT {
 			    {
 			      "type": "Feature",
 			      "properties": {
-			        "EMD_CD": "1168011000",
-			        "EMD_NM": "압구정동"
+		        "EMD_CD": "4143010700",
+		        "EMD_NM": "내손동"
 			      },
 			      "geometry": {
 			        "type": "Polygon",
 			        "coordinates": [
 			          [
-			            [127.00, 37.50],
-			            [127.01, 37.50],
-			            [127.01, 37.51],
-			            [127.00, 37.51],
-			            [127.00, 37.50]
+		            [127.10, 37.30],
+		            [127.11, 37.30],
+		            [127.11, 37.31],
+		            [127.10, 37.31],
+		            [127.10, 37.30]
 			          ]
 			        ]
 			      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "EMD_CD": "4143010900",
+		        "EMD_NM": "포일동"
+		      },
+		      "geometry": {
+		        "type": "Polygon",
+		        "coordinates": [
+		          [
+		            [127.11, 37.30],
+		            [127.12, 37.30],
+		            [127.12, 37.31],
+		            [127.11, 37.31],
+		            [127.11, 37.30]
+		          ]
+		        ]
+		      }
 			    }
 			  ]
 			}
@@ -118,19 +139,66 @@ class LocationDataImportServiceIT {
 				JOIN region r
 					ON r.code = c.region_code
 				WHERE z.id = ?
-					AND z.tier = 1.1
+					AND z.tier = 3.6
 					AND z.dong_codes = ARRAY[
-						'1168011000'
+						'4143010700',
+						'4143010900'
 					]::VARCHAR[]
 					AND ST_GeometryType(z.polygon)
 						= 'ST_MultiPolygon'
 					AND ST_SRID(z.polygon) = 4326
 					AND ST_Covers(z.polygon, z.center)
-					AND c.name = '강남구'
-					AND r.name = '서울'
+					AND ST_Covers(z.polygon, ST_SetSRID(ST_Point(127.105, 37.305), 4326))
+					AND ST_Covers(z.polygon, ST_SetSRID(ST_Point(127.115, 37.305), 4326))
+					AND c.name = '의왕시'
+					AND r.name = '경기'
 				""",
 			Integer.class,
-			"integration-test-zone"
+			"integration-test-poil-naeson"
+		);
+
+		assertThat(importedZoneCount).isEqualTo(1);
+	}
+
+	@Test
+	void 실제_경계에서_포일동과_내손동이_같은_권역에_포함된다() {
+		Path mappingPath = Path.of("data/location/mapping/location-mapping.json");
+		Path boundaryPath = Path.of("data/location/boundary/legal-dong-boundaries.geojson");
+
+		Assumptions.assumeTrue(
+			Files.exists(boundaryPath),
+			"로컬 법정동 경계 GeoJSON이 필요합니다."
+		);
+
+		service.importLocationData(mappingPath, boundaryPath, "emd_cd");
+
+		Integer importedZoneCount = jdbcTemplate.queryForObject(
+			"""
+				SELECT COUNT(*)
+				FROM zone z
+				WHERE z.id = 'uiwang-naeson'
+					AND z.name = '포일/내손'
+					AND z.dong_codes = ARRAY[
+						'4143010700', '4143010900'
+					]::VARCHAR[]
+					AND ST_Covers(
+						z.polygon,
+						(
+							SELECT ST_PointOnSurface(geometry)
+							FROM legal_dong_boundary_stage
+							WHERE dong_code = '4143010700'
+						)
+					)
+					AND ST_Covers(
+						z.polygon,
+						(
+							SELECT ST_PointOnSurface(geometry)
+							FROM legal_dong_boundary_stage
+							WHERE dong_code = '4143010900'
+						)
+					)
+				""",
+			Integer.class
 		);
 
 		assertThat(importedZoneCount).isEqualTo(1);
