@@ -78,7 +78,15 @@ class LocationMappingReaderTest {
 		assertThat(mapping.regions()).hasSize(3);
 		assertThat(mapping.cities()).hasSize(40);
 		assertThat(mapping.zones()).hasSize(162);
-		assertThat(assignedDongCodeCount).isEqualTo(253);
+		assertThat(assignedDongCodeCount).isEqualTo(254);
+		assertThat(mapping.zones())
+			.filteredOn(zone -> zone.id().equals("uiwang-naeson"))
+			.singleElement()
+			.satisfies(zone -> {
+				assertThat(zone.name()).isEqualTo("포일/내손");
+				assertThat(zone.dongCodes())
+					.containsExactly("4143010700", "4143010900");
+			});
 	}
 
 	@Test
