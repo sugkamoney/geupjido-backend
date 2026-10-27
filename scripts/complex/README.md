@@ -35,3 +35,26 @@ python3 -B scripts/complex/complete_import.py --manifest data/complex/import-run
 목록·기본정보 HTTP 요청에는 연결 10초, 응답 30초 제한이 적용된다. 배치 전체의 기본 제한 600초와는 별개다. 기본정보 조회의 일시적인 연결·응답 오류는 제한된 백오프로 재시도하고, 끝내 실패하면 다음 실행의 재시도 대상으로 남긴다.
 
 HTTP `429`로 반환된 공공데이터포털 오류 본문에 `22`(호출 한도 초과)가 있으면 Java 배치가 해당 코드를 보존하고 관리 도구가 즉시 중단한다. 기본정보 API의 `22`가 확인된 동안에는 자동 재개를 반복하지 않는다. 호출 한도가 회복된 뒤 같은 매니페스트로 다시 실행하면 완료된 법정동은 건너뛰고 실패·미시도 법정동부터 처리한다.
+
+## 단지 좌표·권역 수동 적재
+
+`import_locations.py`는 기존 `ComplexLocationBatchRunner`를 최대 20건씩 순차 실행한다. 네이버 Maps Geocoding 인증 정보는 `NAVER_MAPS_CLIENT_ID`와 `NAVER_MAPS_CLIENT_SECRET` 환경 변수 또는 Git에서 제외된 로컬 `.env`에서 읽는다. 로컬 PostgreSQL·PostGIS와 API 이용 한도를 먼저 확인한다.
+
+```sh
+python3 -B scripts/complex/import_locations.py --run
+python3 -B scripts/complex/summarize_location_runs.py --show-unresolved
+```
+
+실행 결과는 기본적으로 Git에서 제외된 `data/complex/location-runs/local.jsonl`에 단지별로 추가된다. 도구가 멈춘 뒤 같은 명령을 다시 실행하면 마지막으로 기록된 `nextAfterId`에서 재개한다. 처음부터 전체 ID를 다시 살펴볼 때만 `--start-over`를 지정한다. 이미 좌표·권역이 저장된 단지는 DB 조회에서 건너뛴다. 주소 조회 결과가 없거나 권역이 미배정된 단지는 다음 전체 재검사에서 다시 후보가 될 수 있으므로, 무작정 반복 실행하지 말고 `--show-unresolved` 결과를 검토한다.
+
+`--batch-size`는 1~20, `--max-batches`는 한 번의 명령에서 실행할 최대 구간 수이며 기본값은 각각 20과 250이다. 프로세스 제한 시간은 구간당 기본 180초다. 같은 매니페스트로 관리 도구를 동시에 실행하지 않도록 잠금 파일을 사용한다. 출력과 매니페스트에는 인증 정보나 API 응답 원문을 기록하지 않는다. `summarize_location_runs.py`는 단지별 마지막 시도만 집계하므로 최종 DB의 좌표·권역 개수도 별도로 확인한다.
+
+### 사용자 검토 주소·권역 보정
+
+`apply_reviewed_locations.sql`은 2026-10-27에 사용자가 확인한 단지 9건만 처리하는 수동 데이터 보정이다. 마장한영스테이의 지번·법정동 코드, 마포영화블렌하임의 도로명·좌표·권역, 방화동 주소 7건의 마곡 권역을 반영한다. 기존 값과 공간 포함 조건을 검사하고 모두 맞을 때 한 트랜잭션으로 저장한다. 기존 Flyway 마이그레이션을 변경하지 않는다. 로컬 DB에서는 다음과 같이 실행했고, 같은 명령을 다시 실행해도 성공하는 것을 확인했다.
+
+```sh
+docker exec -i -u postgres geupjido-postgres psql -U postgres -d geupjido -v ON_ERROR_STOP=1 -f - < scripts/complex/apply_reviewed_locations.sql
+```
+
+마곡 7건은 사용자 승인 예외이므로 원본 법정동 코드는 방화동인 채로 `zone_id`만 마곡이다. 일반 법정동 코드 일치 검사에서는 이 7개 ID를 별도로 집계한다. 마장동은 현재 권역 매핑에 없으므로 마장한영스테이의 `zone_id`는 비워 둔다. 단지별 근거와 수정 후 DB 수치는 `docs/history/2026-10-27-complex-location-batch.md`에 기록했다.

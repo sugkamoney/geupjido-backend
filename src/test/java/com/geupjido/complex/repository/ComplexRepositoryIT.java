@@ -1,6 +1,7 @@
 package com.geupjido.complex.repository;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import jakarta.persistence.EntityManager;
 
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,32 @@ class ComplexRepositoryIT {
 
 	@Autowired
 	private EntityManager entityManager;
+
+	@Test
+	void 미처리_단지_ID를_기준으로_건수를_제한해_이어_조회한다() {
+		Complex first = new Complex(
+			"Z900000001", "첫 번째 단지", "테스트 주소 1", null,
+			"1168010100", 100, null, null
+		);
+		Complex second = new Complex(
+			"Z900000002", "두 번째 단지", "테스트 주소 2", null,
+			"1168010100", 100, null, null
+		);
+		complexRepository.saveAllAndFlush(List.of(first, second));
+		entityManager.clear();
+
+		List<String> firstPage =
+			complexRepository.findIdsNeedingLocationOrZone(
+				"Z900000000", PageRequest.of(0, 1)
+			);
+		List<String> secondPage =
+			complexRepository.findIdsNeedingLocationOrZone(
+				firstPage.getFirst(), PageRequest.of(0, 1)
+			);
+
+		assertThat(firstPage).containsExactly("Z900000001");
+		assertThat(secondPage).containsExactly("Z900000002");
+	}
 
 	@Test
 	void 단지를_저장하고_조회한다() {

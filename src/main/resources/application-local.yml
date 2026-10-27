@@ -41,6 +41,15 @@ app:
     enabled: ${GEOCODING_PROBE_ENABLED:false}
     complex-id: ${GEOCODING_PROBE_COMPLEX_ID:}
 
+  complex-location-import:
+    enabled: ${COMPLEX_LOCATION_IMPORT_ENABLED:false}
+    complex-id: ${COMPLEX_LOCATION_IMPORT_COMPLEX_ID:}
+    schedule-enabled: ${COMPLEX_LOCATION_SCHEDULE_ENABLED:false}
+    batch-enabled: ${COMPLEX_LOCATION_BATCH_ENABLED:false}
+    batch-after-id: ${COMPLEX_LOCATION_BATCH_AFTER_ID:}
+    batch-max-count: ${COMPLEX_LOCATION_BATCH_MAX_COUNT:1}
+    batch-manifest-path: ${COMPLEX_LOCATION_BATCH_MANIFEST_PATH:data/complex/location-runs/local.jsonl}
+
   external:
     geocoding:
       enabled: ${NAVER_GEOCODING_ENABLED:false}

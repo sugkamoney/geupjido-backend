@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.geupjido.batch.complex.client.NaverGeocodingApiClient;
 import com.geupjido.batch.complex.dto.NaverGeocodingResponse;
+import com.geupjido.batch.complex.exception.MultipleGeocodingResultsException;
 import com.geupjido.complex.domain.Complex;
 
 @Service
@@ -53,9 +54,7 @@ public class ComplexGeocodingLookupService {
 			return Optional.empty();
 		}
 		if (count > 1) {
-			throw new IllegalStateException(
-				"지오코딩 결과가 여러 건이어서 자동 선택할 수 없습니다."
-			);
+			throw new MultipleGeocodingResultsException();
 		}
 		if (count != 1 || response.addresses().size() != 1
 			|| response.addresses().getFirst() == null) {

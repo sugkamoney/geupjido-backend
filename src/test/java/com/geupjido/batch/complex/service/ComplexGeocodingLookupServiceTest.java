@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.geupjido.batch.complex.client.NaverGeocodingApiClient;
 import com.geupjido.batch.complex.dto.NaverGeocodingResponse;
+import com.geupjido.batch.complex.exception.MultipleGeocodingResultsException;
 import com.geupjido.complex.domain.Complex;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -74,7 +75,7 @@ class ComplexGeocodingLookupServiceTest {
 			.thenReturn(response(address(), address()));
 
 		assertThatThrownBy(() -> service.findAddress(complex(ROAD)))
-			.isInstanceOf(IllegalStateException.class)
+			.isInstanceOf(MultipleGeocodingResultsException.class)
 			.hasMessageContaining("여러 건");
 
 		verify(apiClient).geocode(ROAD);
