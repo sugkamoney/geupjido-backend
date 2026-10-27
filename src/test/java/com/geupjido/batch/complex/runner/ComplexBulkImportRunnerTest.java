@@ -1,284 +1,46 @@
 package com.geupjido.batch.complex.runner;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
-import org.mockito.InOrder;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
-import com.geupjido.batch.complex.config.ComplexBulkImportProperties;
+import com.geupjido.batch.complex.model.ComplexBatchImportResult;
 import com.geupjido.batch.complex.model.ComplexBulkImportResult;
-import com.geupjido.batch.complex.service.ComplexBulkImportService;
-import com.geupjido.batch.location.model.LocationMapping;
-import com.geupjido.batch.location.model.LocationMapping.ZoneDefinition;
-import com.geupjido.batch.location.reader.LocationMappingReader;
+import com.geupjido.batch.complex.model.ComplexLegalDongImportResult;
+import com.geupjido.batch.complex.service.ComplexImportJobService;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class ComplexBulkImportRunnerTest {
 
-	@TempDir
-	Path tempDir;
-
-	@Mock
-	private LocationMappingReader mappingReader;
-
-	@Mock
-	private ComplexBulkImportService importService;
-
 	@Test
-	void 매핑_파일의_법정동_코드를_순서대로_전달한다()
-		throws IOException {
-
-		Path mappingPath =
-			tempDir.resolve("location-mapping.json");
-		Files.writeString(mappingPath, "{}");
-
-		ComplexBulkImportProperties properties =
-			new ComplexBulkImportProperties(
-				true,
-				mappingPath,
-				List.of()
-			);
-
-		ComplexBulkImportRunner runner =
-			new ComplexBulkImportRunner(
-				properties,
-				mappingReader,
-				importService
-			);
-
-		LocationMapping mapping =
-			new LocationMapping(
-				List.of(),
-				List.of(),
-				List.of(
-					new ZoneDefinition(
-						"yongsan-hannam",
-						"11170",
-						"한남",
-						List.of("1117013100"),
-						new BigDecimal("1.5")
-					),
-					new ZoneDefinition(
-						"seongdong-seongsu",
-						"11200",
-						"성수",
-						List.of(
-							"1120011400",
-							"1120011500"
-						),
-						new BigDecimal("1.8")
-					)
+	void 수동_실행은_공통_작업_서비스를_호출한다() {
+		ComplexImportJobService jobService = mock(ComplexImportJobService.class);
+		when(jobService.importComplexes()).thenReturn(
+			new ComplexBatchImportResult(List.of(
+				new ComplexLegalDongImportResult(
+					"1117013100",
+					new ComplexBulkImportResult(1, 1, 0),
+					null
 				)
-			);
-
-		List<String> expectedLegalDongCodes =
-			List.of(
-				"1117013100",
-				"1120011400",
-				"1120011500"
-			);
-
-		when(mappingReader.read(mappingPath))
-			.thenReturn(mapping);
-
-		when(
-			importService.importByLegalDongCodes(
-				expectedLegalDongCodes
-			)
-		).thenReturn(
-			new ComplexBulkImportResult(
-				3,
-				2,
-				1
-			)
-		);
-
-		runner.run(null);
-
-		InOrder inOrder = inOrder(
-			mappingReader,
-			importService
-		);
-		inOrder.verify(mappingReader).read(mappingPath);
-		inOrder.verify(importService)
-			.importByLegalDongCodes(
-				expectedLegalDongCodes
-			);
-	}
-
-	@Test
-	void 설정한_법정동_코드만_적재한다() throws IOException {
-		List<String> selectedCodes = List.of("1117013100");
-		when(importService.importByLegalDongCodes(selectedCodes))
-			.thenReturn(new ComplexBulkImportResult(0, 0, 0));
-
-		runWithSelection(selectedCodes);
-
-		verify(importService)
-			.importByLegalDongCodes(selectedCodes);
-	}
-
-	@Test
-	void 법정동_코드_형식이_잘못되면_API_호출_전에_중단한다() {
-		assertThatThrownBy(
-			() -> runWithSelection(List.of("11170"))
-		)
-			.isInstanceOf(IllegalArgumentException.class)
-			.hasMessageContaining("숫자 10자리");
-
-		verifyNoInteractions(importService);
-	}
-
-	@Test
-	void 중복_선택은_API_호출_전에_중단한다() {
-		assertThatThrownBy(
-			() -> runWithSelection(
-				List.of("1117013100", "1117013100")
-			)
-		)
-			.isInstanceOf(IllegalArgumentException.class)
-			.hasMessageContaining("중복된 법정동 코드");
-
-		verifyNoInteractions(importService);
-	}
-
-	@Test
-	void 매핑에_없는_법정동은_API_호출_전에_중단한다() {
-		assertThatThrownBy(
-			() -> runWithSelection(List.of("1117010100"))
-		)
-			.isInstanceOf(IllegalArgumentException.class)
-			.hasMessageContaining("권역 매핑에 없는 법정동 코드");
-
-		verifyNoInteractions(importService);
-	}
-
-	private void runWithSelection(List<String> selectedCodes)
-		throws IOException {
-		Path mappingPath = tempDir.resolve("selected-mapping.json");
-		Files.writeString(mappingPath, "{}");
-
-		LocationMapping mapping = new LocationMapping(
-			List.of(),
-			List.of(),
-			List.of(new ZoneDefinition(
-				"yongsan-hannam",
-				"11170",
-				"한남",
-				List.of("1117013100"),
-				new BigDecimal("1.5")
 			))
 		);
 
-		when(mappingReader.read(mappingPath)).thenReturn(mapping);
+		new ComplexBulkImportRunner(jobService).run(null);
 
-		new ComplexBulkImportRunner(
-			new ComplexBulkImportProperties(
-				true,
-				mappingPath,
-				selectedCodes
-			),
-			mappingReader,
-			importService
-		).run(null);
+		verify(jobService).importComplexes();
 	}
 
 	@Test
-	void 매핑_파일_경로가_없으면_실행하지_않는다() {
-		ComplexBulkImportProperties properties =
-			new ComplexBulkImportProperties(
-				true,
-				null,
-				List.of()
-			);
-
-		ComplexBulkImportRunner runner =
-			new ComplexBulkImportRunner(
-				properties,
-				mappingReader,
-				importService
-			);
-
-		assertThatThrownBy(
-			() -> runner.run(null)
-		)
-			.isInstanceOf(IllegalStateException.class)
-			.hasMessageContaining(
-				"공동주택 초기 적재 매핑 파일 경로가 설정되지 않았습니다"
-			);
-
-		verifyNoInteractions(
-			mappingReader,
-			importService
-		);
-	}
-
-	@Test
-	void 매핑_파일이_존재하지_않으면_실행하지_않는다() {
-		Path missingMappingPath =
-			tempDir.resolve("missing-location-mapping.json");
-
-		ComplexBulkImportProperties properties =
-			new ComplexBulkImportProperties(
-				true,
-				missingMappingPath,
-				List.of()
-			);
-
-		ComplexBulkImportRunner runner =
-			new ComplexBulkImportRunner(
-				properties,
-				mappingReader,
-				importService
-			);
-
-		assertThatThrownBy(
-			() -> runner.run(null)
-		)
-			.isInstanceOf(IllegalStateException.class)
-			.hasMessageContaining(
-				"공동주택 초기 적재 매핑 파일이 존재하지 않습니다"
-			)
-			.hasMessageContaining(
-				missingMappingPath.toString()
-			);
-
-		verifyNoInteractions(
-			mappingReader,
-			importService
-		);
-	}
-
-	@Test
-	void 초기_적재가_비활성화되면_Runner를_등록하지_않는다() {
+	void 수동_적재가_비활성화되면_Runner를_등록하지_않는다() {
 		new ApplicationContextRunner()
-			.withUserConfiguration(
-				ComplexBulkImportRunner.class
-			)
-			.withPropertyValues(
-				"app.complex-import.enabled=false"
-			)
-			.run(
-				context -> assertThat(context)
-					.doesNotHaveBean(
-						ComplexBulkImportRunner.class
-					)
-			);
+			.withUserConfiguration(ComplexBulkImportRunner.class)
+			.withPropertyValues("app.complex-import.enabled=false")
+			.run(context -> assertThat(context)
+				.doesNotHaveBean(ComplexBulkImportRunner.class));
 	}
 }

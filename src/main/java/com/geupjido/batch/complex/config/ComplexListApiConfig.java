@@ -1,8 +1,12 @@
 package com.geupjido.batch.complex.config;
 
+import java.net.http.HttpClient;
+import java.time.Duration;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestClient;
 
@@ -31,8 +35,17 @@ public class ComplexListApiConfig {
 			"공공데이터포털 일반 인증키가 필요합니다."
 		);
 
+		JdkClientHttpRequestFactory requestFactory =
+			new JdkClientHttpRequestFactory(
+				HttpClient.newBuilder()
+					.connectTimeout(Duration.ofSeconds(10))
+					.build()
+			);
+		requestFactory.setReadTimeout(Duration.ofSeconds(30));
+
 		return builder
 			.baseUrl(properties.baseUrl())
+			.requestFactory(requestFactory)
 			.build();
 	}
 }

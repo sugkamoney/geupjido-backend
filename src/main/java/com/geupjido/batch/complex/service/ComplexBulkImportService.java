@@ -5,9 +5,11 @@ import java.util.List;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
 import com.geupjido.batch.complex.dto.ComplexListApiItem;
 import com.geupjido.batch.complex.exception.ComplexBasicInfoApiException;
+import com.geupjido.batch.complex.exception.ComplexApiQuotaExceededException;
 import com.geupjido.batch.complex.exception.ComplexBasicInfoMappingException;
 import com.geupjido.batch.complex.model.ComplexBulkImportResult;
 import com.geupjido.batch.complex.model.ComplexImportFailure;
@@ -29,17 +31,18 @@ import com.geupjido.batch.complex.model.ComplexImportStatus;
 )
 public class ComplexBulkImportService {
 
-	private static final int MAX_API_ATTEMPTS = 3;
-
 	private final ComplexListCollectionService listCollectionService;
 	private final ComplexBasicInfoImportService basicInfoImportService;
+	private final ComplexApiRetry apiRetry;
 
 	public ComplexBulkImportService(
 		ComplexListCollectionService listCollectionService,
-		ComplexBasicInfoImportService basicInfoImportService
+		ComplexBasicInfoImportService basicInfoImportService,
+		ComplexApiRetry apiRetry
 	) {
 		this.listCollectionService = listCollectionService;
 		this.basicInfoImportService = basicInfoImportService;
+		this.apiRetry = apiRetry;
 	}
 
 	/**
@@ -71,6 +74,14 @@ public class ComplexBulkImportService {
 					case SKIPPED_ALREADY_EXISTS -> skippedCount++;
 				}
 			} catch (ComplexBasicInfoApiException exception) {
+				if ("22".equals(exception.resultCode())) {
+					throw new ComplexApiQuotaExceededException(
+						"공동주택 기본정보 API 호출 한도를 초과했습니다. 단지 코드="
+							+ complexItem.kaptCode(),
+						exception
+					);
+				}
+
 				failures.add(
 					new ComplexImportFailure(
 						complexItem.kaptCode(),
@@ -103,24 +114,12 @@ public class ComplexBulkImportService {
 	private ComplexImportStatus importWithRetry(
 		String complexCode
 	) {
-		for (
-			int attempt = 1;
-			attempt <= MAX_API_ATTEMPTS;
-			attempt++
-		) {
-			try {
-				return basicInfoImportService.importIfAbsent(
-					complexCode
-				);
-			} catch (ComplexBasicInfoApiException exception) {
-				if (attempt == MAX_API_ATTEMPTS) {
-					throw exception;
-				}
-			}
-		}
-
-		throw new IllegalStateException(
-			"공동주택 기본정보 API 재시도 상태가 올바르지 않습니다."
+		return apiRetry.execute(
+			() -> basicInfoImportService.importIfAbsent(complexCode),
+			exception ->
+				exception instanceof ComplexBasicInfoApiException apiError
+					&& ("04".equals(apiError.resultCode())
+						|| apiError.getCause() instanceof RestClientException)
 		);
 	}
 

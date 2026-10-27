@@ -12,7 +12,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.geupjido.batch.complex.config.ComplexBulkImportProperties;
+import com.geupjido.batch.complex.service.ComplexBatchImportService;
+import com.geupjido.batch.complex.service.ComplexApiRetry;
 import com.geupjido.batch.complex.service.ComplexBulkImportService;
+import com.geupjido.batch.complex.service.ComplexImportJobService;
 import com.geupjido.batch.location.reader.LocationMappingReader;
 import com.geupjido.complex.repository.ComplexRepository;
 
@@ -73,9 +76,14 @@ class ComplexBulkImportRunnerE2ETest {
 
 		ComplexBulkImportRunner runner =
 			new ComplexBulkImportRunner(
-				properties,
-				mappingReader,
-				importService
+				new ComplexImportJobService(
+					properties,
+					mappingReader,
+					new ComplexBatchImportService(
+						importService,
+						new ComplexApiRetry()
+					)
+				)
 			);
 
 		runner.run(null);

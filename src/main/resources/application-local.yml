@@ -32,6 +32,9 @@ app:
 
   complex-import:
     enabled: ${COMPLEX_IMPORT_ENABLED:false}
+    schedule-enabled: ${COMPLEX_IMPORT_SCHEDULE_ENABLED:false}
+    schedule-cron: ${COMPLEX_IMPORT_SCHEDULE_CRON:0 0 2 1 * *}
+    request-interval: ${COMPLEX_IMPORT_REQUEST_INTERVAL:0ms}
     mapping-path: ${COMPLEX_IMPORT_MAPPING_PATH:data/location/mapping/location-mapping.json}
 
   external:

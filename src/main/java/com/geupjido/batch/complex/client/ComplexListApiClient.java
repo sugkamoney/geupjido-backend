@@ -9,11 +9,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 import com.geupjido.batch.complex.config.ComplexListApiProperties;
 import com.geupjido.batch.complex.dto.ComplexListApiItem;
 import com.geupjido.batch.complex.dto.ComplexListApiResponse;
 import com.geupjido.batch.complex.exception.ComplexListApiException;
+import com.geupjido.batch.complex.service.ComplexApiPacer;
 
 /**
  * 법정동 코드를 기준으로 공동주택 단지 목록 API를 호출한다.
@@ -37,13 +39,16 @@ public class ComplexListApiClient {
 
 	private final RestClient restClient;
 	private final ComplexListApiProperties properties;
+	private final ComplexApiPacer apiPacer;
 
 	public ComplexListApiClient(
 		@Qualifier("complexListRestClient") RestClient restClient,
-		ComplexListApiProperties properties
+		ComplexListApiProperties properties,
+		ComplexApiPacer apiPacer
 	) {
 		this.restClient = restClient;
 		this.properties = properties;
+		this.apiPacer = apiPacer;
 	}
 
 	public List<ComplexListApiItem> fetchAllByLegalDongCode(
@@ -84,6 +89,7 @@ public class ComplexListApiClient {
 		int numOfRows
 	) {
 		try {
+			apiPacer.beforeRequest();
 			return restClient.get()
 				.uri(uriBuilder -> uriBuilder
 					.path(LEGAL_DONG_LIST_PATH)
@@ -95,6 +101,11 @@ public class ComplexListApiClient {
 				)
 				.retrieve()
 				.body(ComplexListApiResponse.class);
+		} catch (RestClientResponseException exception) {
+			throw new ComplexListApiException(
+				"공동주택 단지 목록 API가 HTTP 오류를 반환했습니다.",
+				ComplexApiHttpErrorCode.extract(exception)
+			);
 		} catch (RestClientException exception) {
 			throw new ComplexListApiException(
 				"공동주택 단지 목록 API 호출에 실패했습니다.",
@@ -106,6 +117,22 @@ public class ComplexListApiClient {
 	private static ComplexListApiResponse.Body requireSuccessfulBody(
 		ComplexListApiResponse apiResponse
 	) {
+		if (
+			apiResponse != null
+				&& apiResponse.gatewayError() != null
+				&& apiResponse.gatewayError().cmmMsgHeader() != null
+		) {
+			var error = apiResponse.gatewayError().cmmMsgHeader();
+			String resultCode = ComplexApiHttpErrorCode.normalize(
+				error.returnReasonCode()
+			);
+			throw new ComplexListApiException(
+				"공동주택 단지 목록 API가 오류를 반환했습니다. "
+					+ "resultCode=" + resultCode,
+				resultCode
+			);
+		}
+
 		if (
 			apiResponse == null
 				|| apiResponse.response() == null
@@ -120,10 +147,13 @@ public class ComplexListApiClient {
 		ComplexListApiResponse.Header header = result.header();
 
 		if (!SUCCESS_RESULT_CODE.equals(header.resultCode())) {
+			String resultCode = ComplexApiHttpErrorCode.normalize(
+				header.resultCode()
+			);
 			throw new ComplexListApiException(
 				"공동주택 단지 목록 API가 오류를 반환했습니다. "
-					+ "resultCode=" + header.resultCode()
-					+ ", resultMsg=" + header.resultMsg()
+					+ "resultCode=" + resultCode,
+				resultCode
 			);
 		}
 
