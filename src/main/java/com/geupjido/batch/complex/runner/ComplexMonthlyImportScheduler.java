@@ -4,13 +4,16 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.geupjido.batch.complex.model.ComplexBatchImportResult;
 import com.geupjido.batch.complex.model.ComplexLegalDongImportStatus;
 import com.geupjido.batch.complex.service.ComplexImportJobService;
+import com.geupjido.batch.complex.service.ComplexLocationJobService;
 
 @Component
 @ConditionalOnProperty(
@@ -24,9 +27,24 @@ public class ComplexMonthlyImportScheduler {
 		LoggerFactory.getLogger(ComplexMonthlyImportScheduler.class);
 
 	private final ComplexImportJobService jobService;
+	private final ObjectProvider<ComplexLocationJobService> locationJobProvider;
+	private final Environment environment;
 
-	public ComplexMonthlyImportScheduler(ComplexImportJobService jobService) {
+	public ComplexMonthlyImportScheduler(
+		ComplexImportJobService jobService,
+		ObjectProvider<ComplexLocationJobService> locationJobProvider,
+		Environment environment
+	) {
 		this.jobService = jobService;
+		this.locationJobProvider = locationJobProvider;
+		this.environment = environment;
+		if (environment.getProperty(
+			"app.complex-location-import.schedule-enabled", Boolean.class, false
+		) && locationJobProvider.getIfAvailable() == null) {
+			throw new IllegalStateException(
+				"월간 단지 좌표·권역 작업에는 네이버 Geocoding 활성화가 필요합니다."
+			);
+		}
 	}
 
 	@Scheduled(
@@ -54,6 +72,35 @@ public class ComplexMonthlyImportScheduler {
 			result.skippedComplexCount(),
 			result.failedComplexCount(),
 			result.retryLegalDongCodes()
+		);
+
+		if (!environment.getProperty(
+			"app.complex-location-import.schedule-enabled", Boolean.class, false
+		)) {
+			return;
+		}
+		ComplexLocationJobService locationJob = locationJobProvider.getIfAvailable();
+		if (locationJob == null) {
+			throw new IllegalStateException(
+				"월간 단지 좌표·권역 작업에는 네이버 Geocoding 활성화가 필요합니다."
+			);
+		}
+
+		long locationStartedAt = System.nanoTime();
+		log.info("공동주택 단지 월간 좌표·권역 작업을 시작합니다.");
+		ComplexLocationJobService.JobResult locationResult =
+			locationJob.processPending();
+		log.info(
+			"공동주택 단지 월간 좌표·권역 작업을 완료했습니다. "
+				+ "소요 시간={}초, 처리={}, 권역 배정={}, 미배정={}, "
+				+ "복수 결과 보류={}, 건너뛰기={}, 마지막 커서={}",
+			TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - locationStartedAt),
+			locationResult.processedCount(),
+			locationResult.matchedCount(),
+			locationResult.unassignedCount(),
+			locationResult.heldCount(),
+			locationResult.skippedCount(),
+			locationResult.lastCompletedId()
 		);
 	}
 }

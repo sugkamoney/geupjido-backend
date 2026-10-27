@@ -1,6 +1,11 @@
 package com.geupjido.complex.repository;
 
+import java.util.List;
+
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.geupjido.complex.domain.Complex;
 
@@ -9,4 +14,16 @@ import com.geupjido.complex.domain.Complex;
  */
 public interface ComplexRepository
 	extends JpaRepository<Complex, String> {
+
+	@Query("""
+		SELECT c.id
+		FROM Complex c
+		WHERE c.id > :afterId
+		  AND (c.location IS NULL OR c.zone IS NULL)
+		ORDER BY c.id
+		""")
+	List<String> findIdsNeedingLocationOrZone(
+		@Param("afterId") String afterId,
+		Pageable pageable
+	);
 }
