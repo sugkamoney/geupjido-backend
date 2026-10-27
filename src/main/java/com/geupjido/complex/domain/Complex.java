@@ -2,6 +2,7 @@ package com.geupjido.complex.domain;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import jakarta.persistence.Column;
@@ -209,5 +210,22 @@ public class Complex {
 		}
 
 		return value;
+	}
+
+	public void updateLocation(Point point) {
+		Objects.requireNonNull(point, "단지 좌표가 필요합니다.");
+		if (point.isEmpty() || point.getSRID() != 4326) {
+			throw new IllegalArgumentException("SRID 4326 좌표가 필요합니다.");
+		}
+
+		this.location = (Point) point.copy();
+		this.zone = null;
+	}
+
+	public void assignZone(Zone zone) {
+		if (location == null) {
+			throw new IllegalStateException("권역 배정 전에 단지 좌표가 필요합니다.");
+		}
+		this.zone = Objects.requireNonNull(zone, "권역이 필요합니다.");
 	}
 }

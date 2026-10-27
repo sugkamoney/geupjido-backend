@@ -37,7 +37,16 @@ app:
     request-interval: ${COMPLEX_IMPORT_REQUEST_INTERVAL:0ms}
     mapping-path: ${COMPLEX_IMPORT_MAPPING_PATH:data/location/mapping/location-mapping.json}
 
+  geocoding-probe:
+    enabled: ${GEOCODING_PROBE_ENABLED:false}
+    complex-id: ${GEOCODING_PROBE_COMPLEX_ID:}
+
   external:
+    geocoding:
+      enabled: ${NAVER_GEOCODING_ENABLED:false}
+      base-url: ${NAVER_GEOCODING_BASE_URL:https://maps.apigw.ntruss.com/map-geocode/v2}
+      client-id: ${NAVER_MAPS_CLIENT_ID:}
+      client-secret: ${NAVER_MAPS_CLIENT_SECRET:}
     complex-list:
       enabled: ${DATA_GO_KR_APT_LIST_ENABLED:false}
       base-url: ${DATA_GO_KR_APT_LIST_BASE_URL:}
