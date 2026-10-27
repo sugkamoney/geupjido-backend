@@ -1,0 +1,19 @@
+{
+  "gaps": [
+    {
+      "legalDongCode": "1168010300",
+      "complexCode": "A40010008",
+      "reason": "세대수 누락"
+    },
+    {
+      "legalDongCode": "1153010800",
+      "complexCode": "A10019934",
+      "reason": "세대수 누락"
+    },
+    {
+      "legalDongCode": "1153010800",
+      "complexCode": "A10020277",
+      "reason": "세대수 누락"
+    }
+  ]
+}
