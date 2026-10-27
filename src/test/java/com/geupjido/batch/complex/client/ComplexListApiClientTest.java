@@ -1,10 +1,12 @@
 package com.geupjido.batch.complex.client;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
@@ -12,12 +14,14 @@ import org.springframework.web.client.RestClient;
 import com.geupjido.batch.complex.config.ComplexListApiProperties;
 import com.geupjido.batch.complex.dto.ComplexListApiItem;
 import com.geupjido.batch.complex.exception.ComplexListApiException;
+import com.geupjido.batch.complex.service.ComplexApiPacer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 class ComplexListApiClientTest {
 
@@ -40,7 +44,8 @@ class ComplexListApiClientTest {
 
 		client = new ComplexListApiClient(
 			builder.build(),
-			properties
+			properties,
+			new ComplexApiPacer(Duration.ZERO)
 		);
 	}
 
@@ -155,7 +160,7 @@ class ComplexListApiClientTest {
 				  "response": {
 					"header": {
 					  "resultCode": "10",
-					  "resultMsg": "INVALID_REQUEST_PARAMETER_ERROR"
+					  "resultMsg": "serviceKey=api-secret"
 					},
 					"body": null
 				  }
@@ -169,9 +174,38 @@ class ComplexListApiClientTest {
 		)
 			.isInstanceOf(ComplexListApiException.class)
 			.hasMessageContaining("resultCode=10")
-			.hasMessageContaining("INVALID_REQUEST_PARAMETER_ERROR");
+			.satisfies(exception -> assertThat(exception.getMessage())
+				.doesNotContain("api-secret"));
 
 		server.verify();
+	}
+
+	@Test
+	void 비정상_오류_코드의_원문은_예외에_넣지_않는다() {
+		server.expect(requestTo(
+			"https://example.com/getLegaldongAptList4"
+				+ "?serviceKey=test-service-key"
+				+ "&pageNo=1"
+				+ "&numOfRows=100"
+				+ "&bjdCode=1168010700"
+		)).andRespond(withSuccess("""
+			{
+			  "response": {
+			    "header": {
+			      "resultCode": "serviceKey=api-secret",
+			      "resultMsg": "오류"
+			    },
+			    "body": null
+			  }
+			}
+			""", MediaType.APPLICATION_JSON));
+
+		assertThatThrownBy(() -> client.fetchAllByLegalDongCode("1168010700"))
+			.isInstanceOf(ComplexListApiException.class)
+			.satisfies(exception -> {
+				assertThat(exception.getMessage()).doesNotContain("api-secret");
+				assertThat(((ComplexListApiException) exception).resultCode()).isNull();
+			});
 	}
 
 	@Test
@@ -183,6 +217,64 @@ class ComplexListApiClientTest {
 			.hasMessageContaining("숫자 10자리");
 
 		server.verify();
+	}
+
+	@Test
+	void HTTP_200에_담긴_게이트웨이_오류_코드를_알린다() {
+		server.expect(requestTo(
+				"https://example.com/getLegaldongAptList4"
+					+ "?serviceKey=test-service-key"
+					+ "&pageNo=1"
+					+ "&numOfRows=100"
+					+ "&bjdCode=1168010700"
+			))
+			.andRespond(withSuccess("""
+				{
+				  "OpenAPI_ServiceResponse": {
+				    "cmmMsgHeader": {
+				      "returnReasonCode": "04",
+			      "returnAuthMsg": "serviceKey=api-secret"
+				    }
+				  }
+				}
+				""", MediaType.APPLICATION_JSON));
+
+		assertThatThrownBy(() -> client.fetchAllByLegalDongCode("1168010700"))
+			.isInstanceOf(ComplexListApiException.class)
+			.hasMessageContaining("resultCode=04")
+			.satisfies(exception -> assertThat(exception.getMessage())
+				.doesNotContain("api-secret"))
+			.satisfies(exception -> assertThat(
+				((ComplexListApiException) exception).resultCode()
+			).isEqualTo("04"));
+	}
+
+	@Test
+	void HTTP_429_본문의_호출_한도_코드를_알린다() {
+		server.expect(requestTo(
+			"https://example.com/getLegaldongAptList4"
+				+ "?serviceKey=test-service-key"
+				+ "&pageNo=1"
+				+ "&numOfRows=100"
+				+ "&bjdCode=1168010700"
+		))
+			.andRespond(withStatus(HttpStatus.TOO_MANY_REQUESTS)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body("""
+				{
+				  "OpenAPI_ServiceResponse": {
+				    "cmmMsgHeader": {"returnReasonCode": "22"}
+				  }
+				}
+				"""));
+
+		assertThatThrownBy(
+			() -> client.fetchAllByLegalDongCode("1168010700")
+		)
+			.isInstanceOf(ComplexListApiException.class)
+			.satisfies(exception -> assertThat(
+				((ComplexListApiException) exception).resultCode()
+			).isEqualTo("22"));
 	}
 
 	@Test

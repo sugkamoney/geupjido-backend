@@ -1,8 +1,11 @@
 package com.geupjido.batch.complex.client;
 
+import java.time.Duration;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
@@ -10,12 +13,14 @@ import org.springframework.web.client.RestClient;
 import com.geupjido.batch.complex.config.ComplexBasicInfoApiProperties;
 import com.geupjido.batch.complex.dto.ComplexBasicInfoApiItem;
 import com.geupjido.batch.complex.exception.ComplexBasicInfoApiException;
+import com.geupjido.batch.complex.service.ComplexApiPacer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 class ComplexBasicInfoApiClientTest {
 
@@ -38,7 +43,8 @@ class ComplexBasicInfoApiClientTest {
 
 		client = new ComplexBasicInfoApiClient(
 			builder.build(),
-			properties
+			properties,
+			new ComplexApiPacer(Duration.ZERO)
 		);
 	}
 
@@ -111,7 +117,7 @@ class ComplexBasicInfoApiClientTest {
 					"body": null,
 					"header": {
 					  "resultCode": "10",
-					  "resultMsg": "INVALID_REQUEST_PARAMETER_ERROR"
+					  "resultMsg": "serviceKey=api-secret"
 					}
 				  }
 				}
@@ -124,7 +130,8 @@ class ComplexBasicInfoApiClientTest {
 		)
 			.isInstanceOf(ComplexBasicInfoApiException.class)
 			.hasMessageContaining("resultCode=10")
-			.hasMessageContaining("INVALID_REQUEST_PARAMETER_ERROR");
+			.satisfies(exception -> assertThat(exception.getMessage())
+				.doesNotContain("api-secret"));
 
 		server.verify();
 	}
@@ -138,6 +145,58 @@ class ComplexBasicInfoApiClientTest {
 			.hasMessageContaining("1~20자의 영문자와 숫자");
 
 		server.verify();
+	}
+
+	@Test
+	void HTTP_200에_담긴_게이트웨이_오류_코드를_알린다() {
+		server.expect(requestTo(
+				"https://example.com/getAphusBassInfoV5"
+					+ "?serviceKey=test-service-key"
+					+ "&kaptCode=A10027875"
+			))
+			.andRespond(withSuccess("""
+				{
+				  "OpenAPI_ServiceResponse": {
+				    "cmmMsgHeader": {
+				      "returnReasonCode": "04",
+			      "returnAuthMsg": "serviceKey=api-secret"
+				    }
+				  }
+				}
+				""", MediaType.APPLICATION_JSON));
+
+		assertThatThrownBy(() -> client.fetchByComplexCode("A10027875"))
+			.isInstanceOf(ComplexBasicInfoApiException.class)
+			.hasMessageContaining("resultCode=04")
+			.satisfies(exception -> assertThat(exception.getMessage())
+				.doesNotContain("api-secret"))
+			.satisfies(exception -> assertThat(
+				((ComplexBasicInfoApiException) exception).resultCode()
+			).isEqualTo("04"));
+	}
+
+	@Test
+	void HTTP_429_본문의_호출_한도_코드를_알린다() {
+		server.expect(requestTo(
+			"https://example.com/getAphusBassInfoV5"
+				+ "?serviceKey=test-service-key"
+				+ "&kaptCode=A10027875"
+		))
+			.andRespond(withStatus(HttpStatus.TOO_MANY_REQUESTS)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body("""
+				{
+				  "OpenAPI_ServiceResponse": {
+				    "cmmMsgHeader": {"returnReasonCode": "22"}
+				  }
+				}
+				"""));
+
+		assertThatThrownBy(() -> client.fetchByComplexCode("A10027875"))
+			.isInstanceOf(ComplexBasicInfoApiException.class)
+			.satisfies(exception -> assertThat(
+				((ComplexBasicInfoApiException) exception).resultCode()
+			).isEqualTo("22"));
 	}
 
 	@Test
