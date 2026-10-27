@@ -9,9 +9,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import com.geupjido.batch.complex.config.ComplexMonthlySchedulingConfig;
 import com.geupjido.batch.complex.model.ComplexBatchImportResult;
 import com.geupjido.batch.complex.service.ComplexImportJobService;
+import com.geupjido.batch.complex.service.ComplexLocationJobService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -74,5 +76,47 @@ class ComplexMonthlyImportSchedulerTest {
 			"${app.complex-import.schedule-cron:0 0 2 1 * *}"
 		);
 		assertThat(schedule.zone()).isEqualTo("Asia/Seoul");
+	}
+
+	@Test
+	void 단지_수집이_끝난_뒤_좌표_작업을_실행한다() {
+		contextRunner
+			.withBean(
+				ComplexLocationJobService.class,
+				() -> mock(ComplexLocationJobService.class)
+			)
+			.withPropertyValues(
+				"app.complex-import.schedule-enabled=true",
+				"app.external.geocoding.enabled=true",
+				"app.complex-location-import.schedule-enabled=true"
+			)
+			.run(context -> {
+				ComplexImportJobService importJob =
+					context.getBean(ComplexImportJobService.class);
+				ComplexLocationJobService locationJob =
+					context.getBean(ComplexLocationJobService.class);
+				when(importJob.importAllComplexes())
+					.thenReturn(new ComplexBatchImportResult(List.of()));
+				when(locationJob.processPending()).thenReturn(
+					new ComplexLocationJobService.JobResult(1, 1, 0, 0, 0, "A1")
+				);
+
+				context.getBean(ComplexMonthlyImportScheduler.class)
+					.importMonthly();
+
+				var order = inOrder(importJob, locationJob);
+				order.verify(importJob).importAllComplexes();
+				order.verify(locationJob).processPending();
+			});
+	}
+
+	@Test
+	void 좌표_월간_작업만_켜고_지오코딩을_끄면_시작에_실패한다() {
+		contextRunner
+			.withPropertyValues(
+				"app.complex-import.schedule-enabled=true",
+				"app.complex-location-import.schedule-enabled=true"
+			)
+			.run(context -> assertThat(context).hasFailed());
 	}
 }

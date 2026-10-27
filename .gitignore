@@ -3,6 +3,7 @@ HELP.md
 build/
 .env
 data/complex/import-runs/
+data/complex/location-runs/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
