@@ -77,8 +77,19 @@ class LocationMappingReaderTest {
 
 		assertThat(mapping.regions()).hasSize(3);
 		assertThat(mapping.cities()).hasSize(40);
-		assertThat(mapping.zones()).hasSize(162);
-		assertThat(assignedDongCodeCount).isEqualTo(254);
+		assertThat(mapping.zones()).hasSize(163);
+		assertThat(assignedDongCodeCount).isEqualTo(255);
+		assertThat(mapping.zones())
+			.filteredOn(zone -> zone.id().equals("seongdong-majang"))
+			.singleElement()
+			.satisfies(zone -> {
+				assertThat(zone.cityId()).isEqualTo("11200");
+				assertThat(zone.name()).isEqualTo("마장");
+				assertThat(zone.dongCodes())
+					.containsExactly("1120010500");
+				assertThat(zone.initialTier())
+					.isEqualByComparingTo("3.7");
+			});
 		assertThat(mapping.zones())
 			.filteredOn(zone -> zone.id().equals("uiwang-naeson"))
 			.singleElement()
