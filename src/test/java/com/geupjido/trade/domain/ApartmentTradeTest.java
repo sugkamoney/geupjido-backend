@@ -5,8 +5,13 @@ import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
 
+import com.geupjido.complex.domain.Complex;
+import com.geupjido.zone.domain.Zone;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ApartmentTradeTest {
 
@@ -150,6 +155,45 @@ class ApartmentTradeTest {
 		))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("전용면적은 소수 6자리를 초과");
+	}
+
+	@Test
+	void 단지와_권역을_함께_연결하고_같은_연결은_반복하지_않는다() {
+		ApartmentTrade trade = createTrade(false, null);
+		Complex complex = mock(Complex.class);
+		Zone zone = mock(Zone.class);
+		when(complex.getId()).thenReturn("A1");
+		when(complex.getZone()).thenReturn(zone);
+		when(zone.getId()).thenReturn("z1");
+
+		assertThat(trade.linkToComplex(complex)).isTrue();
+		assertThat(trade.getComplex()).isSameAs(complex);
+		assertThat(trade.getZone()).isSameAs(zone);
+		assertThat(trade.linkToComplex(complex)).isFalse();
+		assertThat(trade.isCanceled()).isFalse();
+	}
+
+	@Test
+	void 해제된_거래의_연결은_해제_상태를_유지하고_다른_연결은_거부한다() {
+		ApartmentTrade trade = createTrade(
+			true, LocalDate.of(2026, 9, 20)
+		);
+		Complex first = mock(Complex.class);
+		Zone zone = mock(Zone.class);
+		when(first.getId()).thenReturn("A1");
+		when(first.getZone()).thenReturn(zone);
+		when(zone.getId()).thenReturn("z1");
+		trade.linkToComplex(first);
+
+		Complex other = mock(Complex.class);
+		when(other.getId()).thenReturn("A2");
+		when(other.getZone()).thenReturn(zone);
+		assertThatThrownBy(() -> trade.linkToComplex(other))
+			.isInstanceOf(IllegalStateException.class);
+		assertThat(trade.getComplex()).isSameAs(first);
+		assertThat(trade.isCanceled()).isTrue();
+		assertThat(trade.getCancellationDate())
+			.isEqualTo(LocalDate.of(2026, 9, 20));
 	}
 
 	private ApartmentTrade createTrade(

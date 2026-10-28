@@ -73,3 +73,11 @@ app:
     enabled: ${APARTMENT_TRADE_IMPORT_ENABLED:false}
     district-code: ${APARTMENT_TRADE_IMPORT_DISTRICT_CODE:}
     deal-year-month: ${APARTMENT_TRADE_IMPORT_DEAL_YEAR_MONTH:}
+
+  apartment-trade-match:
+    enabled: ${APARTMENT_TRADE_MATCH_ENABLED:false}
+    audit-enabled: ${APARTMENT_TRADE_MATCH_AUDIT_ENABLED:false}
+    audit-path: ${APARTMENT_TRADE_MATCH_AUDIT_PATH:build/reports/apartment-trade-match-audit.tsv}
+    proposal-path: ${APARTMENT_TRADE_MATCH_PROPOSAL_PATH:data/trade/matching/yongsan-202609-proposals.tsv}
+    reference-path: ${APARTMENT_TRADE_MATCH_REFERENCE_PATH:data/location/reference/legal-dongs-20260917.tsv}
+    mapping-path: ${APARTMENT_TRADE_MATCH_MAPPING_PATH:data/location/mapping/location-mapping.json}

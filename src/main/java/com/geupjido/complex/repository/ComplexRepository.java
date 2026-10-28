@@ -26,4 +26,6 @@ public interface ComplexRepository
 		@Param("afterId") String afterId,
 		Pageable pageable
 	);
+
+	List<Complex> findByLegalDongCode(String legalDongCode);
 }

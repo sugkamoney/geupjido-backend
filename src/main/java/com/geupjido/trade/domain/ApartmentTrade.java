@@ -3,6 +3,7 @@ package com.geupjido.trade.domain;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import jakarta.persistence.Column;
@@ -270,6 +271,32 @@ public class ApartmentTrade {
 		}
 		canceled = true;
 		cancellationDate = date;
+	}
+
+	/**
+	 * 확인된 단지와 그 단지의 현재 권역을 함께 연결한다.
+	 * 이미 다른 값으로 연결된 거래는 덮어쓰지 않는다.
+	 *
+	 * @return 새로 연결했으면 true, 동일한 연결이 이미 있으면 false
+	 */
+	public boolean linkToComplex(Complex candidate) {
+		Objects.requireNonNull(candidate, "연결할 단지가 필요합니다.");
+		Zone candidateZone = Objects.requireNonNull(
+			candidate.getZone(), "단지의 권역이 필요합니다."
+		);
+		if (complex != null || zone != null) {
+			if (complex != null && zone != null
+				&& complex.getId().equals(candidate.getId())
+				&& zone.getId().equals(candidateZone.getId())) {
+				return false;
+			}
+			throw new IllegalStateException(
+				"이미 다른 단지 또는 권역에 연결된 거래입니다."
+			);
+		}
+		complex = candidate;
+		zone = candidateZone;
+		return true;
 	}
 
 	public Long getId() {
