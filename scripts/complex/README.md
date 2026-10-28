@@ -18,7 +18,7 @@ python3 scripts/complex/import_complexes.py --run --batch-size 1 --start-index 1
 python3 -m unittest discover -s scripts/complex -p 'test_*.py' -v
 ```
 
-전체 254개 법정동을 긴 시간에 걸쳐 재개할 때는 다음 관리 도구를 사용한다. 기존 매니페스트를 읽고 성공·빈 목록을 건너뛰며, 목록 API가 연속 실패하면 기본 120초 쉬고 다시 시작한다. 진전 없는 라운드가 연속되면 대기는 240초, 480초처럼 늘어나고 최대 900초다. 완료된 법정동 증가와 부분 적재의 신규 단지 수를 모두 진전으로 계산한다. 기본 3회 연속 진전이 없거나 오류 코드 `22`로 인한 한도 소진이 감지되면 자동으로 멈춘다. 한 번의 명령에서 최대 100회 재개하므로 무한 호출하지 않는다. 기본 배치 크기는 2개 법정동이다. 실행 중인 관리 도구를 중복 실행하지 않는다.
+현재 매핑의 전체 255개 법정동을 긴 시간에 걸쳐 재개할 때는 다음 관리 도구를 사용한다. 기존 매니페스트를 읽고 성공·빈 목록을 건너뛰며, 목록 API가 연속 실패하면 기본 120초 쉬고 다시 시작한다. 진전 없는 라운드가 연속되면 대기는 240초, 480초처럼 늘어나고 최대 900초다. 완료된 법정동 증가와 부분 적재의 신규 단지 수를 모두 진전으로 계산한다. 기본 3회 연속 진전이 없거나 오류 코드 `22`로 인한 한도 소진이 감지되면 자동으로 멈춘다. 한 번의 명령에서 최대 100회 재개하므로 무한 호출하지 않는다. 기본 배치 크기는 2개 법정동이다. 실행 중인 관리 도구를 중복 실행하지 않는다.
 
 관리 도구는 매니페스트 옆의 `.lock` 파일에 프로세스 잠금을 유지한다. 같은 매니페스트로 두 번째 관리 도구를 실행하면 적재 전에 종료된다. 이 잠금은 관리 도구끼리만 조율하므로 `import_complexes.py --run`을 같은 매니페스트로 동시에 실행해서는 안 된다.
 
@@ -57,4 +57,31 @@ python3 -B scripts/complex/summarize_location_runs.py --show-unresolved
 docker exec -i -u postgres geupjido-postgres psql -U postgres -d geupjido -v ON_ERROR_STOP=1 -f - < scripts/complex/apply_reviewed_locations.sql
 ```
 
-마곡 7건은 사용자 승인 예외이므로 원본 법정동 코드는 방화동인 채로 `zone_id`만 마곡이다. 일반 법정동 코드 일치 검사에서는 이 7개 ID를 별도로 집계한다. 마장동은 현재 권역 매핑에 없으므로 마장한영스테이의 `zone_id`는 비워 둔다. 단지별 근거와 수정 후 DB 수치는 `docs/history/2026-10-27-complex-location-batch.md`에 기록했다.
+마곡 7건은 사용자 승인 예외이므로 원본 법정동 코드는 방화동인 채로 `zone_id`만 마곡이다. 일반 법정동 코드 일치 검사에서는 이 7개 ID를 별도로 집계한다. #90 당시 마장동 권역이 없어 마장한영스테이의 `zone_id`를 비워 두었고, #91에서 새 권역 추가와 함께 배정했다. 단지별 근거와 #90 수동 보정 당시 DB 수치는 `docs/history/2026-10-27-complex-location-batch.md`, 마장동 후속 결과는 `docs/history/2026-10-27-majang-zone.md`에 기록했다.
+
+### #91 위치 예외 재검토
+
+`audit_location_exceptions.sql`은 #90에서 보류한 12건, 마곡 수동 예외 7건, 부산 E2E 테스트 행의 존재 여부를 읽기 전용으로 출력한다. #91에서는 지번 후보가 VWorld PNU 필지 안에 있는 11건의 좌표·권역을 보정했다. `A10024245`는 K-apt의 사당동 42 필지가 현재 조회되지 않아, 서울시 단지 주소와 사당동 1161 필지를 따로 검증해 지번·좌표·권역을 보정했다. 필지별 근거와 원천 주소의 남은 이력 확인 사항은 `docs/history/2026-10-27-complex-location-exception-followup.md`에 기록했다.
+
+```sh
+docker exec -i -u postgres geupjido-postgres psql -U postgres -d geupjido -v ON_ERROR_STOP=1 -f - < scripts/complex/audit_location_exceptions.sql
+```
+
+11건의 조건부 보정 SQL은 저장된 원본 주소·좌표·법정동 코드와 대상 권역의 공간 포함 관계를 검사한다. 재실행하면 이미 배정된 상태를 확인하고 변경하지 않는다. **로컬 DB에서만** 다음과 같이 실행한다.
+
+```sh
+docker exec -i -u postgres geupjido-postgres psql -U postgres -d geupjido -v ON_ERROR_STOP=1 -f - < scripts/complex/apply_parcel_verified_locations.sql
+```
+
+사당동 단지 1건과 도로명주소 자치구 오기 2건은 각각 별도 조건부 SQL로 보정했다. 두 SQL 모두 원본 상태와 배정 권역의 공간 포함을 확인하며 재실행 시 변경 없이 종료한다. **로컬 DB에서만** 실행한다.
+
+```sh
+docker exec -i -u postgres geupjido-postgres psql -U postgres -d geupjido -v ON_ERROR_STOP=1 -f - < scripts/complex/correct_sadang_complex_location.sql
+docker exec -i -u postgres geupjido-postgres psql -U postgres -d geupjido -v ON_ERROR_STOP=1 -f - < scripts/complex/correct_reviewed_road_districts.sql
+```
+
+`A10027875`는 수도권 수집 결과가 아니라 실제 API 저장 E2E 테스트가 로컬 DB에 남긴 부산 단지다. E2E 테스트는 이제 실행 후 롤백된다. **기존 로컬 DB에 남은 테스트 행만** 아래 SQL로 제거한다. 이 SQL은 단지 ID·주소·법정동 코드와 연결 거래가 예상과 다른 경우 중단한다. 운영 DB에서는 실행하지 않는다.
+
+```sh
+docker exec -i -u postgres geupjido-postgres psql -U postgres -d geupjido -v ON_ERROR_STOP=1 -f - < scripts/complex/remove_local_e2e_fixture.sql
+```

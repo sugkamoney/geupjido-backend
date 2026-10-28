@@ -104,6 +104,7 @@ initial_tier	zone_name	region_hint	city_hint	zone_id	city_id	dong_codes	status	n
 3.7	등촌	seoul	강서구	gangseo-deungchon	11500	1150010200	confirmed	공식 법정동명 1:1 매칭
 3.7	미아	seoul	강북구	gangbuk-mia	11305	1130510100	confirmed	공식 법정동명 1:1 매칭
 3.7	석관	seoul	성북구	seongbuk-seokgwan	11290	1129013900	confirmed	공식 법정동명 1:1 매칭
+3.7	마장	seoul	성동구	seongdong-majang	11200	1120010500	confirmed	기준 배치표의 마장/이문 3.7급 중 마장동을 별도 공간 권역으로 추가
 3.7	이문·휘경	seoul	동대문구	dongdaemun-imun-hwigyeong	11230	1123011000,1123010900	confirmed	복합 권역명을 구성하는 법정동 각각 매칭
 3.7	종암	seoul	성북구	seongbuk-jongam	11290	1129013500	confirmed	공식 법정동명 1:1 매칭
 3.7	창동	seoul	도봉구	dobong-changdong	11320	1132010700	confirmed	공식 법정동명 1:1 매칭

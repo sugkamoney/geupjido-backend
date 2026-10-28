@@ -7,6 +7,7 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.geupjido.batch.complex.model.ComplexImportStatus;
 import com.geupjido.complex.domain.Complex;
@@ -20,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 )
 @SpringBootTest
 @ActiveProfiles("local")
+@Transactional
 class ComplexBasicInfoImportServiceE2ETest {
 
 	private static final String COMPLEX_CODE = "A10027875";

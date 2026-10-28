@@ -1211,6 +1211,15 @@
       "initialTier": 3.7
     },
     {
+      "id": "seongdong-majang",
+      "cityId": "11200",
+      "name": "마장",
+      "dongCodes": [
+        "1120010500"
+      ],
+      "initialTier": 3.7
+    },
+    {
       "id": "dongdaemun-imun-hwigyeong",
       "cityId": "11230",
       "name": "이문·휘경",
