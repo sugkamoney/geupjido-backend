@@ -2,6 +2,7 @@ package com.geupjido.trade.repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,6 +16,26 @@ import com.geupjido.trade.domain.ApartmentTrade;
  */
 public interface ApartmentTradeRepository
 	extends JpaRepository<ApartmentTrade, Long> {
+
+	List<ApartmentTrade>
+	findByDistrictCodeAndLegalDongNameAndRawApartmentNameAndLotNumberAndBuildYear(
+		String districtCode,
+		String legalDongName,
+		String rawApartmentName,
+		String lotNumber,
+		Short buildYear
+	);
+
+	List<ApartmentTrade>
+	findByDistrictCodeAndLegalDongNameAndRawApartmentNameAndLotNumberAndBuildYearAndDealDateGreaterThanEqualAndDealDateLessThan(
+		String districtCode,
+		String legalDongName,
+		String rawApartmentName,
+		String lotNumber,
+		Short buildYear,
+		LocalDate startDate,
+		LocalDate endDate
+	);
 
 	@Query(value = """
 		SELECT *
