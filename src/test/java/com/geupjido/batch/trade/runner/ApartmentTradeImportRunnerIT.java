@@ -21,6 +21,8 @@ import com.geupjido.batch.trade.config.ApartmentTradeApiProperties;
 import com.geupjido.batch.trade.config.ApartmentTradeImportProperties;
 import com.geupjido.batch.trade.mapper.ApartmentTradeMapper;
 import com.geupjido.batch.trade.service.ApartmentTradeCollectionService;
+import com.geupjido.batch.trade.service.ApartmentTradeScopeFilter;
+import com.geupjido.batch.trade.service.ApartmentTradeBackfillPersistenceService;
 import com.geupjido.batch.trade.service.ApartmentTradeImportService;
 import com.geupjido.batch.trade.service.ApartmentTradePersistenceService;
 import com.geupjido.trade.domain.ApartmentTrade;
@@ -51,7 +53,13 @@ class ApartmentTradeImportRunnerIT {
 	private ApartmentTradePersistenceService persistenceService;
 
 	@Autowired
+	private ApartmentTradeBackfillPersistenceService backfillPersistenceService;
+
+	@Autowired
 	private ApartmentTradeRepository repository;
+
+	@Autowired
+	private ApartmentTradeScopeFilter scopeFilter;
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
@@ -73,11 +81,12 @@ class ApartmentTradeImportRunnerIT {
 		);
 		ApartmentTradeCollectionService collectionService =
 			new ApartmentTradeCollectionService(
-				client, new ApartmentTradeMapper()
+				client, new ApartmentTradeMapper(), scopeFilter
 			);
 		ApartmentTradeImportService importService =
 			new ApartmentTradeImportService(
-				collectionService, persistenceService
+				collectionService, persistenceService,
+				backfillPersistenceService
 			);
 		runner = new ApartmentTradeImportRunner(
 			new ApartmentTradeImportProperties(true, "11170", "202609"),

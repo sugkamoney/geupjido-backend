@@ -6,5 +6,8 @@ package com.geupjido.batch.complex.model;
 public enum ComplexImportStatus {
 
 	CREATED,
-	SKIPPED_ALREADY_EXISTS
+	SKIPPED_ALREADY_EXISTS,
+	SKIPPED_RENTAL_ONLY,
+	SKIPPED_STAFF_HOUSING,
+	SKIPPED_SALE_TYPE_UNKNOWN
 }

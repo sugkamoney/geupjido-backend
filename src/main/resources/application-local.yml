@@ -74,8 +74,26 @@ app:
     district-code: ${APARTMENT_TRADE_IMPORT_DISTRICT_CODE:}
     deal-year-month: ${APARTMENT_TRADE_IMPORT_DEAL_YEAR_MONTH:}
 
+  apartment-trade-backfill:
+    enabled: ${APARTMENT_TRADE_BACKFILL_ENABLED:false}
+    mapping-path: ${APARTMENT_TRADE_BACKFILL_MAPPING_PATH:data/location/mapping/location-mapping.json}
+    from-month: ${APARTMENT_TRADE_BACKFILL_FROM_MONTH:}
+    through-month: ${APARTMENT_TRADE_BACKFILL_THROUGH_MONTH:}
+    max-pairs: ${APARTMENT_TRADE_BACKFILL_MAX_PAIRS:40}
+    manifest-path: ${APARTMENT_TRADE_BACKFILL_MANIFEST_PATH:data/trade/import-runs/local.tsv}
+
+  complex-price-recalculation:
+    enabled: ${COMPLEX_PRICE_RECALCULATION_ENABLED:false}
+
+  complex-sale-type-backfill:
+    enabled: ${COMPLEX_SALE_TYPE_BACKFILL_ENABLED:false}
+    after-id: ${COMPLEX_SALE_TYPE_BACKFILL_AFTER_ID:}
+    max-count: ${COMPLEX_SALE_TYPE_BACKFILL_MAX_COUNT:100}
+    only-unpriced: ${COMPLEX_SALE_TYPE_BACKFILL_ONLY_UNPRICED:false}
+
   apartment-trade-match:
     enabled: ${APARTMENT_TRADE_MATCH_ENABLED:false}
+    auto-exact-enabled: ${APARTMENT_TRADE_MATCH_AUTO_EXACT_ENABLED:false}
     audit-enabled: ${APARTMENT_TRADE_MATCH_AUDIT_ENABLED:false}
     audit-path: ${APARTMENT_TRADE_MATCH_AUDIT_PATH:build/reports/apartment-trade-match-audit.tsv}
     proposal-path: ${APARTMENT_TRADE_MATCH_PROPOSAL_PATH:data/trade/matching/yongsan-202609-proposals.tsv}

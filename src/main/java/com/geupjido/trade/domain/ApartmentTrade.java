@@ -281,6 +281,11 @@ public class ApartmentTrade {
 	 */
 	public boolean linkToComplex(Complex candidate) {
 		Objects.requireNonNull(candidate, "연결할 단지가 필요합니다.");
+		if (candidate.isRentalOnly()) {
+			throw new IllegalArgumentException(
+				"임대 전용 단지는 매매 실거래와 연결할 수 없습니다."
+			);
+		}
 		Zone candidateZone = Objects.requireNonNull(
 			candidate.getZone(), "단지의 권역이 필요합니다."
 		);

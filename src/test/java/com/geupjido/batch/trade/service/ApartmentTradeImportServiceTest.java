@@ -29,6 +29,9 @@ class ApartmentTradeImportServiceTest {
 	@Mock
 	private ApartmentTradePersistenceService persistenceService;
 
+	@Mock
+	private ApartmentTradeBackfillPersistenceService backfillPersistenceService;
+
 	@InjectMocks
 	private ApartmentTradeImportService service;
 

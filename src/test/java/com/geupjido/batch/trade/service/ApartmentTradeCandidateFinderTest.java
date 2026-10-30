@@ -44,6 +44,43 @@ class ApartmentTradeCandidateFinderTest {
 	}
 
 	@Test
+	void 같은_지번의_임대_전용은_제외하고_분양만_남긴다() {
+		ApartmentTrade trade = trade("한강로2가", "417");
+		ApartmentTradeScope scope = new ApartmentTradeScope(
+			Status.IN_SCOPE, "1117012500", "yongsan-hangangro"
+		);
+		Complex rental = complex("R", "한강로2가 417");
+		rental.updateSaleType("임대");
+		Complex sale = complex("S", "한강로2가 417");
+		sale.updateSaleType("분양");
+		Complex mixed = complex("M", "한강로2가 417");
+		mixed.updateSaleType("분양/임대");
+		when(repository.findByLegalDongCode("1117012500"))
+			.thenReturn(List.of(rental, sale, mixed));
+
+		assertThat(finder.findCandidates(trade, scope))
+			.containsExactly(sale, mixed);
+	}
+
+	@Test
+	void 분양형태가_확인된_단지만_지번의_영번_표기_차이를_허용한다() {
+		ApartmentTrade trade = trade("한강로2가", "417");
+		ApartmentTradeScope scope = new ApartmentTradeScope(
+			Status.IN_SCOPE, "1117012500", "yongsan-hangangro"
+		);
+		Complex unverified = complex("U", "한강로2가 417-0000");
+		Complex sale = complex("S", "한강로2가 0417-0000");
+		sale.updateSaleType("분양");
+		Complex otherLot = complex("O", "한강로2가 417-1");
+		otherLot.updateSaleType("분양");
+		when(repository.findByLegalDongCode("1117012500"))
+			.thenReturn(List.of(unverified, sale, otherLot));
+
+		assertThat(finder.findCandidates(trade, scope))
+			.containsExactly(sale);
+	}
+
+	@Test
 	void 대상밖_거래는_후보를_조회하지_않는다() {
 		ApartmentTradeScope scope = new ApartmentTradeScope(
 			Status.OUT_OF_SCOPE, "1117010700", null

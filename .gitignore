@@ -4,6 +4,8 @@ build/
 .env
 data/complex/import-runs/
 data/complex/location-runs/
+data/trade/import-runs/
+data/trade/audit-runs/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/

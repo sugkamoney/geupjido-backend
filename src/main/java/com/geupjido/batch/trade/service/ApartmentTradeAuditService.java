@@ -96,10 +96,12 @@ public class ApartmentTradeAuditService {
 						&& trade.getZone() != null
 						&& trade.getComplex().getZone() != null
 						&& scope.status() == ApartmentTradeScope.Status.IN_SCOPE
+						&& scope.legalDongCode().equals(
+							trade.getComplex().getLegalDongCode()
+						)
 						&& trade.getZone().getId().equals(
 							trade.getComplex().getZone().getId()
-						)
-						&& trade.getZone().getId().equals(scope.zoneId());
+						);
 					linkStatus = consistent ? "LINKED" : "INCONSISTENT_LINK";
 					if (!consistent) {
 						inconsistent++;

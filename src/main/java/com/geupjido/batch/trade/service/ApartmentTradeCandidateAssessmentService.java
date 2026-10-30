@@ -25,8 +25,13 @@ public class ApartmentTradeCandidateAssessmentService {
 		ApartmentTrade trade,
 		ApartmentTradeScope scope
 	) {
-		List<Complex> candidates =
-			candidateFinder.findCandidates(trade, scope);
+		return assess(trade, candidateFinder.findCandidates(trade, scope));
+	}
+
+	ApartmentTradeCandidateAssessment assess(
+		ApartmentTrade trade,
+		List<Complex> candidates
+	) {
 
 		List<String> candidateIds = candidates.stream()
 			.map(Complex::getId)
@@ -40,48 +45,58 @@ public class ApartmentTradeCandidateAssessmentService {
 		}
 
 		if (candidates.size() > 1) {
-			return new ApartmentTradeCandidateAssessment(
-				Status.MULTIPLE_CANDIDATES, candidateIds
-			);
+			List<Complex> namedCandidates = candidates.stream()
+				.filter(candidate -> isSameName(trade, candidate)
+					|| ApprovedTradeNameAliases.matches(trade, candidate))
+				.toList();
+			if (namedCandidates.size() != 1
+				|| !isConfirmedSaleType(namedCandidates.getFirst())) {
+				return new ApartmentTradeCandidateAssessment(
+					Status.MULTIPLE_CANDIDATES, candidateIds
+				);
+			}
+			return assessSingle(trade, namedCandidates.getFirst());
 		}
 
-		Complex candidate = candidates.getFirst();
+		return assessSingle(trade, candidates.getFirst());
+	}
 
-		if (
-			trade.getBuildYear() == null
-				|| candidate.getApprovalDate() == null
-		) {
-			return new ApartmentTradeCandidateAssessment(
-				Status.YEAR_UNVERIFIED, candidateIds
-			);
-		}
+	private ApartmentTradeCandidateAssessment assessSingle(
+		ApartmentTrade trade,
+		Complex candidate
+	) {
+		List<String> candidateIds = List.of(candidate.getId());
 
-		if (
-			trade.getBuildYear().intValue()
-				!= candidate.getApprovalDate().getYear()
-		) {
-			return new ApartmentTradeCandidateAssessment(
-				Status.YEAR_MISMATCH, candidateIds
-			);
-		}
-
-		String tradeName = removeWhitespace(
-			trade.getRawApartmentName()
-		);
-		String candidateName = removeWhitespace(
-			candidate.getName()
-		);
-
-		Status status = tradeName.equals(candidateName)
+		Status status = isSameName(trade, candidate)
 			? Status.NAME_EXACT
-			: Status.NAME_REVIEW;
+			: ApprovedTradeNameAliases.matches(trade, candidate)
+				? Status.NAME_APPROVED_ALIAS : Status.NAME_REVIEW;
 
 		return new ApartmentTradeCandidateAssessment(
 			status, candidateIds
 		);
 	}
 
-	private static String removeWhitespace(String value) {
-		return value.replaceAll("\\s+", "");
+	private static boolean isSameName(
+		ApartmentTrade trade, Complex candidate
+	) {
+		return normalizeName(trade.getRawApartmentName()).equals(
+			normalizeName(candidate.getName())
+		);
+	}
+
+	private static boolean isConfirmedSaleType(Complex candidate) {
+		String saleType = candidate.getSaleType();
+		return saleType != null
+			&& (saleType.contains("분양") || saleType.contains("혼합"))
+			&& !candidate.isRentalOnly();
+	}
+
+	private static String normalizeName(String value) {
+		String withoutWhitespace = value.replaceAll("\\s+", "");
+		return withoutWhitespace.endsWith("아파트")
+			? withoutWhitespace.substring(0,
+				withoutWhitespace.length() - "아파트".length())
+			: withoutWhitespace;
 	}
 }

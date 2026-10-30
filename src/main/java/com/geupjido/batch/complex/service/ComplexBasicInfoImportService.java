@@ -38,6 +38,15 @@ public class ComplexBasicInfoImportService {
 
 		Complex complex =
 			collectionService.collectByComplexCode(complexCode);
+		if (complex.getSaleType() == null) {
+			return ComplexImportStatus.SKIPPED_SALE_TYPE_UNKNOWN;
+		}
+		if (complex.isRentalOnly()) {
+			return ComplexImportStatus.SKIPPED_RENTAL_ONLY;
+		}
+		if (complex.isStaffHousing()) {
+			return ComplexImportStatus.SKIPPED_STAFF_HOUSING;
+		}
 
 		complexRepository.save(complex);
 

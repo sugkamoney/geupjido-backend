@@ -70,6 +70,7 @@ class ComplexBasicInfoApiClientTest {
 				        "kaptdaCnt": 182.0,
 				        "kaptUsedate": "20150806",
 				        "bjdCode": "2638010100",
+				        "codeSaleNm": "분양",
 				        "codeHeatNm": "개별난방"
 				      }
 				    },
@@ -98,6 +99,7 @@ class ComplexBasicInfoApiClientTest {
 			.isEqualByComparingTo("182.0");
 		assertThat(result.kaptUsedate()).isEqualTo("20150806");
 		assertThat(result.bjdCode()).isEqualTo("2638010100");
+		assertThat(result.codeSaleNm()).isEqualTo("분양");
 
 		server.verify();
 	}

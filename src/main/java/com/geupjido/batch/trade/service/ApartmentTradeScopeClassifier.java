@@ -53,6 +53,16 @@ public class ApartmentTradeScopeClassifier {
 	) {
 		String code = reference.findCode(districtCode, legalDongName)
 			.orElse(null);
+		if (code == null && legalDongName != null) {
+			int separator = legalDongName.indexOf(' ');
+			if (separator > 0) {
+				String town = legalDongName.substring(0, separator);
+				if (town.endsWith("읍") || town.endsWith("면")) {
+					code = reference.findCode(districtCode, town)
+						.orElse(null);
+				}
+			}
+		}
 		if (code == null) {
 			return new ApartmentTradeScope(
 				Status.UNKNOWN_LEGAL_DONG, null, null
