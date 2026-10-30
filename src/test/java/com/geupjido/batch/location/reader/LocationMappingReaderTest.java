@@ -76,9 +76,9 @@ class LocationMappingReaderTest {
 			.sum();
 
 		assertThat(mapping.regions()).hasSize(3);
-		assertThat(mapping.cities()).hasSize(40);
-		assertThat(mapping.zones()).hasSize(163);
-		assertThat(assignedDongCodeCount).isEqualTo(255);
+		assertThat(mapping.cities()).hasSize(62);
+		assertThat(mapping.zones()).hasSize(279);
+		assertThat(assignedDongCodeCount).isEqualTo(651);
 		assertThat(mapping.zones())
 			.filteredOn(zone -> zone.id().equals("seongdong-majang"))
 			.singleElement()
@@ -86,17 +86,25 @@ class LocationMappingReaderTest {
 				assertThat(zone.cityId()).isEqualTo("11200");
 				assertThat(zone.name()).isEqualTo("마장");
 				assertThat(zone.dongCodes())
-					.containsExactly("1120010500");
+					.containsExactly("1120010500", "1120010600");
 				assertThat(zone.initialTier())
 					.isEqualByComparingTo("3.7");
 			});
 		assertThat(mapping.zones())
-			.filteredOn(zone -> zone.id().equals("uiwang-naeson"))
+			.filteredOn(zone -> zone.cityId().equals("41430")
+				&& zone.name().equals("포일"))
 			.singleElement()
 			.satisfies(zone -> {
-				assertThat(zone.name()).isEqualTo("포일/내손");
 				assertThat(zone.dongCodes())
-					.containsExactly("4143010700", "4143010900");
+					.containsExactly("4143010900");
+			});
+		assertThat(mapping.zones())
+			.filteredOn(zone -> zone.cityId().equals("41430")
+				&& zone.name().equals("내손"))
+			.singleElement()
+			.satisfies(zone -> {
+				assertThat(zone.dongCodes())
+					.containsExactly("4143010700");
 			});
 	}
 

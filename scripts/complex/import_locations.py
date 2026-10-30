@@ -18,9 +18,9 @@ DEFAULT_MANIFEST = ROOT / "data/complex/location-runs/local.jsonl"
 REQUIRED_ENV = ("NAVER_MAPS_CLIENT_ID", "NAVER_MAPS_CLIENT_SECRET")
 
 
-def local_settings():
+def local_settings(path=None):
     settings = {}
-    path = ROOT / ".env"
+    path = path or ROOT / ".env"
     if path.exists():
         for line in path.read_text(encoding="utf-8").splitlines():
             if "=" not in line or line.lstrip().startswith("#"):
@@ -86,7 +86,7 @@ def run_batch(cursor, batch_size, manifest, env, timeout):
 
 
 def import_all(args):
-    settings = local_settings()
+    settings = local_settings(args.env_file)
     env = os.environ.copy()
     for name in REQUIRED_ENV:
         if not env.get(name) and settings.get(name):
@@ -144,6 +144,7 @@ def main(argv=None):
     parser.add_argument("--max-batches", type=int, default=250)
     parser.add_argument("--timeout-seconds", type=int, default=180)
     parser.add_argument("--start-over", action="store_true")
+    parser.add_argument("--env-file", type=Path)
     args = parser.parse_args(argv)
     if not 1 <= args.batch_size <= 20:
         parser.error("--batch-size는 1~20이어야 합니다")

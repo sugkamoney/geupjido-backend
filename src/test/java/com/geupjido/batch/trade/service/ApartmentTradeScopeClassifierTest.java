@@ -41,9 +41,9 @@ class ApartmentTradeScopeClassifierTest {
 			.isEqualTo(new ApartmentTradeScope(
 				Status.IN_SCOPE, "1117013100", "yongsan-hannam"
 			));
-		assertThat(classifier.classify("11170", "동자동"))
+		assertThat(classifier.classify("41370", "오산동"))
 			.isEqualTo(new ApartmentTradeScope(
-				Status.OUT_OF_SCOPE, "1117010700", null
+				Status.OUT_OF_SCOPE, "4137010100", null
 			));
 		assertThat(classifier.classify("11170", "없는동"))
 			.isEqualTo(new ApartmentTradeScope(
