@@ -161,7 +161,7 @@ class LocationDataImportServiceIT {
 	}
 
 	@Test
-	void 실제_경계에서_포일동과_내손동이_같은_권역에_포함된다() {
+	void 실제_경계에서_포일동과_내손동이_각각_권역에_포함된다() {
 		Path mappingPath = Path.of("data/location/mapping/location-mapping.json");
 		Path boundaryPath = Path.of("data/location/boundary/legal-dong-boundaries.geojson");
 
@@ -176,32 +176,20 @@ class LocationDataImportServiceIT {
 			"""
 				SELECT COUNT(*)
 				FROM zone z
-				WHERE z.id = 'uiwang-naeson'
-					AND z.name = '포일/내손'
-					AND z.dong_codes = ARRAY[
-						'4143010700', '4143010900'
-					]::VARCHAR[]
-					AND ST_Covers(
-						z.polygon,
-						(
-							SELECT ST_PointOnSurface(geometry)
-							FROM legal_dong_boundary_stage
-							WHERE dong_code = '4143010700'
-						)
-					)
-					AND ST_Covers(
-						z.polygon,
-						(
-							SELECT ST_PointOnSurface(geometry)
-							FROM legal_dong_boundary_stage
-							WHERE dong_code = '4143010900'
-						)
-					)
+				JOIN legal_dong_boundary_stage b
+					ON b.dong_code = z.dong_codes[1]
+				WHERE (z.id = 'gg-41430-026'
+					AND z.name = '포일'
+					AND z.dong_codes = ARRAY['4143010900']::VARCHAR[]
+					OR z.id = 'gg-41430-027'
+					AND z.name = '내손'
+					AND z.dong_codes = ARRAY['4143010700']::VARCHAR[])
+					AND ST_Covers(z.polygon, ST_PointOnSurface(b.geometry))
 				""",
 			Integer.class
 		);
 
-		assertThat(importedZoneCount).isEqualTo(1);
+		assertThat(importedZoneCount).isEqualTo(2);
 	}
 
 	@Test

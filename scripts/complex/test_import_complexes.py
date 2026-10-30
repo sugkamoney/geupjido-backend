@@ -11,19 +11,20 @@ import import_complexes as script
 
 
 FIXTURE = Path(__file__).parent / "fixtures/sample-run.log"
+FIXTURE_CODES = ["1168011000", "1165010700", "1168010500", "1168010400"]
 
 
 class ImportComplexesTest(unittest.TestCase):
-    def test_mapping_has_254_unique_codes_in_mapping_order(self):
+    def test_mapping_has_unique_codes_in_mapping_order(self):
         codes = script.mapping_codes(script.DEFAULT_MAPPING)
-        self.assertEqual(254, len(codes))
-        self.assertEqual(254, len(set(codes)))
+        self.assertEqual(651, len(codes))
+        self.assertEqual(651, len(set(codes)))
         self.assertEqual("1168011000", codes[0])
-        self.assertEqual("4159510200", codes[-1])
+        self.assertEqual("2827511100", codes[-1])
         self.assertIn("1168010300", codes)
 
     def test_fixture_parses_every_status_and_discards_secrets(self):
-        codes = script.mapping_codes(script.DEFAULT_MAPPING)[:4]
+        codes = FIXTURE_CODES
         rows = script.parse_results(FIXTURE.read_text(), codes, 0)
         self.assertEqual(
             ["SUCCESS", "PARTIAL", "LIST_FAILED", "EMPTY"],
@@ -115,7 +116,7 @@ class ImportComplexesTest(unittest.TestCase):
         self.assertIn(f"배치 1: {code}", recheck_output.getvalue())
 
     def test_resume_skips_success_and_empty_and_retries_failures(self):
-        codes = script.mapping_codes(script.DEFAULT_MAPPING)[:4]
+        codes = FIXTURE_CODES
         with tempfile.TemporaryDirectory() as directory:
             manifest = Path(directory) / "import.jsonl"
             script.append_rows(manifest, script.parse_results(FIXTURE.read_text(), codes, 0))
@@ -134,8 +135,8 @@ class ImportComplexesTest(unittest.TestCase):
         with patch.object(script, "run_batch", side_effect=AssertionError("executed")):
             with contextlib.redirect_stdout(StringIO()) as output:
                 self.assertEqual(0, script.main(["--dry-run", "--batch-size", "5"]))
-        self.assertEqual(51, output.getvalue().count("배치 "))
-        self.assertIn("전체=254 선택=254 대기=254", output.getvalue())
+        self.assertEqual(131, output.getvalue().count("배치 "))
+        self.assertIn("전체=651 선택=651 대기=651", output.getvalue())
 
     def test_dry_run_prioritizes_unattempted_codes_over_failed_retries(self):
         codes = script.mapping_codes(script.DEFAULT_MAPPING)[:3]
@@ -162,7 +163,7 @@ class ImportComplexesTest(unittest.TestCase):
         ], lines)
 
     def test_run_writes_per_dong_results_and_resumes_in_order(self):
-        codes = script.mapping_codes(script.DEFAULT_MAPPING)[:4]
+        codes = FIXTURE_CODES
         with tempfile.TemporaryDirectory() as directory:
             mapping = Path(directory) / "mapping.json"
             mapping.write_text(json.dumps({"zones": [{"dongCodes": codes}]}))
@@ -177,7 +178,8 @@ class ImportComplexesTest(unittest.TestCase):
                                                      "--manifest", str(manifest),
                                                      "--batch-size", "2"]))
             self.assertEqual(
-                [(codes[:2], mapping, 600), (codes[2:], mapping, 600)],
+                [(codes[:2], mapping, 600, script.ROOT / ".env"),
+                 (codes[2:], mapping, 600, script.ROOT / ".env")],
                 [call.args for call in runner.call_args_list],
             )
             self.assertEqual(4, len(manifest.read_text().splitlines()))
@@ -189,7 +191,7 @@ class ImportComplexesTest(unittest.TestCase):
                     self.assertEqual(0, script.main(["--run", "--mapping", str(mapping),
                                                      "--manifest", str(manifest),
                                                      "--batch-size", "2"]))
-                runner.assert_called_once_with(codes[1:3], mapping, 600)
+                runner.assert_called_once_with(codes[1:3], mapping, 600, script.ROOT / ".env")
 
     def test_run_uses_local_api_settings_and_exits_without_web_server(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -217,7 +219,7 @@ class ImportComplexesTest(unittest.TestCase):
             mapping = Path(directory) / "mapping.json"
             mapping.write_text(json.dumps({"zones": [{"dongCodes": codes}]}))
             manifest = Path(directory) / "import.jsonl"
-            def failed_result(batch, path, timeout):
+            def failed_result(batch, path, timeout, env_file):
                 return 0, (f"공동주택 단지 적재 진행: 법정동 1/1, "
                            f"코드={batch[0]}, 상태=LIST_FAILED, "
                            "신규=0, 건너뛰기=0, 실패=0")
@@ -237,7 +239,7 @@ class ImportComplexesTest(unittest.TestCase):
             mapping.write_text(json.dumps({"zones": [{"dongCodes": codes}]}))
             manifest = Path(directory) / "import.jsonl"
 
-            def failed_result(batch, path, timeout):
+            def failed_result(batch, path, timeout, env_file):
                 status = "LIST_FAILED" if batch[0] == codes[1] else "PARTIAL"
                 failed = 0 if status == "LIST_FAILED" else 1
                 return 0, (f"공동주택 단지 적재 진행: 법정동 1/1, "

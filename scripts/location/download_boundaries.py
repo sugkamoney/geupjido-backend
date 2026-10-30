@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import socket
@@ -273,6 +274,12 @@ def download_boundaries(
         target_codes,
     )
 
+    # 이미 완료한 서울·기존 경기 경계는 결과 파일에서 재사용한다.
+    # 새 권역을 추가한 뒤에도 불필요한 API 재호출을 막는다.
+    existing = load_checkpoint(OUTPUT_PATH, target_codes)
+    for emd_code, feature in existing.items():
+        features_by_code.setdefault(emd_code, feature)
+
     if features_by_code:
         print(f"중간 저장 데이터 {len(features_by_code)}개를 이어받습니다.")
 
@@ -308,7 +315,10 @@ def download_boundaries(
 
 
 def main() -> None:
-    load_env(ENV_PATH)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--env-file", type=Path, default=ENV_PATH)
+    args = parser.parse_args()
+    load_env(args.env_file)
 
     api_key = require_env("VWORLD_API_KEY")
     domain = require_env("VWORLD_DOMAIN")

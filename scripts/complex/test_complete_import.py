@@ -46,6 +46,30 @@ class CompleteImportTest(unittest.TestCase):
             self.assertEqual(2, importer.call_count)
             sleeper.assert_called_once_with(120)
 
+    def test_forwards_list_failure_limit_for_full_pending_scan(self):
+        with tempfile.TemporaryDirectory() as directory:
+            importer = Mock(return_value=1)
+            with contextlib.redirect_stdout(StringIO()), contextlib.redirect_stderr(StringIO()):
+                result = complete_import.run_until_complete(
+                    Path(directory) / "run.jsonl", ["1168011000"],
+                    1, 0, 1, 1, importer,
+                    max_consecutive_list_failures=20,
+                    max_consecutive_api_failures=20,
+                )
+            self.assertEqual(1, result)
+            self.assertEqual(
+                "20",
+                importer.call_args.args[0][
+                    importer.call_args.args[0].index("--max-consecutive-list-failures") + 1
+                ],
+            )
+            self.assertEqual(
+                "20",
+                importer.call_args.args[0][
+                    importer.call_args.args[0].index("--max-consecutive-api-failures") + 1
+                ],
+            )
+
     def test_no_progress_waits_increase_until_cap(self):
         with tempfile.TemporaryDirectory() as directory:
             sleeper = Mock()
