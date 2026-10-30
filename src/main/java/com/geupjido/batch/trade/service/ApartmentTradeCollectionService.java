@@ -23,13 +23,16 @@ public class ApartmentTradeCollectionService {
 
 	private final ApartmentTradeApiClient apiClient;
 	private final ApartmentTradeMapper mapper;
+	private final ApartmentTradeScopeFilter scopeFilter;
 
 	public ApartmentTradeCollectionService(
 		ApartmentTradeApiClient apiClient,
-		ApartmentTradeMapper mapper
+		ApartmentTradeMapper mapper,
+		ApartmentTradeScopeFilter scopeFilter
 	) {
 		this.apiClient = apiClient;
 		this.mapper = mapper;
+		this.scopeFilter = scopeFilter;
 	}
 
 	public List<ApartmentTradeData> collect(
@@ -42,6 +45,8 @@ public class ApartmentTradeCollectionService {
 				dealYearMonth
 			);
 
-		return items.stream().map(mapper::map).toList();
+		return items.stream()
+			.filter(item -> scopeFilter.includes(item.sggCd(), item.umdNm()))
+			.map(mapper::map).toList();
 	}
 }

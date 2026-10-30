@@ -33,6 +33,9 @@ class ApartmentTradeCollectionServiceTest {
 	@Mock
 	private ApartmentTradeMapper mapper;
 
+	@Mock
+	private ApartmentTradeScopeFilter scopeFilter;
+
 	@InjectMocks
 	private ApartmentTradeCollectionService service;
 
@@ -42,6 +45,10 @@ class ApartmentTradeCollectionServiceTest {
 			mock(ApartmentTradeApiItem.class);
 		ApartmentTradeApiItem secondItem =
 			mock(ApartmentTradeApiItem.class);
+		when(firstItem.sggCd()).thenReturn("11170");
+		when(firstItem.umdNm()).thenReturn("한남동");
+		when(secondItem.sggCd()).thenReturn("11170");
+		when(secondItem.umdNm()).thenReturn("한남동");
 
 		ApartmentTradeData firstTrade =
 			mock(ApartmentTradeData.class);
@@ -50,6 +57,7 @@ class ApartmentTradeCollectionServiceTest {
 
 		when(apiClient.fetchAll("11170", "202609"))
 			.thenReturn(List.of(firstItem, secondItem));
+		when(scopeFilter.includes("11170", "한남동")).thenReturn(true);
 		when(mapper.map(firstItem)).thenReturn(firstTrade);
 		when(mapper.map(secondItem)).thenReturn(secondTrade);
 
@@ -64,6 +72,18 @@ class ApartmentTradeCollectionServiceTest {
 			.fetchAll("11170", "202609");
 		inOrder.verify(mapper).map(firstItem);
 		inOrder.verify(mapper).map(secondItem);
+	}
+
+	@Test
+	void 서비스_법정동_밖의_거래는_변환하지_않는다() {
+		ApartmentTradeApiItem outside = mock(ApartmentTradeApiItem.class);
+		when(outside.sggCd()).thenReturn("11170");
+		when(outside.umdNm()).thenReturn("도원동");
+		when(apiClient.fetchAll("11170", "202609"))
+			.thenReturn(List.of(outside));
+
+		assertThat(service.collect("11170", "202609")).isEmpty();
+		verifyNoInteractions(mapper);
 	}
 
 	@Test
@@ -104,9 +124,12 @@ class ApartmentTradeCollectionServiceTest {
 	void 실거래가_변환이_실패하면_예외를_그대로_전달한다() {
 		ApartmentTradeApiItem item =
 			mock(ApartmentTradeApiItem.class);
+		when(item.sggCd()).thenReturn("11170");
+		when(item.umdNm()).thenReturn("한남동");
 
 		when(apiClient.fetchAll("11170", "202609"))
 			.thenReturn(List.of(item));
+		when(scopeFilter.includes("11170", "한남동")).thenReturn(true);
 		when(mapper.map(item))
 			.thenThrow(
 				new ApartmentTradeMappingException(

@@ -86,6 +86,7 @@ public class ApartmentTradeMatchProposalReader {
 		try {
 			Status status = Status.valueOf(fields[8]);
 			if (status != Status.NAME_EXACT
+				&& status != Status.NAME_APPROVED_ALIAS
 				&& status != Status.NAME_REVIEW) {
 				throw new IllegalArgumentException("판정 상태가 잘못되었습니다.");
 			}

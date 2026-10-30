@@ -49,6 +49,8 @@ class ApartmentTradeScopeClassifierTest {
 			.isEqualTo(new ApartmentTradeScope(
 				Status.UNKNOWN_LEGAL_DONG, null, null
 			));
+		assertThat(classifier.classify("41220", "고덕면 궁리").status())
+			.isEqualTo(Status.OUT_OF_SCOPE);
 	}
 
 	@Test

@@ -27,7 +27,7 @@ public class ComplexBasicInfoMapper {
 			);
 		}
 
-		return new Complex(
+		Complex complex = new Complex(
 			item.kaptCode(),
 			item.kaptName(),
 			item.kaptAddr(),
@@ -37,6 +37,8 @@ public class ComplexBasicInfoMapper {
 			toBuildingCount(item.kaptDongCnt()),
 			toApprovalDate(item.kaptUsedate())
 		);
+		complex.updateSaleType(item.codeSaleNm());
+		return complex;
 	}
 
 	private int toHouseholds(BigDecimal value) {

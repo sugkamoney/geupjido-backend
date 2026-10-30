@@ -7,6 +7,8 @@ import java.util.regex.Pattern;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -62,6 +64,9 @@ public class Complex {
 	@Column(name = "approval_date")
 	private LocalDate approvalDate;
 
+	@Column(name = "sale_type", length = 50)
+	private String saleType;
+
 	@Column(name = "score", precision = 8, scale = 2)
 	private BigDecimal score;
 
@@ -71,10 +76,14 @@ public class Complex {
 	@Column(name = "price")
 	private Integer price;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "price_source", length = 40)
+	private RepresentativePriceSource priceSource;
+
 	@Column(
 		name = "representative_area",
-		precision = 6,
-		scale = 2
+		precision = 12,
+		scale = 6
 	)
 	private BigDecimal representativeArea;
 
@@ -162,6 +171,31 @@ public class Complex {
 		return approvalDate;
 	}
 
+	public String getSaleType() {
+		return saleType;
+	}
+
+	public boolean isRentalOnly() {
+		return saleType != null && saleType.contains("임대")
+			&& !saleType.contains("분양");
+	}
+
+	public boolean isStaffHousing() {
+		return "사택 및 관사 등".equals(saleType);
+	}
+
+	public void updateSaleType(String saleType) {
+		if (saleType == null || saleType.isBlank()) {
+			this.saleType = null;
+			return;
+		}
+		String normalized = saleType.trim();
+		if (normalized.length() > 50) {
+			throw new IllegalArgumentException("분양형태는 50자 이하여야 합니다.");
+		}
+		this.saleType = normalized;
+	}
+
 	public BigDecimal getScore() {
 		return score;
 	}
@@ -172,6 +206,10 @@ public class Complex {
 
 	public Integer getPrice() {
 		return price;
+	}
+
+	public RepresentativePriceSource getPriceSource() {
+		return priceSource;
 	}
 
 	public BigDecimal getRepresentativeArea() {
@@ -227,5 +265,50 @@ public class Complex {
 			throw new IllegalStateException("권역 배정 전에 단지 좌표가 필요합니다.");
 		}
 		this.zone = Objects.requireNonNull(zone, "권역이 필요합니다.");
+	}
+
+	/** 선택된 정상 거래 한 건의 가격·실제 면적·계약일을 함께 반영한다. */
+	public void updateRepresentativeTrade(
+		Integer price,
+		BigDecimal area,
+		LocalDate dealDate
+	) {
+		updateRepresentativeTrade(price, area, dealDate,
+			price == null ? null : RepresentativePriceSource.APARTMENT_SALE);
+	}
+
+	public void updateRepresentativeTrade(
+		Integer price,
+		BigDecimal area,
+		LocalDate dealDate,
+		RepresentativePriceSource source
+	) {
+		if (price == null && area == null && dealDate == null
+			&& source == null) {
+			this.price = null;
+			this.priceSource = null;
+			this.representativeArea = null;
+			this.lastDealDate = null;
+			return;
+		}
+		if (price == null || price <= 0 || area == null
+			|| area.signum() <= 0 || dealDate == null || source == null) {
+			throw new IllegalArgumentException(
+				"대표 거래에는 양수 가격·전용면적과 계약일이 필요합니다."
+			);
+		}
+		this.price = price;
+		this.priceSource = source;
+		this.representativeArea = area;
+		this.lastDealDate = dealDate;
+	}
+
+	public void updateProvisionalZoneRank(Integer rank) {
+		if (rank != null && (rank <= 0 || zone == null || price == null)) {
+			throw new IllegalArgumentException(
+				"잠정 순위에는 권역, 대표 가격과 양수 순위가 필요합니다."
+			);
+		}
+		this.zoneRank = rank;
 	}
 }

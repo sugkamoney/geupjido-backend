@@ -106,16 +106,14 @@ public class ApartmentTradeLinkService {
 		).orElseThrow(() -> new IllegalStateException(
 			"승인된 후보 단지가 없습니다: " + proposal.candidateId()
 		));
-		if (!proposal.candidateName().equals(candidate.getName())
+		if (candidate.isRentalOnly()
+			|| !proposal.candidateName().equals(candidate.getName())
 			|| !proposal.key().legalDongCode().equals(
 				candidate.getLegalDongCode()
 			)
-			|| candidate.getApprovalDate() == null
-			|| candidate.getApprovalDate().getYear()
-				!= proposal.key().buildYear()
 			|| candidate.getZone() == null) {
 			throw new IllegalStateException(
-				"승인된 후보 단지의 이름·법정동·연도·권역이 변경되었습니다: "
+				"승인된 후보 단지의 이름·법정동·권역이 변경되었습니다: "
 					+ proposal.candidateId()
 			);
 		}

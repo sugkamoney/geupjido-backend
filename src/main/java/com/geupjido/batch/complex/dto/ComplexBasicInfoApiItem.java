@@ -16,6 +16,15 @@ public record ComplexBasicInfoApiItem(
 	String kaptDongCnt,
 	BigDecimal kaptdaCnt,
 	String kaptUsedate,
-	String bjdCode
+	String bjdCode,
+	String codeSaleNm
 ) {
+	public ComplexBasicInfoApiItem(
+		String kaptCode, String kaptName, String kaptAddr,
+		String doroJuso, String kaptDongCnt, BigDecimal kaptdaCnt,
+		String kaptUsedate, String bjdCode
+	) {
+		this(kaptCode, kaptName, kaptAddr, doroJuso, kaptDongCnt,
+			kaptdaCnt, kaptUsedate, bjdCode, null);
+	}
 }

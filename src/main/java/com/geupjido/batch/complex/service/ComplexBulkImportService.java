@@ -71,7 +71,10 @@ public class ComplexBulkImportService {
 
 				switch (status) {
 					case CREATED -> createdCount++;
-					case SKIPPED_ALREADY_EXISTS -> skippedCount++;
+					case SKIPPED_ALREADY_EXISTS, SKIPPED_RENTAL_ONLY,
+						SKIPPED_STAFF_HOUSING,
+						SKIPPED_SALE_TYPE_UNKNOWN ->
+						skippedCount++;
 				}
 			} catch (ComplexBasicInfoApiException exception) {
 				if ("22".equals(exception.resultCode())) {

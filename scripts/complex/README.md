@@ -118,3 +118,49 @@ docker exec -i -u postgres geupjido-postgres psql -U postgres -d geupjido -v ON_
 ```sh
 docker exec -i -u postgres geupjido-postgres psql -U postgres -d geupjido -v ON_ERROR_STOP=1 -f - < scripts/complex/remove_local_e2e_fixture.sql
 ```
+
+## 기존 단지 분양형태 보충
+
+Flyway V9는 `complex.sale_type`을 추가한다. 새 단지는 기본정보 API의
+`codeSaleNm`을 확인하고 임대 전용·사택 및 관사·분양형태 미확인이면 저장하지 않는다.
+기존 단지는 다음
+수동 실행으로 분양형태를 보충하며, 임대 전용이나 사택·관사로 확인되면 거래 원본의
+단지·권역 연결을 해제한 뒤 단지를 삭제한다. 그 외 단지의 위치·권역·가격은
+덮어쓰지 않는다. 일반 서버 실행에서는 꺼져 있다.
+API 키는 로컬 `.env` 또는 환경 변수에서 읽고 출력하지 않는다.
+
+```sh
+python3 -B scripts/complex/backfill_sale_types.py --max-count 100
+python3 -B scripts/complex/backfill_sale_types.py --max-count 5000 --request-interval 300ms
+python3 -B scripts/complex/backfill_sale_types.py --only-unpriced --max-count 1500
+```
+
+DB에서 `sale_type IS NULL`인 단지만 ID 순서로 조회하므로 같은 명령을
+다시 실행하면 분양형태가 채워진 단지는 건너뛴다.
+`--only-unpriced`는 가격이 비어 있고 분양형태도 미확인인 단지만 조회한다.
+가격 공백 감사 작업 중 호출 범위를 좁힐 때 사용한다.
+삭제된 제외 단지가
+목록 API에 다시 나타나더라도 새 단지 저장 단계에서 건너뛴다. 응답에 분양형태가 없거나 API 조회가
+실패한 ID는 비워 두고 결과에 출력한다. 실패 ID가 앞쪽에 반복돼 뒤쪽으로
+진행해야 하면 `--after-id ID`를 지정할 수 있다. 이 경우 앞쪽 실패 ID는
+나중에 시작 ID 없이 다시 실행해야 한다. 요청은 순서대로 전송한다. 오류
+코드 `22` 또는 `04`가 연속 3개 단지에서 재시도 후에도 발생하면 호출을
+멈춘다. 서비스의 일일 API 한도와
+응답 상태를 확인한 뒤 재개한다.
+
+K-apt에서 받은 주간 단지 기본정보 엑셀이 있으면 단지코드로 기존 단지와
+대조해 빈 분양형태를 한꺼번에 보충할 수 있다. 먼저 적용 없이 신규 적재 수,
+엑셀에서 분양형태를 확인할 수 없는 ID, 이미 채워진 API 값과의 충돌을 확인한다. 엑셀의 안내문대로
+이 파일은 참조 자료이므로 기존 API 값은 덮어쓰지 않는다. 충돌이 있으면
+적용하지 않으며, 엑셀에서 값을 확인할 수 없는 단지는 기본정보 API로 따로 조회한다.
+`--apply`는 로컬 DB를 백업한 뒤 한 트랜잭션으로 입력하고, 임대 전용·사택·관사 단지는
+거래 연결을 해제한 뒤 삭제한다. 원본 엑셀과 DB 백업은 Git에 추가하지 않는다.
+
+```sh
+python3 -B scripts/complex/import_sale_types_xlsx.py /path/to/kapt-basic-info.xlsx
+python3 -B scripts/complex/import_sale_types_xlsx.py /path/to/kapt-basic-info.xlsx --apply
+python3 -B scripts/complex/backfill_sale_types.py --max-count 200 --request-interval 2s
+```
+
+임대 단지 삭제 후에는 `COMPLEX_PRICE_RECALCULATION_ENABLED=true`로
+대표 가격 재계산 Runner를 실행해 권역 내 순위를 다시 매긴다.
