@@ -1,5 +1,6 @@
 package com.geupjido.complex.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.domain.Pageable;
@@ -28,4 +29,25 @@ public interface ComplexRepository
 	);
 
 	List<Complex> findByLegalDongCode(String legalDongCode);
+
+	List<Complex> findByLegalDongCodeIn(Collection<String> legalDongCodes);
+
+	@Query("""
+		SELECT c.id FROM Complex c
+		WHERE c.id > :afterId AND c.saleType IS NULL
+		ORDER BY c.id
+		""")
+	List<String> findIdsMissingSaleTypeAfterId(
+		@Param("afterId") String afterId, Pageable pageable
+	);
+
+	@Query("""
+		SELECT c.id FROM Complex c
+		WHERE c.id > :afterId AND c.saleType IS NULL
+		  AND c.price IS NULL
+		ORDER BY c.id
+		""")
+	List<String> findIdsMissingSaleTypeAndPriceAfterId(
+		@Param("afterId") String afterId, Pageable pageable
+	);
 }

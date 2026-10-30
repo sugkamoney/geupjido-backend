@@ -7,11 +7,13 @@ public record ApartmentTradeCandidateAssessment(
 	List<String> candidateIds
 ) {
 	public enum Status {
+		VERIFIED_SOURCE_KEY,
 		NO_CANDIDATE,
 		MULTIPLE_CANDIDATES,
 		YEAR_UNVERIFIED,
 		YEAR_MISMATCH,
 		NAME_EXACT,
+		NAME_APPROVED_ALIAS,
 		NAME_REVIEW
 	}
 

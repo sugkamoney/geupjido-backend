@@ -29,7 +29,8 @@ class ComplexBasicInfoMapperTest {
 				"3",
 				new BigDecimal("182.0"),
 				"20150806",
-				"2638010100"
+				"2638010100",
+				"임대"
 			);
 
 		Complex complex = mapper.map(item);
@@ -47,6 +48,8 @@ class ComplexBasicInfoMapperTest {
 		assertThat(complex.getBuildingCount()).isEqualTo(3);
 		assertThat(complex.getApprovalDate())
 			.isEqualTo(LocalDate.of(2015, 8, 6));
+		assertThat(complex.getSaleType()).isEqualTo("임대");
+		assertThat(complex.isRentalOnly()).isTrue();
 		assertThat(complex.isActive()).isFalse();
 	}
 

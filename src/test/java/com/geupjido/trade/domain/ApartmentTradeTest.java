@@ -16,6 +16,20 @@ import static org.mockito.Mockito.when;
 class ApartmentTradeTest {
 
 	@Test
+	void 임대_전용_단지에는_매매_실거래를_연결하지_않는다() {
+		ApartmentTrade trade = createTrade(false, null);
+		Complex rental = new Complex("R", "임대 단지",
+			"서울특별시 용산구 한남동 810", null, "1117011000",
+			100, null, LocalDate.of(2011, 1, 1));
+		rental.updateSaleType("임대");
+
+		assertThatThrownBy(() -> trade.linkToComplex(rental))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("임대 전용");
+		assertThat(trade.getComplex()).isNull();
+	}
+
+	@Test
 	void 정상_거래를_생성한다() {
 		ApartmentTrade trade = new ApartmentTrade(
 			LocalDate.of(2026, 9, 15),

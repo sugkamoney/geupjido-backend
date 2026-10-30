@@ -1,5 +1,6 @@
 package com.geupjido.complex.domain;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
@@ -116,5 +117,50 @@ class ComplexTest {
 			.hasMessageContaining(
 				"법정동 코드는 숫자 10자리"
 			);
+	}
+
+	@Test
+	void 대표_거래는_가격_실제_면적_계약일을_함께_갱신하거나_비운다() {
+		Complex complex = new Complex(
+			"A10027875", "테스트아파트", "서울시 테스트동 1",
+			null, "1168010100", 100, null, null
+		);
+		LocalDate date = LocalDate.of(2026, 10, 20);
+		complex.updateRepresentativeTrade(
+			250_000, new BigDecimal("59.987654"), date
+		);
+		assertThat(complex.getPrice()).isEqualTo(250_000);
+		assertThat(complex.getRepresentativeArea())
+			.isEqualByComparingTo("59.987654");
+		assertThat(complex.getLastDealDate()).isEqualTo(date);
+		assertThat(complex.getPriceSource())
+			.isEqualTo(RepresentativePriceSource.APARTMENT_SALE);
+		complex.updateRepresentativeTrade(240_000,
+			new BigDecimal("58.000000"), date);
+		assertThat(complex.getRepresentativeArea())
+			.isEqualByComparingTo("58.000000");
+		complex.updateRepresentativeTrade(260_000,
+			new BigDecimal("60.999999"), date);
+		assertThat(complex.getRepresentativeArea())
+			.isEqualByComparingTo("60.999999");
+		complex.updateRepresentativeTrade(260_000,
+			new BigDecimal("44.000000"), date);
+		complex.updateRepresentativeTrade(260_000,
+			new BigDecimal("65.000000"), date);
+		complex.updateRepresentativeTrade(260_000,
+			new BigDecimal("18.950900"), date);
+		complex.updateRepresentativeTrade(1_430_000,
+			new BigDecimal("206.895300"), date);
+		assertThat(complex.getRepresentativeArea())
+			.isEqualByComparingTo("206.895300");
+		assertThatThrownBy(() -> complex.updateRepresentativeTrade(260_000,
+			BigDecimal.ZERO, date))
+			.isInstanceOf(IllegalArgumentException.class);
+
+		complex.updateRepresentativeTrade(null, null, null);
+		assertThat(complex.getPrice()).isNull();
+		assertThat(complex.getPriceSource()).isNull();
+		assertThat(complex.getRepresentativeArea()).isNull();
+		assertThat(complex.getLastDealDate()).isNull();
 	}
 }
