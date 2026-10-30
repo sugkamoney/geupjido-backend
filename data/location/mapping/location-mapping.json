@@ -146,24 +146,39 @@
       "name": "강동구"
     },
     {
+      "id": "28185",
+      "regionCode": "incheon",
+      "name": "연수구"
+    },
+    {
+      "id": "28275",
+      "regionCode": "incheon",
+      "name": "서해구"
+    },
+    {
+      "id": "28290",
+      "regionCode": "incheon",
+      "name": "검단구"
+    },
+    {
       "id": "41117",
       "regionCode": "gyeonggi",
-      "name": "영통구"
+      "name": "수원시 영통구"
     },
     {
       "id": "41131",
       "regionCode": "gyeonggi",
-      "name": "수정구"
+      "name": "성남시 수정구"
     },
     {
       "id": "41135",
       "regionCode": "gyeonggi",
-      "name": "분당구"
+      "name": "성남시 분당구"
     },
     {
       "id": "41173",
       "regionCode": "gyeonggi",
-      "name": "동안구"
+      "name": "안양시 동안구"
     },
     {
       "id": "41210",
@@ -188,37 +203,132 @@
     {
       "id": "41463",
       "regionCode": "gyeonggi",
-      "name": "기흥구"
+      "name": "용인시 기흥구"
     },
     {
       "id": "41465",
       "regionCode": "gyeonggi",
-      "name": "수지구"
+      "name": "용인시 수지구"
     },
     {
       "id": "41595",
       "regionCode": "gyeonggi",
-      "name": "병점구"
+      "name": "화성시 병점구"
     },
     {
       "id": "41597",
       "regionCode": "gyeonggi",
-      "name": "동탄구"
+      "name": "화성시 동탄구"
     },
     {
-      "id": "28185",
-      "regionCode": "incheon",
-      "name": "연수구"
+      "id": "41133",
+      "regionCode": "gyeonggi",
+      "name": "성남시 중원구"
     },
     {
-      "id": "28275",
-      "regionCode": "incheon",
-      "name": "서해구"
+      "id": "41610",
+      "regionCode": "gyeonggi",
+      "name": "광주시"
     },
     {
-      "id": "28290",
-      "regionCode": "incheon",
-      "name": "검단구"
+      "id": "41410",
+      "regionCode": "gyeonggi",
+      "name": "군포시"
+    },
+    {
+      "id": "41113",
+      "regionCode": "gyeonggi",
+      "name": "수원시 권선구"
+    },
+    {
+      "id": "41115",
+      "regionCode": "gyeonggi",
+      "name": "수원시 팔달구"
+    },
+    {
+      "id": "41111",
+      "regionCode": "gyeonggi",
+      "name": "수원시 장안구"
+    },
+    {
+      "id": "41220",
+      "regionCode": "gyeonggi",
+      "name": "평택시"
+    },
+    {
+      "id": "41273",
+      "regionCode": "gyeonggi",
+      "name": "안산시 단원구"
+    },
+    {
+      "id": "41271",
+      "regionCode": "gyeonggi",
+      "name": "안산시 상록구"
+    },
+    {
+      "id": "41171",
+      "regionCode": "gyeonggi",
+      "name": "안양시 만안구"
+    },
+    {
+      "id": "41390",
+      "regionCode": "gyeonggi",
+      "name": "시흥시"
+    },
+    {
+      "id": "41194",
+      "regionCode": "gyeonggi",
+      "name": "부천시 소사구"
+    },
+    {
+      "id": "41192",
+      "regionCode": "gyeonggi",
+      "name": "부천시 원미구"
+    },
+    {
+      "id": "41570",
+      "regionCode": "gyeonggi",
+      "name": "김포시"
+    },
+    {
+      "id": "41281",
+      "regionCode": "gyeonggi",
+      "name": "고양시 덕양구"
+    },
+    {
+      "id": "41287",
+      "regionCode": "gyeonggi",
+      "name": "고양시 일산서구"
+    },
+    {
+      "id": "41285",
+      "regionCode": "gyeonggi",
+      "name": "고양시 일산동구"
+    },
+    {
+      "id": "41480",
+      "regionCode": "gyeonggi",
+      "name": "파주시"
+    },
+    {
+      "id": "41310",
+      "regionCode": "gyeonggi",
+      "name": "구리시"
+    },
+    {
+      "id": "41360",
+      "regionCode": "gyeonggi",
+      "name": "남양주시"
+    },
+    {
+      "id": "41150",
+      "regionCode": "gyeonggi",
+      "name": "의정부시"
+    },
+    {
+      "id": "41630",
+      "regionCode": "gyeonggi",
+      "name": "양주시"
     }
   ],
   "zones": [
@@ -232,15 +342,6 @@
       "initialTier": 1.1
     },
     {
-      "id": "seocho-banpo",
-      "cityId": "11650",
-      "name": "반포",
-      "dongCodes": [
-        "1165010700"
-      ],
-      "initialTier": 1.2
-    },
-    {
       "id": "gangnam-samseong",
       "cityId": "11680",
       "name": "삼성",
@@ -252,29 +353,12 @@
     {
       "id": "gangnam-cheongdam",
       "cityId": "11680",
-      "name": "청담",
+      "name": "청담·신사",
       "dongCodes": [
-        "1168010400"
-      ],
-      "initialTier": 1.2
-    },
-    {
-      "id": "gangnam-sinsa",
-      "cityId": "11680",
-      "name": "신사",
-      "dongCodes": [
+        "1168010400",
         "1168010700"
       ],
-      "initialTier": 1.4
-    },
-    {
-      "id": "seocho-jamwon",
-      "cityId": "11650",
-      "name": "잠원",
-      "dongCodes": [
-        "1165010600"
-      ],
-      "initialTier": 1.4
+      "initialTier": 1.3
     },
     {
       "id": "gangnam-daechi",
@@ -282,15 +366,6 @@
       "name": "대치",
       "dongCodes": [
         "1168010600"
-      ],
-      "initialTier": 1.5
-    },
-    {
-      "id": "seocho-seocho",
-      "cityId": "11650",
-      "name": "서초",
-      "dongCodes": [
-        "1165010800"
       ],
       "initialTier": 1.5
     },
@@ -304,15 +379,6 @@
       "initialTier": 1.6
     },
     {
-      "id": "gangnam-yeoksam",
-      "cityId": "11680",
-      "name": "역삼",
-      "dongCodes": [
-        "1168010100"
-      ],
-      "initialTier": 1.6
-    },
-    {
       "id": "gangnam-gaepo",
       "cityId": "11680",
       "name": "개포",
@@ -322,56 +388,12 @@
       "initialTier": 1.7
     },
     {
-      "id": "gangnam-nonhyeon",
+      "id": "gangnam-yeoksam",
       "cityId": "11680",
-      "name": "논현",
+      "name": "역삼·논현",
       "dongCodes": [
+        "1168010100",
         "1168010800"
-      ],
-      "initialTier": 1.7
-    },
-    {
-      "id": "seocho-bangbae",
-      "cityId": "11650",
-      "name": "방배",
-      "dongCodes": [
-        "1165010100"
-      ],
-      "initialTier": 1.7
-    },
-    {
-      "id": "yeongdeungpo-yeouido",
-      "cityId": "11560",
-      "name": "여의도",
-      "dongCodes": [
-        "1156011000"
-      ],
-      "initialTier": 1.7
-    },
-    {
-      "id": "yongsan-ichon",
-      "cityId": "11170",
-      "name": "이촌",
-      "dongCodes": [
-        "1117012900"
-      ],
-      "initialTier": 1.7
-    },
-    {
-      "id": "songpa-jamsil",
-      "cityId": "11710",
-      "name": "잠실",
-      "dongCodes": [
-        "1171010100"
-      ],
-      "initialTier": 1.7
-    },
-    {
-      "id": "yongsan-hannam",
-      "cityId": "11170",
-      "name": "한남",
-      "dongCodes": [
-        "1117013100"
       ],
       "initialTier": 1.7
     },
@@ -385,15 +407,6 @@
       "initialTier": 1.9
     },
     {
-      "id": "songpa-sincheon",
-      "cityId": "11710",
-      "name": "신천",
-      "dongCodes": [
-        "1171010200"
-      ],
-      "initialTier": 1.9
-    },
-    {
       "id": "gangnam-irwon",
       "cityId": "11680",
       "name": "일원",
@@ -403,111 +416,196 @@
       "initialTier": 1.9
     },
     {
-      "id": "yangcheon-mokdong",
-      "cityId": "11470",
-      "name": "목동",
-      "dongCodes": [
-        "1147010200"
-      ],
-      "initialTier": 2.0
-    },
-    {
-      "id": "seongdong-seongsu",
-      "cityId": "11200",
-      "name": "성수",
-      "dongCodes": [
-        "1120011400",
-        "1120011500"
-      ],
-      "initialTier": 2.1
-    },
-    {
-      "id": "yongsan-seobinggo",
-      "cityId": "11170",
-      "name": "서빙고",
-      "dongCodes": [
-        "1117013300"
-      ],
-      "initialTier": 2.2
-    },
-    {
-      "id": "yongsan-hangangro",
-      "cityId": "11170",
-      "name": "한강로",
-      "dongCodes": [
-        "1117012400",
-        "1117012500",
-        "1117012800"
-      ],
-      "initialTier": 2.2
-    },
-    {
-      "id": "jung-hoehyeon",
-      "cityId": "11140",
-      "name": "회현",
-      "dongCodes": [
-        "1114012100",
-        "1114012200",
-        "1114012300"
-      ],
-      "initialTier": 2.3
-    },
-    {
-      "id": "bundang-pangyo",
-      "cityId": "41135",
-      "name": "판교",
-      "dongCodes": [
-        "4113510800",
-        "4113510900",
-        "4113511000",
-        "4113511500"
-      ],
-      "initialTier": 2.3
-    },
-    {
-      "id": "seocho-naegok",
-      "cityId": "11650",
-      "name": "내곡",
-      "dongCodes": [
-        "1165010900"
-      ],
-      "initialTier": 2.4
-    },
-    {
       "id": "gangnam-segok",
       "cityId": "11680",
-      "name": "세곡",
+      "name": "세곡·자곡",
       "dongCodes": [
-        "1168011100"
+        "1168011100",
+        "1168011200",
+        "1168011300"
       ],
       "initialTier": 2.4
     },
     {
-      "id": "gwacheon-gwacheonjungang",
-      "cityId": "41290",
-      "name": "과천중앙",
+      "id": "gangdong-godeok",
+      "cityId": "11740",
+      "name": "고덕",
       "dongCodes": [
-        "4129010700"
+        "1174010200"
       ],
-      "initialTier": 2.4
+      "initialTier": 2.8
     },
     {
-      "id": "seocho-yangjae",
-      "cityId": "11650",
-      "name": "양재",
+      "id": "gangdong-myeongil",
+      "cityId": "11740",
+      "name": "명일",
       "dongCodes": [
-        "1165010200"
+        "1174010100"
       ],
-      "initialTier": 2.5
+      "initialTier": 2.8
     },
     {
-      "id": "mapo-gongdeok",
-      "cityId": "11440",
-      "name": "공덕",
+      "id": "gangdong-dunchon",
+      "cityId": "11740",
+      "name": "둔촌",
       "dongCodes": [
-        "1144010200"
+        "1174010600"
       ],
-      "initialTier": 2.6
+      "initialTier": 3.2
+    },
+    {
+      "id": "gangdong-cheonho",
+      "cityId": "11740",
+      "name": "천호·성내·암사",
+      "dongCodes": [
+        "1174010700",
+        "1174010800",
+        "1174010900"
+      ],
+      "initialTier": 3.4
+    },
+    {
+      "id": "gangdong-gildong",
+      "cityId": "11740",
+      "name": "길동",
+      "dongCodes": [
+        "1174010500"
+      ],
+      "initialTier": 3.6
+    },
+    {
+      "id": "gangdong-gangil",
+      "cityId": "11740",
+      "name": "강일·상일",
+      "dongCodes": [
+        "1174010300",
+        "1174011000"
+      ],
+      "initialTier": 3.8
+    },
+    {
+      "id": "gangbuk-mia",
+      "cityId": "11305",
+      "name": "미아",
+      "dongCodes": [
+        "1130510100"
+      ],
+      "initialTier": 3.7
+    },
+    {
+      "id": "gangbuk-suyu",
+      "cityId": "11305",
+      "name": "수유·번동",
+      "dongCodes": [
+        "1130510200",
+        "1130510300"
+      ],
+      "initialTier": 4.5
+    },
+    {
+      "id": "gangbuk-ui",
+      "cityId": "11305",
+      "name": "우이",
+      "dongCodes": [
+        "1130510400"
+      ],
+      "initialTier": 4.8
+    },
+    {
+      "id": "gangseo-magok",
+      "cityId": "11500",
+      "name": "마곡",
+      "dongCodes": [
+        "1150010500"
+      ],
+      "initialTier": 3.2
+    },
+    {
+      "id": "gangseo-yeomchang",
+      "cityId": "11500",
+      "name": "염창",
+      "dongCodes": [
+        "1150010100"
+      ],
+      "initialTier": 3.4
+    },
+    {
+      "id": "gangseo-gayang",
+      "cityId": "11500",
+      "name": "가양",
+      "dongCodes": [
+        "1150010400"
+      ],
+      "initialTier": 3.5
+    },
+    {
+      "id": "gangseo-naebalsan",
+      "cityId": "11500",
+      "name": "내발산",
+      "dongCodes": [
+        "1150010600"
+      ],
+      "initialTier": 3.7
+    },
+    {
+      "id": "gangseo-deungchon",
+      "cityId": "11500",
+      "name": "등촌",
+      "dongCodes": [
+        "1150010200"
+      ],
+      "initialTier": 3.7
+    },
+    {
+      "id": "gangseo-hwagok",
+      "cityId": "11500",
+      "name": "화곡",
+      "dongCodes": [
+        "1150010300"
+      ],
+      "initialTier": 4.2
+    },
+    {
+      "id": "gangseo-banghwa",
+      "cityId": "11500",
+      "name": "방화",
+      "dongCodes": [
+        "1150010900",
+        "1150011000"
+      ],
+      "initialTier": 4.5
+    },
+    {
+      "id": "gangseo-gonghang",
+      "cityId": "11500",
+      "name": "공항",
+      "dongCodes": [
+        "1150010700",
+        "1150010800",
+        "1150011100",
+        "1150011200",
+        "1150011300"
+      ],
+      "initialTier": 4.8
+    },
+    {
+      "id": "gwanak-bongcheon",
+      "cityId": "11620",
+      "name": "봉천",
+      "dongCodes": [
+        "1162010100",
+        "1162010300"
+      ],
+      "initialTier": 3.9
+    },
+    {
+      "id": "gwanak-sinrim",
+      "cityId": "11620",
+      "name": "신림",
+      "dongCodes": [
+        "1162010200"
+      ],
+      "initialTier": 4.4
     },
     {
       "id": "gwangjin-gwangjang",
@@ -523,34 +621,338 @@
       "cityId": "11215",
       "name": "구의",
       "dongCodes": [
+        "1121510200",
         "1121510300"
       ],
       "initialTier": 2.6
     },
     {
-      "id": "songpa-bangi",
-      "cityId": "11710",
-      "name": "방이",
+      "id": "gwangjin-jayang",
+      "cityId": "11215",
+      "name": "자양",
       "dongCodes": [
-        "1171011100"
+        "1121510500"
       ],
-      "initialTier": 2.6
+      "initialTier": 3.2
     },
     {
-      "id": "jongro-sajik",
-      "cityId": "11110",
-      "name": "사직",
+      "id": "gwangjin-hwayang-gunja",
+      "cityId": "11215",
+      "name": "화양·군자",
       "dongCodes": [
-        "1111011500"
+        "1121510700",
+        "1121510900"
       ],
-      "initialTier": 2.6
+      "initialTier": 3.7
     },
     {
-      "id": "songpa-songpa",
-      "cityId": "11710",
-      "name": "송파",
+      "id": "gwangjin-junggok",
+      "cityId": "11215",
+      "name": "중곡",
       "dongCodes": [
-        "1171010400"
+        "1121510100"
+      ],
+      "initialTier": 4.2
+    },
+    {
+      "id": "guro-sindorim",
+      "cityId": "11530",
+      "name": "신도림",
+      "dongCodes": [
+        "1153010100"
+      ],
+      "initialTier": 3.0
+    },
+    {
+      "id": "guro-guro",
+      "cityId": "11530",
+      "name": "구로",
+      "dongCodes": [
+        "1153010200",
+        "1153010300"
+      ],
+      "initialTier": 4.1
+    },
+    {
+      "id": "guro-gocheok",
+      "cityId": "11530",
+      "name": "고척",
+      "dongCodes": [
+        "1153010600"
+      ],
+      "initialTier": 4.3
+    },
+    {
+      "id": "guro-onsu",
+      "cityId": "11530",
+      "name": "온수",
+      "dongCodes": [
+        "1153011000"
+      ],
+      "initialTier": 4.3
+    },
+    {
+      "id": "guro-oryu",
+      "cityId": "11530",
+      "name": "오류",
+      "dongCodes": [
+        "1153010800",
+        "1153011100"
+      ],
+      "initialTier": 4.4
+    },
+    {
+      "id": "guro-hang",
+      "cityId": "11530",
+      "name": "항",
+      "dongCodes": [
+        "1153011200"
+      ],
+      "initialTier": 4.4
+    },
+    {
+      "id": "guro-gaebong",
+      "cityId": "11530",
+      "name": "개봉",
+      "dongCodes": [
+        "1153010700"
+      ],
+      "initialTier": 4.5
+    },
+    {
+      "id": "guro-gung",
+      "cityId": "11530",
+      "name": "궁",
+      "dongCodes": [
+        "1153010900"
+      ],
+      "initialTier": 4.5
+    },
+    {
+      "id": "geumcheon-doksan",
+      "cityId": "11545",
+      "name": "독산",
+      "dongCodes": [
+        "1154510200"
+      ],
+      "initialTier": 4.2
+    },
+    {
+      "id": "geumcheon-gasan",
+      "cityId": "11545",
+      "name": "가산",
+      "dongCodes": [
+        "1154510100"
+      ],
+      "initialTier": 4.4
+    },
+    {
+      "id": "geumcheon-siheung",
+      "cityId": "11545",
+      "name": "시흥",
+      "dongCodes": [
+        "1154510300"
+      ],
+      "initialTier": 4.9
+    },
+    {
+      "id": "nowon-junggye",
+      "cityId": "11350",
+      "name": "중계",
+      "dongCodes": [
+        "1135010600"
+      ],
+      "initialTier": 3.4
+    },
+    {
+      "id": "nowon-hagye",
+      "cityId": "11350",
+      "name": "하계",
+      "dongCodes": [
+        "1135010400"
+      ],
+      "initialTier": 3.7
+    },
+    {
+      "id": "nowon-sanggye",
+      "cityId": "11350",
+      "name": "상계",
+      "dongCodes": [
+        "1135010500"
+      ],
+      "initialTier": 3.8
+    },
+    {
+      "id": "nowon-wolgye",
+      "cityId": "11350",
+      "name": "월계",
+      "dongCodes": [
+        "1135010200"
+      ],
+      "initialTier": 4.0
+    },
+    {
+      "id": "nowon-gongreung",
+      "cityId": "11350",
+      "name": "공릉",
+      "dongCodes": [
+        "1135010300"
+      ],
+      "initialTier": 4.2
+    },
+    {
+      "id": "dobong-changdong",
+      "cityId": "11320",
+      "name": "창동",
+      "dongCodes": [
+        "1132010700"
+      ],
+      "initialTier": 3.7
+    },
+    {
+      "id": "dobong-banghak",
+      "cityId": "11320",
+      "name": "방학",
+      "dongCodes": [
+        "1132010600"
+      ],
+      "initialTier": 4.3
+    },
+    {
+      "id": "dobong-ssangmun",
+      "cityId": "11320",
+      "name": "쌍문",
+      "dongCodes": [
+        "1132010500"
+      ],
+      "initialTier": 4.5
+    },
+    {
+      "id": "dobong-dobong",
+      "cityId": "11320",
+      "name": "도봉",
+      "dongCodes": [
+        "1132010800"
+      ],
+      "initialTier": 4.8
+    },
+    {
+      "id": "dongdaemun-dapsipri",
+      "cityId": "11230",
+      "name": "답십리·청량리·용두·제기",
+      "dongCodes": [
+        "1123010100",
+        "1123010200",
+        "1123010300",
+        "1123010500",
+        "1123010700",
+        "1123010800"
+      ],
+      "initialTier": 3.1
+    },
+    {
+      "id": "dongdaemun-jeonnong",
+      "cityId": "11230",
+      "name": "전농",
+      "dongCodes": [
+        "1123010400"
+      ],
+      "initialTier": 3.6
+    },
+    {
+      "id": "dongdaemun-imun-hwigyeong",
+      "cityId": "11230",
+      "name": "이문·휘경",
+      "dongCodes": [
+        "1123010900",
+        "1123011000"
+      ],
+      "initialTier": 3.7
+    },
+    {
+      "id": "dongdaemun-jangan",
+      "cityId": "11230",
+      "name": "장안",
+      "dongCodes": [
+        "1123010600"
+      ],
+      "initialTier": 3.9
+    },
+    {
+      "id": "dongjak-heukseok",
+      "cityId": "11590",
+      "name": "흑석",
+      "dongCodes": [
+        "1159010500",
+        "1159010600"
+      ],
+      "initialTier": 2.7
+    },
+    {
+      "id": "dongjak-noryangjin",
+      "cityId": "11590",
+      "name": "노량진",
+      "dongCodes": [
+        "1159010100"
+      ],
+      "initialTier": 3.0
+    },
+    {
+      "id": "dongjak-bon",
+      "cityId": "11590",
+      "name": "본",
+      "dongCodes": [
+        "1159010400"
+      ],
+      "initialTier": 3.0
+    },
+    {
+      "id": "dongjak-sadang",
+      "cityId": "11590",
+      "name": "사당",
+      "dongCodes": [
+        "1159010700"
+      ],
+      "initialTier": 3.1
+    },
+    {
+      "id": "dongjak-sangdo",
+      "cityId": "11590",
+      "name": "상도",
+      "dongCodes": [
+        "1159010200",
+        "1159010300"
+      ],
+      "initialTier": 3.1
+    },
+    {
+      "id": "dongjak-daebang",
+      "cityId": "11590",
+      "name": "대방·신대방",
+      "dongCodes": [
+        "1159010800",
+        "1159010900"
+      ],
+      "initialTier": 3.4
+    },
+    {
+      "id": "mapo-yonggang",
+      "cityId": "11440",
+      "name": "용강",
+      "dongCodes": [
+        "1144010500",
+        "1144010600",
+        "1144010700"
+      ],
+      "initialTier": 2.5
+    },
+    {
+      "id": "mapo-gongdeok",
+      "cityId": "11440",
+      "name": "공덕",
+      "dongCodes": [
+        "1144010200",
+        "1144010300"
       ],
       "initialTier": 2.6
     },
@@ -564,6 +966,202 @@
       "initialTier": 2.6
     },
     {
+      "id": "mapo-gwangheungchang",
+      "cityId": "11440",
+      "name": "광흥창·망원·합정",
+      "dongCodes": [
+        "1144011000",
+        "1144011100",
+        "1144011200",
+        "1144011300",
+        "1144011400",
+        "1144011500",
+        "1144011600",
+        "1144011700",
+        "1144011800",
+        "1144012000",
+        "1144012100",
+        "1144012200",
+        "1144012300"
+      ],
+      "initialTier": 2.7
+    },
+    {
+      "id": "mapo-daeheung",
+      "cityId": "11440",
+      "name": "대흥",
+      "dongCodes": [
+        "1144010800"
+      ],
+      "initialTier": 2.7
+    },
+    {
+      "id": "mapo-yeomri",
+      "cityId": "11440",
+      "name": "염리",
+      "dongCodes": [
+        "1144010900"
+      ],
+      "initialTier": 2.7
+    },
+    {
+      "id": "mapo-dohwa",
+      "cityId": "11440",
+      "name": "도화",
+      "dongCodes": [
+        "1144010400"
+      ],
+      "initialTier": 3.0
+    },
+    {
+      "id": "mapo-sangam",
+      "cityId": "11440",
+      "name": "상암·성산",
+      "dongCodes": [
+        "1144012400",
+        "1144012500",
+        "1144012600",
+        "1144012700"
+      ],
+      "initialTier": 3.4
+    },
+    {
+      "id": "seodaemun-bukahyeon",
+      "cityId": "11410",
+      "name": "북아현",
+      "dongCodes": [
+        "1141010100",
+        "1141010200",
+        "1141010300",
+        "1141010400",
+        "1141010500",
+        "1141010600",
+        "1141010700",
+        "1141011000",
+        "1141011200",
+        "1141011300"
+      ],
+      "initialTier": 3.0
+    },
+    {
+      "id": "seodaemun-namgajwa",
+      "cityId": "11410",
+      "name": "남가좌",
+      "dongCodes": [
+        "1141012000"
+      ],
+      "initialTier": 3.4
+    },
+    {
+      "id": "seodaemun-yeonhui",
+      "cityId": "11410",
+      "name": "연희·현저·홍제",
+      "dongCodes": [
+        "1141010800",
+        "1141010900",
+        "1141011100",
+        "1141011400",
+        "1141011500",
+        "1141011600",
+        "1141011700"
+      ],
+      "initialTier": 3.6
+    },
+    {
+      "id": "seodaemun-hongeun",
+      "cityId": "11410",
+      "name": "홍은",
+      "dongCodes": [
+        "1141011800"
+      ],
+      "initialTier": 3.7
+    },
+    {
+      "id": "seodaemun-bukgajwa",
+      "cityId": "11410",
+      "name": "북가좌",
+      "dongCodes": [
+        "1141011900"
+      ],
+      "initialTier": 3.8
+    },
+    {
+      "id": "seocho-banpo",
+      "cityId": "11650",
+      "name": "반포",
+      "dongCodes": [
+        "1165010700"
+      ],
+      "initialTier": 1.2
+    },
+    {
+      "id": "seocho-jamwon",
+      "cityId": "11650",
+      "name": "잠원",
+      "dongCodes": [
+        "1165010600"
+      ],
+      "initialTier": 1.4
+    },
+    {
+      "id": "seocho-seocho",
+      "cityId": "11650",
+      "name": "서초",
+      "dongCodes": [
+        "1165010800"
+      ],
+      "initialTier": 1.5
+    },
+    {
+      "id": "seocho-bangbae",
+      "cityId": "11650",
+      "name": "방배",
+      "dongCodes": [
+        "1165010100"
+      ],
+      "initialTier": 1.7
+    },
+    {
+      "id": "seocho-naegok",
+      "cityId": "11650",
+      "name": "내곡",
+      "dongCodes": [
+        "1165010900",
+        "1165011100"
+      ],
+      "initialTier": 2.4
+    },
+    {
+      "id": "seocho-yangjae",
+      "cityId": "11650",
+      "name": "양재",
+      "dongCodes": [
+        "1165010200",
+        "1165010400",
+        "1165011000"
+      ],
+      "initialTier": 2.5
+    },
+    {
+      "id": "seocho-umyeon",
+      "cityId": "11650",
+      "name": "우면",
+      "dongCodes": [
+        "1165010300"
+      ],
+      "initialTier": 2.5
+    },
+    {
+      "id": "seongdong-seongsu",
+      "cityId": "11200",
+      "name": "성수",
+      "dongCodes": [
+        "1120011400",
+        "1120011500"
+      ],
+      "initialTier": 2.1
+    },
+    {
       "id": "seongdong-oksu",
       "cityId": "11200",
       "name": "옥수",
@@ -573,12 +1171,221 @@
       "initialTier": 2.6
     },
     {
-      "id": "gwacheon-galhyeon-munwon",
-      "cityId": "41290",
-      "name": "갈현·문원",
+      "id": "seongdong-wangsimni",
+      "cityId": "11200",
+      "name": "왕십리",
       "dongCodes": [
-        "4129010300",
-        "4129010200"
+        "1120010100",
+        "1120010300"
+      ],
+      "initialTier": 2.7
+    },
+    {
+      "id": "seongdong-geumho",
+      "cityId": "11200",
+      "name": "금호",
+      "dongCodes": [
+        "1120010900",
+        "1120011000",
+        "1120011100",
+        "1120011200"
+      ],
+      "initialTier": 3.1
+    },
+    {
+      "id": "seongdong-hawangsimni",
+      "cityId": "11200",
+      "name": "하왕십리",
+      "dongCodes": [
+        "1120010200"
+      ],
+      "initialTier": 3.2
+    },
+    {
+      "id": "seongdong-haengdang",
+      "cityId": "11200",
+      "name": "행당",
+      "dongCodes": [
+        "1120010400",
+        "1120010700"
+      ],
+      "initialTier": 3.3
+    },
+    {
+      "id": "seongdong-eungbong",
+      "cityId": "11200",
+      "name": "응봉",
+      "dongCodes": [
+        "1120010800"
+      ],
+      "initialTier": 3.5
+    },
+    {
+      "id": "seongdong-majang",
+      "cityId": "11200",
+      "name": "마장",
+      "dongCodes": [
+        "1120010500",
+        "1120010600"
+      ],
+      "initialTier": 3.7
+    },
+    {
+      "id": "seongdong-songjeong",
+      "cityId": "11200",
+      "name": "송정",
+      "dongCodes": [
+        "1120011800",
+        "1120012200"
+      ],
+      "initialTier": 4.0
+    },
+    {
+      "id": "seongbuk-gileum",
+      "cityId": "11290",
+      "name": "길음",
+      "dongCodes": [
+        "1129013400"
+      ],
+      "initialTier": 3.3
+    },
+    {
+      "id": "seongbuk-dongsomun",
+      "cityId": "11290",
+      "name": "동소문",
+      "dongCodes": [
+        "1129010100",
+        "1129010200",
+        "1129010400",
+        "1129010500",
+        "1129010600",
+        "1129010700",
+        "1129010800",
+        "1129010900",
+        "1129011000",
+        "1129011100",
+        "1129011200",
+        "1129011400",
+        "1129011600",
+        "1129011900",
+        "1129012000"
+      ],
+      "initialTier": 3.4
+    },
+    {
+      "id": "seongbuk-bomun",
+      "cityId": "11290",
+      "name": "보문",
+      "dongCodes": [
+        "1129011300",
+        "1129011500",
+        "1129011700",
+        "1129012100",
+        "1129012200",
+        "1129012300",
+        "1129012400",
+        "1129012600",
+        "1129012700",
+        "1129012800",
+        "1129012900",
+        "1129013000",
+        "1129013100",
+        "1129013200"
+      ],
+      "initialTier": 3.4
+    },
+    {
+      "id": "seongbuk-jangwi",
+      "cityId": "11290",
+      "name": "장위",
+      "dongCodes": [
+        "1129013800"
+      ],
+      "initialTier": 3.6
+    },
+    {
+      "id": "seongbuk-seokgwan",
+      "cityId": "11290",
+      "name": "석관",
+      "dongCodes": [
+        "1129013900"
+      ],
+      "initialTier": 3.7
+    },
+    {
+      "id": "seongbuk-jongam",
+      "cityId": "11290",
+      "name": "종암",
+      "dongCodes": [
+        "1129012500",
+        "1129013500"
+      ],
+      "initialTier": 3.7
+    },
+    {
+      "id": "seongbuk-wolgok",
+      "cityId": "11290",
+      "name": "월곡",
+      "dongCodes": [
+        "1129013600",
+        "1129013700"
+      ],
+      "initialTier": 3.8
+    },
+    {
+      "id": "seongbuk-donam",
+      "cityId": "11290",
+      "name": "돈암",
+      "dongCodes": [
+        "1129010300",
+        "1129011800"
+      ],
+      "initialTier": 4.0
+    },
+    {
+      "id": "seongbuk-jeongreung",
+      "cityId": "11290",
+      "name": "정릉",
+      "dongCodes": [
+        "1129013300"
+      ],
+      "initialTier": 4.2
+    },
+    {
+      "id": "songpa-jamsil",
+      "cityId": "11710",
+      "name": "잠실",
+      "dongCodes": [
+        "1171010100",
+        "1171010600"
+      ],
+      "initialTier": 1.7
+    },
+    {
+      "id": "songpa-sincheon",
+      "cityId": "11710",
+      "name": "신천",
+      "dongCodes": [
+        "1171010200"
+      ],
+      "initialTier": 1.9
+    },
+    {
+      "id": "songpa-bangi",
+      "cityId": "11710",
+      "name": "방이",
+      "dongCodes": [
+        "1171011100"
+      ],
+      "initialTier": 2.6
+    },
+    {
+      "id": "songpa-songpa",
+      "cityId": "11710",
+      "name": "송파",
+      "dongCodes": [
+        "1171010400",
+        "1171010500"
       ],
       "initialTier": 2.6
     },
@@ -588,16 +1395,6 @@
       "name": "가락",
       "dongCodes": [
         "1171010700"
-      ],
-      "initialTier": 2.7
-    },
-    {
-      "id": "mapo-mangwon-hapjeong",
-      "cityId": "11440",
-      "name": "망원·합정",
-      "dongCodes": [
-        "1144012300",
-        "1144012200"
       ],
       "initialTier": 2.7
     },
@@ -620,201 +1417,6 @@
       "initialTier": 2.7
     },
     {
-      "id": "seongdong-wangsimni",
-      "cityId": "11200",
-      "name": "왕십리",
-      "dongCodes": [
-        "1120010100",
-        "1120010200"
-      ],
-      "initialTier": 2.7
-    },
-    {
-      "id": "yongsan-wonhyo",
-      "cityId": "11170",
-      "name": "원효",
-      "dongCodes": [
-        "1117011200",
-        "1117011300",
-        "1117011700",
-        "1117011800"
-      ],
-      "initialTier": 2.7
-    },
-    {
-      "id": "dongjak-heukseok",
-      "cityId": "11590",
-      "name": "흑석",
-      "dongCodes": [
-        "1159010500"
-      ],
-      "initialTier": 2.7
-    },
-    {
-      "id": "hanam-gamil-wirye",
-      "cityId": "41450",
-      "name": "감일·위례",
-      "dongCodes": [
-        "4145011400",
-        "4145011600"
-      ],
-      "initialTier": 2.7
-    },
-    {
-      "id": "bundang-sunae",
-      "cityId": "41135",
-      "name": "수내",
-      "dongCodes": [
-        "4113510200"
-      ],
-      "initialTier": 2.7
-    },
-    {
-      "id": "sujeong-wirye-seongnam",
-      "cityId": "41131",
-      "name": "위례성남",
-      "dongCodes": [
-        "4113110800"
-      ],
-      "initialTier": 2.7
-    },
-    {
-      "id": "bundang-jeongja",
-      "cityId": "41135",
-      "name": "정자",
-      "dongCodes": [
-        "4113510300"
-      ],
-      "initialTier": 2.7
-    },
-    {
-      "id": "gangdong-godeok",
-      "cityId": "11740",
-      "name": "고덕",
-      "dongCodes": [
-        "1174010200"
-      ],
-      "initialTier": 2.8
-    },
-    {
-      "id": "gangdong-myeongil",
-      "cityId": "11740",
-      "name": "명일",
-      "dongCodes": [
-        "1174010100"
-      ],
-      "initialTier": 2.8
-    },
-    {
-      "id": "bundang-seohyeon",
-      "cityId": "41135",
-      "name": "서현",
-      "dongCodes": [
-        "4113510500"
-      ],
-      "initialTier": 2.8
-    },
-    {
-      "id": "bundang-bundangdong",
-      "cityId": "41135",
-      "name": "분당동",
-      "dongCodes": [
-        "4113510100"
-      ],
-      "initialTier": 2.9
-    },
-    {
-      "id": "dongjak-noryangjin",
-      "cityId": "11590",
-      "name": "노량진",
-      "dongCodes": [
-        "1159010100"
-      ],
-      "initialTier": 3.0
-    },
-    {
-      "id": "dongdaemun-dapsipri",
-      "cityId": "11230",
-      "name": "답십리",
-      "dongCodes": [
-        "1123010500"
-      ],
-      "initialTier": 3.0
-    },
-    {
-      "id": "yeongdeungpo-dangsan",
-      "cityId": "11560",
-      "name": "당산",
-      "dongCodes": [
-        "1156011700",
-        "1156011100",
-        "1156011200",
-        "1156011300",
-        "1156011400",
-        "1156011500",
-        "1156011600"
-      ],
-      "initialTier": 3.0
-    },
-    {
-      "id": "seodaemun-bukahyeon",
-      "cityId": "11410",
-      "name": "북아현",
-      "dongCodes": [
-        "1141011000"
-      ],
-      "initialTier": 3.0
-    },
-    {
-      "id": "guro-sindorim",
-      "cityId": "11530",
-      "name": "신도림",
-      "dongCodes": [
-        "1153010100"
-      ],
-      "initialTier": 3.0
-    },
-    {
-      "id": "dongdaemun-cheongryangri",
-      "cityId": "11230",
-      "name": "청량리",
-      "dongCodes": [
-        "1123010700"
-      ],
-      "initialTier": 3.0
-    },
-    {
-      "id": "seongdong-geumho",
-      "cityId": "11200",
-      "name": "금호",
-      "dongCodes": [
-        "1120010900",
-        "1120011000",
-        "1120011100",
-        "1120011200"
-      ],
-      "initialTier": 3.1
-    },
-    {
-      "id": "dongjak-sadang",
-      "cityId": "11590",
-      "name": "사당",
-      "dongCodes": [
-        "1159010700"
-      ],
-      "initialTier": 3.1
-    },
-    {
-      "id": "dongjak-sangdo",
-      "cityId": "11590",
-      "name": "상도",
-      "dongCodes": [
-        "1159010200",
-        "1159010300"
-      ],
-      "initialTier": 3.1
-    },
-    {
       "id": "songpa-jangji",
       "cityId": "11710",
       "name": "장지",
@@ -824,22 +1426,82 @@
       "initialTier": 3.1
     },
     {
-      "id": "gangdong-dunchon",
-      "cityId": "11740",
-      "name": "둔촌",
+      "id": "songpa-pungnap",
+      "cityId": "11710",
+      "name": "풍납",
       "dongCodes": [
-        "1174010600"
+        "1171010300"
       ],
-      "initialTier": 3.2
+      "initialTier": 3.5
     },
     {
-      "id": "gangseo-magok",
-      "cityId": "11500",
-      "name": "마곡",
+      "id": "songpa-geoyeo-macheon",
+      "cityId": "11710",
+      "name": "거여",
       "dongCodes": [
-        "1150010500"
+        "1171011300"
       ],
-      "initialTier": 3.2
+      "initialTier": 3.6
+    },
+    {
+      "id": "songpa-macheon",
+      "cityId": "11710",
+      "name": "마천",
+      "dongCodes": [
+        "1171011400"
+      ],
+      "initialTier": 3.6
+    },
+    {
+      "id": "yangcheon-mokdong",
+      "cityId": "11470",
+      "name": "목동 비단지",
+      "dongCodes": [
+        "1147010200"
+      ],
+      "initialTier": 2.6
+    },
+    {
+      "id": "yangcheon-sinjeong",
+      "cityId": "11470",
+      "name": "신정",
+      "dongCodes": [
+        "1147010100"
+      ],
+      "initialTier": 3.3
+    },
+    {
+      "id": "yangcheon-sinwol",
+      "cityId": "11470",
+      "name": "신월",
+      "dongCodes": [
+        "1147010300"
+      ],
+      "initialTier": 4.3
+    },
+    {
+      "id": "yeongdeungpo-yeouido",
+      "cityId": "11560",
+      "name": "여의도",
+      "dongCodes": [
+        "1156011000"
+      ],
+      "initialTier": 1.7
+    },
+    {
+      "id": "yeongdeungpo-dangsan",
+      "cityId": "11560",
+      "name": "당산",
+      "dongCodes": [
+        "1156011100",
+        "1156011200",
+        "1156011300",
+        "1156011400",
+        "1156011500",
+        "1156011600",
+        "1156011700"
+      ],
+      "initialTier": 3.0
     },
     {
       "id": "yeongdeungpo-singil",
@@ -868,262 +1530,127 @@
       "initialTier": 3.2
     },
     {
-      "id": "gwangjin-jayang",
-      "cityId": "11215",
-      "name": "자양",
+      "id": "yeongdeungpo-yangpyeong",
+      "cityId": "11560",
+      "name": "양평",
       "dongCodes": [
-        "1121510500"
-      ],
-      "initialTier": 3.2
-    },
-    {
-      "id": "yongsan-huam",
-      "cityId": "11170",
-      "name": "후암",
-      "dongCodes": [
-        "1117010100"
-      ],
-      "initialTier": 3.2
-    },
-    {
-      "id": "seongbuk-gileum",
-      "cityId": "11290",
-      "name": "길음",
-      "dongCodes": [
-        "1129013400"
-      ],
-      "initialTier": 3.3
-    },
-    {
-      "id": "yangcheon-sinjeong",
-      "cityId": "11470",
-      "name": "신정",
-      "dongCodes": [
-        "1147010100"
-      ],
-      "initialTier": 3.3
-    },
-    {
-      "id": "gangdong-cheonho",
-      "cityId": "11740",
-      "name": "천호",
-      "dongCodes": [
-        "1174010900"
-      ],
-      "initialTier": 3.3
-    },
-    {
-      "id": "seongdong-haengdang",
-      "cityId": "11200",
-      "name": "행당",
-      "dongCodes": [
-        "1120010700"
-      ],
-      "initialTier": 3.3
-    },
-    {
-      "id": "yeongtong-gwanggyo",
-      "cityId": "41117",
-      "name": "광교",
-      "dongCodes": [
-        "4111710200",
-        "4111710300",
-        "4111710400"
-      ],
-      "initialTier": 3.3
-    },
-    {
-      "id": "seodaemun-namgajwa",
-      "cityId": "11410",
-      "name": "남가좌",
-      "dongCodes": [
-        "1141012000"
-      ],
-      "initialTier": 3.4
-    },
-    {
-      "id": "mapo-sangam",
-      "cityId": "11440",
-      "name": "상암",
-      "dongCodes": [
-        "1144012700"
-      ],
-      "initialTier": 3.4
-    },
-    {
-      "id": "gangdong-seongnae",
-      "cityId": "11740",
-      "name": "성내",
-      "dongCodes": [
-        "1174010800"
-      ],
-      "initialTier": 3.4
-    },
-    {
-      "id": "mapo-seongsan",
-      "cityId": "11440",
-      "name": "성산",
-      "dongCodes": [
-        "1144012500"
-      ],
-      "initialTier": 3.4
-    },
-    {
-      "id": "dongjak-sindaebang",
-      "cityId": "11590",
-      "name": "신대방",
-      "dongCodes": [
-        "1159010900"
-      ],
-      "initialTier": 3.4
-    },
-    {
-      "id": "gangdong-amsa",
-      "cityId": "11740",
-      "name": "암사",
-      "dongCodes": [
-        "1174010700"
-      ],
-      "initialTier": 3.4
-    },
-    {
-      "id": "gangseo-yeomchang",
-      "cityId": "11500",
-      "name": "염창",
-      "dongCodes": [
-        "1150010100"
-      ],
-      "initialTier": 3.4
-    },
-    {
-      "id": "nowon-junggye",
-      "cityId": "11350",
-      "name": "중계",
-      "dongCodes": [
-        "1135010600"
-      ],
-      "initialTier": 3.4
-    },
-    {
-      "id": "jongro-pyeongchang",
-      "cityId": "11110",
-      "name": "평창",
-      "dongCodes": [
-        "1111018300"
-      ],
-      "initialTier": 3.4
-    },
-    {
-      "id": "hanam-misa",
-      "cityId": "41450",
-      "name": "미사",
-      "dongCodes": [
-        "4145011100"
-      ],
-      "initialTier": 3.4
-    },
-    {
-      "id": "gwangmyeong-cheolsan",
-      "cityId": "41210",
-      "name": "철산",
-      "dongCodes": [
-        "4121010200"
-      ],
-      "initialTier": 3.4
-    },
-    {
-      "id": "gangseo-gayang",
-      "cityId": "11500",
-      "name": "가양",
-      "dongCodes": [
-        "1150010400"
+        "1156012500",
+        "1156012600",
+        "1156012700",
+        "1156012800",
+        "1156012900",
+        "1156013000",
+        "1156013100",
+        "1156013400"
       ],
       "initialTier": 3.5
-    },
-    {
-      "id": "jung-sindang",
-      "cityId": "11140",
-      "name": "신당",
-      "dongCodes": [
-        "1114016200"
-      ],
-      "initialTier": 3.5
-    },
-    {
-      "id": "seodaemun-yeonhui",
-      "cityId": "11410",
-      "name": "연희",
-      "dongCodes": [
-        "1141011700"
-      ],
-      "initialTier": 3.5
-    },
-    {
-      "id": "songpa-pungnap",
-      "cityId": "11710",
-      "name": "풍납",
-      "dongCodes": [
-        "1171010300"
-      ],
-      "initialTier": 3.5
-    },
-    {
-      "id": "jung-hwanghak",
-      "cityId": "11140",
-      "name": "황학",
-      "dongCodes": [
-        "1114016500"
-      ],
-      "initialTier": 3.5
-    },
-    {
-      "id": "yeonsu-songdo",
-      "cityId": "28185",
-      "name": "송도",
-      "dongCodes": [
-        "2818510600"
-      ],
-      "initialTier": 3.5
-    },
-    {
-      "id": "dongan-pyeongchon",
-      "cityId": "41173",
-      "name": "평촌",
-      "dongCodes": [
-        "4117310300"
-      ],
-      "initialTier": 3.5
-    },
-    {
-      "id": "songpa-geoyeo-macheon",
-      "cityId": "11710",
-      "name": "거여·마천",
-      "dongCodes": [
-        "1171011300",
-        "1171011400"
-      ],
-      "initialTier": 3.6
-    },
-    {
-      "id": "gangdong-gildong",
-      "cityId": "11740",
-      "name": "길동",
-      "dongCodes": [
-        "1174010500"
-      ],
-      "initialTier": 3.6
     },
     {
       "id": "yeongdeungpo-mullae",
       "cityId": "11560",
       "name": "문래",
       "dongCodes": [
+        "1156011800",
         "1156011900",
         "1156012000",
         "1156012100",
         "1156012200",
         "1156012300",
         "1156012400"
+      ],
+      "initialTier": 3.6
+    },
+    {
+      "id": "yeongdeungpo-daerim",
+      "cityId": "11560",
+      "name": "대림",
+      "dongCodes": [
+        "1156013300"
+      ],
+      "initialTier": 3.8
+    },
+    {
+      "id": "yongsan-ichon",
+      "cityId": "11170",
+      "name": "동부이촌",
+      "dongCodes": [
+        "1117012900"
+      ],
+      "initialTier": 1.7
+    },
+    {
+      "id": "yongsan-hannam",
+      "cityId": "11170",
+      "name": "한남",
+      "dongCodes": [
+        "1117013000",
+        "1117013100",
+        "1117013600"
+      ],
+      "initialTier": 1.7
+    },
+    {
+      "id": "yongsan-seobinggo",
+      "cityId": "11170",
+      "name": "서빙고·한강로",
+      "dongCodes": [
+        "1117010300",
+        "1117010500",
+        "1117010600",
+        "1117012400",
+        "1117012500",
+        "1117012600",
+        "1117012700",
+        "1117012800",
+        "1117013200",
+        "1117013300",
+        "1117013400",
+        "1117013500"
+      ],
+      "initialTier": 2.2
+    },
+    {
+      "id": "yongsan-wonhyo",
+      "cityId": "11170",
+      "name": "원효",
+      "dongCodes": [
+        "1117010400",
+        "1117011000",
+        "1117011100",
+        "1117011200",
+        "1117011300",
+        "1117011400",
+        "1117011500",
+        "1117011600",
+        "1117011700",
+        "1117011800",
+        "1117011900",
+        "1117012000",
+        "1117012100",
+        "1117012200",
+        "1117012300"
+      ],
+      "initialTier": 2.7
+    },
+    {
+      "id": "yongsan-huam",
+      "cityId": "11170",
+      "name": "후암",
+      "dongCodes": [
+        "1117010100",
+        "1117010200",
+        "1117010700",
+        "1117010800",
+        "1117010900"
+      ],
+      "initialTier": 3.2
+    },
+    {
+      "id": "eunpyeong-nokbeon",
+      "cityId": "11380",
+      "name": "녹번",
+      "dongCodes": [
+        "1138010200"
       ],
       "initialTier": 3.6
     },
@@ -1138,195 +1665,11 @@
       "initialTier": 3.6
     },
     {
-      "id": "seongbuk-jangwi",
-      "cityId": "11290",
-      "name": "장위",
-      "dongCodes": [
-        "1129013800"
-      ],
-      "initialTier": 3.6
-    },
-    {
-      "id": "seodaemun-hongje",
-      "cityId": "11410",
-      "name": "홍제",
-      "dongCodes": [
-        "1141011100"
-      ],
-      "initialTier": 3.6
-    },
-    {
-      "id": "dongan-gwanyang",
-      "cityId": "41173",
-      "name": "관양",
-      "dongCodes": [
-        "4117310200"
-      ],
-      "initialTier": 3.6
-    },
-    {
-      "id": "bundang-gumi",
-      "cityId": "41135",
-      "name": "구미",
-      "dongCodes": [
-        "4113511400"
-      ],
-      "initialTier": 3.6
-    },
-    {
-      "id": "uiwang-naeson",
-      "cityId": "41430",
-      "name": "포일/내손",
-      "dongCodes": [
-        "4143010700",
-        "4143010900"
-      ],
-      "initialTier": 3.6
-    },
-    {
-      "id": "gangseo-deungchon",
-      "cityId": "11500",
-      "name": "등촌",
-      "dongCodes": [
-        "1150010200"
-      ],
-      "initialTier": 3.7
-    },
-    {
-      "id": "gangbuk-mia",
-      "cityId": "11305",
-      "name": "미아",
-      "dongCodes": [
-        "1130510100"
-      ],
-      "initialTier": 3.7
-    },
-    {
-      "id": "seongbuk-seokgwan",
-      "cityId": "11290",
-      "name": "석관",
-      "dongCodes": [
-        "1129013900"
-      ],
-      "initialTier": 3.7
-    },
-    {
-      "id": "seongdong-majang",
-      "cityId": "11200",
-      "name": "마장",
-      "dongCodes": [
-        "1120010500"
-      ],
-      "initialTier": 3.7
-    },
-    {
-      "id": "dongdaemun-imun-hwigyeong",
-      "cityId": "11230",
-      "name": "이문·휘경",
-      "dongCodes": [
-        "1123011000",
-        "1123010900"
-      ],
-      "initialTier": 3.7
-    },
-    {
-      "id": "seongbuk-jongam",
-      "cityId": "11290",
-      "name": "종암",
-      "dongCodes": [
-        "1129013500"
-      ],
-      "initialTier": 3.7
-    },
-    {
-      "id": "dobong-changdong",
-      "cityId": "11320",
-      "name": "창동",
-      "dongCodes": [
-        "1132010700"
-      ],
-      "initialTier": 3.7
-    },
-    {
-      "id": "nowon-hagye",
-      "cityId": "11350",
-      "name": "하계",
-      "dongCodes": [
-        "1135010400"
-      ],
-      "initialTier": 3.7
-    },
-    {
-      "id": "gwangjin-hwayang-gunja",
-      "cityId": "11215",
-      "name": "화양·군자",
-      "dongCodes": [
-        "1121510700",
-        "1121510900"
-      ],
-      "initialTier": 3.7
-    },
-    {
-      "id": "bundang-yatap",
-      "cityId": "41135",
-      "name": "야탑",
-      "dongCodes": [
-        "4113510700"
-      ],
-      "initialTier": 3.7
-    },
-    {
-      "id": "suji-jukjeon",
-      "cityId": "41465",
-      "name": "죽전",
-      "dongCodes": [
-        "4146510200"
-      ],
-      "initialTier": 3.7
-    },
-    {
-      "id": "yeongdeungpo-daerim",
-      "cityId": "11560",
-      "name": "대림",
-      "dongCodes": [
-        "1156013300"
-      ],
-      "initialTier": 3.8
-    },
-    {
       "id": "eunpyeong-bulgwang",
       "cityId": "11380",
       "name": "불광",
       "dongCodes": [
         "1138010300"
-      ],
-      "initialTier": 3.8
-    },
-    {
-      "id": "nowon-sanggye",
-      "cityId": "11350",
-      "name": "상계",
-      "dongCodes": [
-        "1135010500"
-      ],
-      "initialTier": 3.8
-    },
-    {
-      "id": "gangdong-sangil",
-      "cityId": "11740",
-      "name": "상일",
-      "dongCodes": [
-        "1174010300"
-      ],
-      "initialTier": 3.8
-    },
-    {
-      "id": "seongbuk-wolgok",
-      "cityId": "11290",
-      "name": "월곡",
-      "dongCodes": [
-        "1129013600",
-        "1129013700"
       ],
       "initialTier": 3.8
     },
@@ -1340,15 +1683,6 @@
       "initialTier": 3.8
     },
     {
-      "id": "gwanak-bongcheon",
-      "cityId": "11620",
-      "name": "봉천",
-      "dongCodes": [
-        "1162010100"
-      ],
-      "initialTier": 3.9
-    },
-    {
       "id": "eunpyeong-eungam",
       "cityId": "11380",
       "name": "응암",
@@ -1358,122 +1692,251 @@
       "initialTier": 3.9
     },
     {
-      "id": "dongdaemun-jangan",
-      "cityId": "11230",
-      "name": "장안",
+      "id": "eunpyeong-daejo",
+      "cityId": "11380",
+      "name": "대조",
       "dongCodes": [
-        "1123010600"
+        "1138010600"
       ],
-      "initialTier": 3.9
+      "initialTier": 4.4
     },
     {
-      "id": "dongtan-dongtan",
-      "cityId": "41597",
-      "name": "동탄",
+      "id": "eunpyeong-sinsa",
+      "cityId": "11380",
+      "name": "신사",
       "dongCodes": [
-        "4159710100",
-        "4159710200",
-        "4159710300",
-        "4159710500",
-        "4159710600",
-        "4159710700",
-        "4159710800",
-        "4159710900",
-        "4159711000",
-        "4159711100",
-        "4159711200",
-        "4159711300",
-        "4159711400",
-        "4159711500"
+        "1138010900"
       ],
-      "initialTier": 3.9
+      "initialTier": 4.4
     },
     {
-      "id": "dongan-bisan",
-      "cityId": "41173",
-      "name": "비산",
+      "id": "eunpyeong-gusan",
+      "cityId": "11380",
+      "name": "구산",
       "dongCodes": [
-        "4117310100"
+        "1138010500",
+        "1138010800"
       ],
-      "initialTier": 3.9
+      "initialTier": 4.7
     },
     {
-      "id": "suji-suji",
-      "cityId": "41465",
-      "name": "수지",
+      "id": "eunpyeong-galhyeon",
+      "cityId": "11380",
+      "name": "갈현",
       "dongCodes": [
-        "4146510100",
-        "4146510300",
-        "4146510400",
-        "4146510500",
-        "4146510600",
-        "4146510700"
+        "1138010400"
       ],
-      "initialTier": 3.9
+      "initialTier": 4.8
     },
     {
-      "id": "seongbuk-donam",
-      "cityId": "11290",
-      "name": "돈암",
+      "id": "jongro-sajik",
+      "cityId": "11110",
+      "name": "사직",
       "dongCodes": [
-        "1129010300"
+        "1111010200",
+        "1111010300",
+        "1111010400",
+        "1111010500",
+        "1111010600",
+        "1111010700",
+        "1111010800",
+        "1111010900",
+        "1111011000",
+        "1111011100",
+        "1111011200",
+        "1111011300",
+        "1111011400",
+        "1111011500",
+        "1111011600",
+        "1111011700",
+        "1111011800",
+        "1111011900",
+        "1111012000",
+        "1111012100",
+        "1111012200",
+        "1111012300",
+        "1111012400",
+        "1111012500",
+        "1111012600",
+        "1111012700",
+        "1111012800",
+        "1111012900",
+        "1111013200",
+        "1111013400",
+        "1111013500",
+        "1111013600",
+        "1111013700",
+        "1111013800",
+        "1111013900",
+        "1111014100",
+        "1111014200",
+        "1111014300",
+        "1111014400",
+        "1111014500",
+        "1111014600",
+        "1111014700",
+        "1111017600",
+        "1111017700",
+        "1111017800",
+        "1111017900",
+        "1111018000",
+        "1111018100",
+        "1111018700"
       ],
-      "initialTier": 4.0
+      "initialTier": 2.6
+    },
+    {
+      "id": "jongro-pyeongchang",
+      "cityId": "11110",
+      "name": "평창",
+      "dongCodes": [
+        "1111010100",
+        "1111014000",
+        "1111014800",
+        "1111014900",
+        "1111018200",
+        "1111018300",
+        "1111018400",
+        "1111018500",
+        "1111018600"
+      ],
+      "initialTier": 3.4
+    },
+    {
+      "id": "jongro-changsin-sungin",
+      "cityId": "11110",
+      "name": "창신·숭인",
+      "dongCodes": [
+        "1111013000",
+        "1111013100",
+        "1111013300",
+        "1111015000",
+        "1111015100",
+        "1111015200",
+        "1111015300",
+        "1111015400",
+        "1111015500",
+        "1111015600",
+        "1111015700",
+        "1111015800",
+        "1111015900",
+        "1111016000",
+        "1111016100",
+        "1111016200",
+        "1111016300",
+        "1111016400",
+        "1111016500",
+        "1111016600",
+        "1111016700",
+        "1111016800",
+        "1111016900",
+        "1111017000",
+        "1111017100",
+        "1111017200",
+        "1111017300",
+        "1111017400",
+        "1111017500"
+      ],
+      "initialTier": 4.3
+    },
+    {
+      "id": "jung-malli",
+      "cityId": "11140",
+      "name": "만리·회현",
+      "dongCodes": [
+        "1114010100",
+        "1114010200",
+        "1114010300",
+        "1114010400",
+        "1114010500",
+        "1114010600",
+        "1114010700",
+        "1114010800",
+        "1114010900",
+        "1114011000",
+        "1114011100",
+        "1114011200",
+        "1114011300",
+        "1114011400",
+        "1114011500",
+        "1114011600",
+        "1114011700",
+        "1114011800",
+        "1114011900",
+        "1114012000",
+        "1114012100",
+        "1114012200",
+        "1114012300",
+        "1114012400",
+        "1114012500",
+        "1114012600",
+        "1114012700",
+        "1114012800",
+        "1114012900",
+        "1114013000",
+        "1114013100",
+        "1114013200",
+        "1114013400",
+        "1114013700",
+        "1114013800",
+        "1114014000",
+        "1114014100",
+        "1114014200",
+        "1114015500",
+        "1114015600",
+        "1114015700",
+        "1114015800",
+        "1114015900",
+        "1114016000",
+        "1114016100",
+        "1114016600",
+        "1114016700",
+        "1114016800",
+        "1114016900",
+        "1114017000",
+        "1114017100",
+        "1114017200",
+        "1114017300",
+        "1114017400"
+      ],
+      "initialTier": 2.3
+    },
+    {
+      "id": "jung-sindang",
+      "cityId": "11140",
+      "name": "신당·황학",
+      "dongCodes": [
+        "1114013300",
+        "1114013500",
+        "1114013600",
+        "1114013900",
+        "1114014300",
+        "1114014400",
+        "1114014500",
+        "1114014600",
+        "1114014700",
+        "1114014800",
+        "1114014900",
+        "1114015000",
+        "1114015100",
+        "1114015200",
+        "1114015300",
+        "1114015400",
+        "1114016200",
+        "1114016300",
+        "1114016400",
+        "1114016500"
+      ],
+      "initialTier": 3.5
     },
     {
       "id": "jungrang-sangbong-junghwa",
       "cityId": "11260",
-      "name": "상봉·중화",
+      "name": "상봉",
       "dongCodes": [
-        "1126010200",
-        "1126010300"
+        "1126010200"
       ],
       "initialTier": 4.0
-    },
-    {
-      "id": "nowon-wolgye",
-      "cityId": "11350",
-      "name": "월계",
-      "dongCodes": [
-        "1135010200"
-      ],
-      "initialTier": 4.0
-    },
-    {
-      "id": "guro-guro",
-      "cityId": "11530",
-      "name": "구로",
-      "dongCodes": [
-        "1153010200"
-      ],
-      "initialTier": 4.1
-    },
-    {
-      "id": "gwangmyeong-soha",
-      "cityId": "41210",
-      "name": "소하",
-      "dongCodes": [
-        "4121010400"
-      ],
-      "initialTier": 4.1
-    },
-    {
-      "id": "nowon-gongreung",
-      "cityId": "11350",
-      "name": "공릉",
-      "dongCodes": [
-        "1135010300"
-      ],
-      "initialTier": 4.2
-    },
-    {
-      "id": "geumcheon-doksan",
-      "cityId": "11545",
-      "name": "독산",
-      "dongCodes": [
-        "1154510200"
-      ],
-      "initialTier": 4.2
     },
     {
       "id": "jungrang-mukdong",
@@ -1483,97 +1946,6 @@
         "1126010400"
       ],
       "initialTier": 4.2
-    },
-    {
-      "id": "seongbuk-jeongreung",
-      "cityId": "11290",
-      "name": "정릉",
-      "dongCodes": [
-        "1129013300"
-      ],
-      "initialTier": 4.2
-    },
-    {
-      "id": "gwangjin-junggok",
-      "cityId": "11215",
-      "name": "중곡",
-      "dongCodes": [
-        "1121510100"
-      ],
-      "initialTier": 4.2
-    },
-    {
-      "id": "gangseo-hwagok",
-      "cityId": "11500",
-      "name": "화곡",
-      "dongCodes": [
-        "1150010300"
-      ],
-      "initialTier": 4.2
-    },
-    {
-      "id": "gwangmyeong-haan",
-      "cityId": "41210",
-      "name": "하안",
-      "dongCodes": [
-        "4121010300"
-      ],
-      "initialTier": 4.2
-    },
-    {
-      "id": "guro-gocheok",
-      "cityId": "11530",
-      "name": "고척",
-      "dongCodes": [
-        "1153010600"
-      ],
-      "initialTier": 4.3
-    },
-    {
-      "id": "dobong-banghak",
-      "cityId": "11320",
-      "name": "방학",
-      "dongCodes": [
-        "1132010600"
-      ],
-      "initialTier": 4.3
-    },
-    {
-      "id": "yangcheon-sinwol",
-      "cityId": "11470",
-      "name": "신월",
-      "dongCodes": [
-        "1147010300"
-      ],
-      "initialTier": 4.3
-    },
-    {
-      "id": "jongro-changsin-sungin",
-      "cityId": "11110",
-      "name": "창신·숭인",
-      "dongCodes": [
-        "1111017400",
-        "1111017500"
-      ],
-      "initialTier": 4.3
-    },
-    {
-      "id": "gwangmyeong-gwangmyeongdong",
-      "cityId": "41210",
-      "name": "광명동",
-      "dongCodes": [
-        "4121010100"
-      ],
-      "initialTier": 4.3
-    },
-    {
-      "id": "geumcheon-gasan",
-      "cityId": "11545",
-      "name": "가산",
-      "dongCodes": [
-        "1154510100"
-      ],
-      "initialTier": 4.4
     },
     {
       "id": "jungrang-mangu",
@@ -1594,34 +1966,337 @@
       "initialTier": 4.4
     },
     {
-      "id": "gangbuk-suyu",
-      "cityId": "11305",
-      "name": "수유",
+      "id": "jungrang-sinnae",
+      "cityId": "11260",
+      "name": "신내",
       "dongCodes": [
-        "1130510300"
+        "1126010600"
+      ],
+      "initialTier": 4.6
+    },
+    {
+      "id": "jungrang-junghwa",
+      "cityId": "11260",
+      "name": "중화",
+      "dongCodes": [
+        "1126010300"
+      ],
+      "initialTier": 4.6
+    },
+    {
+      "id": "gg-41135-001",
+      "cityId": "41135",
+      "name": "동판교",
+      "dongCodes": [
+        "4113511000",
+        "4113510900"
+      ],
+      "initialTier": 2.3
+    },
+    {
+      "id": "gg-41135-002",
+      "cityId": "41135",
+      "name": "서판교",
+      "dongCodes": [
+        "4113510800",
+        "4113511500"
+      ],
+      "initialTier": 2.7
+    },
+    {
+      "id": "gg-41135-003",
+      "cityId": "41135",
+      "name": "정자",
+      "dongCodes": [
+        "4113510300"
+      ],
+      "initialTier": 2.7
+    },
+    {
+      "id": "gg-41135-004",
+      "cityId": "41135",
+      "name": "수내",
+      "dongCodes": [
+        "4113510200"
+      ],
+      "initialTier": 2.7
+    },
+    {
+      "id": "gg-41135-005",
+      "cityId": "41135",
+      "name": "이매",
+      "dongCodes": [
+        "4113510600"
+      ],
+      "initialTier": 2.8
+    },
+    {
+      "id": "gg-41135-006",
+      "cityId": "41135",
+      "name": "서현",
+      "dongCodes": [
+        "4113510500"
+      ],
+      "initialTier": 2.8
+    },
+    {
+      "id": "gg-41135-007",
+      "cityId": "41135",
+      "name": "미금",
+      "dongCodes": [
+        "4113511100"
+      ],
+      "initialTier": 2.9
+    },
+    {
+      "id": "gg-41135-008",
+      "cityId": "41135",
+      "name": "구미",
+      "dongCodes": [
+        "4113511400"
+      ],
+      "initialTier": 3.6
+    },
+    {
+      "id": "gg-41135-009",
+      "cityId": "41135",
+      "name": "야탑",
+      "dongCodes": [
+        "4113510700"
+      ],
+      "initialTier": 3.7
+    },
+    {
+      "id": "gg-41133-010",
+      "cityId": "41133",
+      "name": "은행",
+      "dongCodes": [
+        "4113310400"
+      ],
+      "initialTier": 3.7
+    },
+    {
+      "id": "gg-41133-011",
+      "cityId": "41133",
+      "name": "여수",
+      "dongCodes": [
+        "4113310600"
+      ],
+      "initialTier": 3.8
+    },
+    {
+      "id": "gg-41131-012",
+      "cityId": "41131",
+      "name": "단대",
+      "dongCodes": [
+        "4113110400"
+      ],
+      "initialTier": 3.9
+    },
+    {
+      "id": "gg-41131-013",
+      "cityId": "41131",
+      "name": "태평",
+      "dongCodes": [
+        "4113110200"
+      ],
+      "initialTier": 3.9
+    },
+    {
+      "id": "gg-41133-014",
+      "cityId": "41133",
+      "name": "금광",
+      "dongCodes": [
+        "4113310300"
+      ],
+      "initialTier": 3.9
+    },
+    {
+      "id": "gg-41450-015",
+      "cityId": "41450",
+      "name": "위례",
+      "dongCodes": [
+        "4145011600",
+        "4145011500"
+      ],
+      "initialTier": 2.7
+    },
+    {
+      "id": "gg-41450-016",
+      "cityId": "41450",
+      "name": "미사",
+      "dongCodes": [
+        "4145011100",
+        "4145010900",
+        "4145011200",
+        "4145011000"
+      ],
+      "initialTier": 3.4
+    },
+    {
+      "id": "gg-41450-017",
+      "cityId": "41450",
+      "name": "덕풍",
+      "dongCodes": [
+        "4145010800"
+      ],
+      "initialTier": 4.1
+    },
+    {
+      "id": "gg-41450-018",
+      "cityId": "41450",
+      "name": "창우",
+      "dongCodes": [
+        "4145010300"
+      ],
+      "initialTier": 4.1
+    },
+    {
+      "id": "gg-41610-019",
+      "cityId": "41610",
+      "name": "태전",
+      "dongCodes": [
+        "4161011000"
+      ],
+      "initialTier": 5.1
+    },
+    {
+      "id": "gg-41610-020",
+      "cityId": "41610",
+      "name": "오포",
+      "dongCodes": [
+        "4161011400",
+        "4161011800",
+        "4161011700",
+        "4161011900",
+        "4161012000",
+        "4161011500",
+        "4161011600"
+      ],
+      "initialTier": 5.2
+    },
+    {
+      "id": "gg-41465-021",
+      "cityId": "41465",
+      "name": "동천",
+      "dongCodes": [
+        "4146510300"
+      ],
+      "initialTier": 3.7
+    },
+    {
+      "id": "gg-41465-022",
+      "cityId": "41465",
+      "name": "수지구청",
+      "dongCodes": [
+        "4146510100"
+      ],
+      "initialTier": 3.9
+    },
+    {
+      "id": "gg-41465-023",
+      "cityId": "41465",
+      "name": "상현",
+      "dongCodes": [
+        "4146510700"
+      ],
+      "initialTier": 4.1
+    },
+    {
+      "id": "gg-41463-024",
+      "cityId": "41463",
+      "name": "구성",
+      "dongCodes": [
+        "4146311200",
+        "4146311400"
+      ],
+      "initialTier": 4.2
+    },
+    {
+      "id": "gg-41463-025",
+      "cityId": "41463",
+      "name": "기흥",
+      "dongCodes": [
+        "4146310700",
+        "4146310800"
+      ],
+      "initialTier": 5.1
+    },
+    {
+      "id": "gg-41430-026",
+      "cityId": "41430",
+      "name": "포일",
+      "dongCodes": [
+        "4143010900"
+      ],
+      "initialTier": 3.6
+    },
+    {
+      "id": "gg-41430-027",
+      "cityId": "41430",
+      "name": "내손",
+      "dongCodes": [
+        "4143010700"
+      ],
+      "initialTier": 3.6
+    },
+    {
+      "id": "gg-41410-028",
+      "cityId": "41410",
+      "name": "산본",
+      "dongCodes": [
+        "4141010400"
+      ],
+      "initialTier": 4.6
+    },
+    {
+      "id": "gg-41410-029",
+      "cityId": "41410",
+      "name": "당동",
+      "dongCodes": [
+        "4141010100"
+      ],
+      "initialTier": 4.7
+    },
+    {
+      "id": "gg-41410-030",
+      "cityId": "41410",
+      "name": "금정",
+      "dongCodes": [
+        "4141010500"
+      ],
+      "initialTier": 4.9
+    },
+    {
+      "id": "gg-41410-031",
+      "cityId": "41410",
+      "name": "대야미",
+      "dongCodes": [
+        "4141010800"
+      ],
+      "initialTier": 5.2
+    },
+    {
+      "id": "gg-41117-032",
+      "cityId": "41117",
+      "name": "광교",
+      "dongCodes": [
+        "4111710300",
+        "4111710400"
+      ],
+      "initialTier": 3.3
+    },
+    {
+      "id": "gg-41117-033",
+      "cityId": "41117",
+      "name": "망포",
+      "dongCodes": [
+        "4111710700"
       ],
       "initialTier": 4.4
     },
     {
-      "id": "gwanak-sinrim",
-      "cityId": "11620",
-      "name": "신림",
-      "dongCodes": [
-        "1162010200"
-      ],
-      "initialTier": 4.4
-    },
-    {
-      "id": "guro-oryu",
-      "cityId": "11530",
-      "name": "오류",
-      "dongCodes": [
-        "1153010800"
-      ],
-      "initialTier": 4.4
-    },
-    {
-      "id": "yeongtong-yeongtong",
+      "id": "gg-41117-034",
       "cityId": "41117",
       "name": "영통",
       "dongCodes": [
@@ -1630,31 +2305,888 @@
       "initialTier": 4.4
     },
     {
-      "id": "guro-gaebong",
-      "cityId": "11530",
-      "name": "개봉",
+      "id": "gg-41117-035",
+      "cityId": "41117",
+      "name": "매탄",
       "dongCodes": [
-        "1153010700"
+        "4111710100"
+      ],
+      "initialTier": 4.4
+    },
+    {
+      "id": "gg-41113-036",
+      "cityId": "41113",
+      "name": "세류",
+      "dongCodes": [
+        "4111312600"
       ],
       "initialTier": 4.5
     },
     {
-      "id": "gangseo-banghwa",
-      "cityId": "11500",
-      "name": "방화",
+      "id": "gg-41113-037",
+      "cityId": "41113",
+      "name": "호매실",
       "dongCodes": [
-        "1150010900"
+        "4111313500"
       ],
       "initialTier": 4.5
     },
     {
-      "id": "dobong-ssangmun",
-      "cityId": "11320",
-      "name": "쌍문",
+      "id": "gg-41115-038",
+      "cityId": "41115",
+      "name": "화서",
       "dongCodes": [
-        "1132010500"
+        "4111513800"
       ],
       "initialTier": 4.5
+    },
+    {
+      "id": "gg-41111-039",
+      "cityId": "41111",
+      "name": "정자",
+      "dongCodes": [
+        "4111113000"
+      ],
+      "initialTier": 4.7
+    },
+    {
+      "id": "gg-41597-040",
+      "cityId": "41597",
+      "name": "동탄2",
+      "dongCodes": [
+        "4159710500",
+        "4159710600",
+        "4159711500",
+        "4159711400",
+        "4159711300",
+        "4159710700",
+        "4159711200",
+        "4159711000",
+        "4159711100",
+        "4159710900",
+        "4159710800"
+      ],
+      "initialTier": 3.9
+    },
+    {
+      "id": "gg-41597-041",
+      "cityId": "41597",
+      "name": "동탄1",
+      "dongCodes": [
+        "4159710200",
+        "4159710300"
+      ],
+      "initialTier": 4.3
+    },
+    {
+      "id": "gg-41597-042",
+      "cityId": "41597",
+      "name": "능동",
+      "dongCodes": [
+        "4159710100"
+      ],
+      "initialTier": 4.8
+    },
+    {
+      "id": "gg-41595-043",
+      "cityId": "41595",
+      "name": "병점",
+      "dongCodes": [
+        "4159510200"
+      ],
+      "initialTier": 5.4
+    },
+    {
+      "id": "gg-41220-044",
+      "cityId": "41220",
+      "name": "고덕",
+      "dongCodes": [
+        "4122012800"
+      ],
+      "initialTier": 5.3
+    },
+    {
+      "id": "gg-41220-045",
+      "cityId": "41220",
+      "name": "소사",
+      "dongCodes": [
+        "4122012300"
+      ],
+      "initialTier": 5.3
+    },
+    {
+      "id": "gg-41220-046",
+      "cityId": "41220",
+      "name": "동삭",
+      "dongCodes": [
+        "4122011900"
+      ],
+      "initialTier": 5.5
+    },
+    {
+      "id": "gg-41273-047",
+      "cityId": "41273",
+      "name": "고잔",
+      "dongCodes": [
+        "4127310100"
+      ],
+      "initialTier": 4.9
+    },
+    {
+      "id": "gg-41273-048",
+      "cityId": "41273",
+      "name": "초지",
+      "dongCodes": [
+        "4127310700"
+      ],
+      "initialTier": 5.0
+    },
+    {
+      "id": "gg-41273-049",
+      "cityId": "41273",
+      "name": "선부",
+      "dongCodes": [
+        "4127310900"
+      ],
+      "initialTier": 5.1
+    },
+    {
+      "id": "gg-41271-050",
+      "cityId": "41271",
+      "name": "월피",
+      "dongCodes": [
+        "4127110900"
+      ],
+      "initialTier": 5.1
+    },
+    {
+      "id": "gg-41271-051",
+      "cityId": "41271",
+      "name": "사동",
+      "dongCodes": [
+        "4127110300"
+      ],
+      "initialTier": 5.2
+    },
+    {
+      "id": "gg-41271-052",
+      "cityId": "41271",
+      "name": "본오",
+      "dongCodes": [
+        "4127110400"
+      ],
+      "initialTier": 5.3
+    },
+    {
+      "id": "gg-41271-053",
+      "cityId": "41271",
+      "name": "건건",
+      "dongCodes": [
+        "4127111100"
+      ],
+      "initialTier": 5.3
+    },
+    {
+      "id": "gg-41173-054",
+      "cityId": "41173",
+      "name": "평촌",
+      "dongCodes": [
+        "4117310300"
+      ],
+      "initialTier": 3.5
+    },
+    {
+      "id": "gg-41173-055",
+      "cityId": "41173",
+      "name": "인덕원",
+      "dongCodes": [
+        "4117310200"
+      ],
+      "initialTier": 3.6
+    },
+    {
+      "id": "gg-41173-056",
+      "cityId": "41173",
+      "name": "비산",
+      "dongCodes": [
+        "4117310100"
+      ],
+      "initialTier": 3.9
+    },
+    {
+      "id": "gg-41171-057",
+      "cityId": "41171",
+      "name": "석수",
+      "dongCodes": [
+        "4117110200"
+      ],
+      "initialTier": 4.0
+    },
+    {
+      "id": "gg-41173-058",
+      "cityId": "41173",
+      "name": "호계",
+      "dongCodes": [
+        "4117310400"
+      ],
+      "initialTier": 4.2
+    },
+    {
+      "id": "gg-41290-059",
+      "cityId": "41290",
+      "name": "과천",
+      "dongCodes": [
+        "4129010700",
+        "4129010300",
+        "4129010200",
+        "4129010900",
+        "4129011000",
+        "4129010800"
+      ],
+      "initialTier": 2.4
+    },
+    {
+      "id": "gg-41390-060",
+      "cityId": "41390",
+      "name": "목감",
+      "dongCodes": [
+        "4139012600",
+        "4139012400",
+        "4139012300",
+        "4139012500",
+        "4139012200"
+      ],
+      "initialTier": 4.5
+    },
+    {
+      "id": "gg-41390-061",
+      "cityId": "41390",
+      "name": "대야",
+      "dongCodes": [
+        "4139010100"
+      ],
+      "initialTier": 5.0
+    },
+    {
+      "id": "gg-41390-062",
+      "cityId": "41390",
+      "name": "장현",
+      "dongCodes": [
+        "4139012900"
+      ],
+      "initialTier": 5.2
+    },
+    {
+      "id": "gg-41390-063",
+      "cityId": "41390",
+      "name": "월곶",
+      "dongCodes": [
+        "4139013100"
+      ],
+      "initialTier": 5.3
+    },
+    {
+      "id": "gg-41390-064",
+      "cityId": "41390",
+      "name": "정왕",
+      "dongCodes": [
+        "4139013200"
+      ],
+      "initialTier": 5.3
+    },
+    {
+      "id": "gg-41210-065",
+      "cityId": "41210",
+      "name": "철산",
+      "dongCodes": [
+        "4121010200"
+      ],
+      "initialTier": 3.4
+    },
+    {
+      "id": "gg-41210-066",
+      "cityId": "41210",
+      "name": "광명역",
+      "dongCodes": [
+        "4121010600"
+      ],
+      "initialTier": 4.1
+    },
+    {
+      "id": "gg-41210-067",
+      "cityId": "41210",
+      "name": "소하",
+      "dongCodes": [
+        "4121010400"
+      ],
+      "initialTier": 4.1
+    },
+    {
+      "id": "gg-41210-068",
+      "cityId": "41210",
+      "name": "하안",
+      "dongCodes": [
+        "4121010300"
+      ],
+      "initialTier": 4.2
+    },
+    {
+      "id": "gg-41194-069",
+      "cityId": "41194",
+      "name": "옥길",
+      "dongCodes": [
+        "4119410600"
+      ],
+      "initialTier": 4.3
+    },
+    {
+      "id": "gg-41194-070",
+      "cityId": "41194",
+      "name": "범박",
+      "dongCodes": [
+        "4119410300"
+      ],
+      "initialTier": 4.7
+    },
+    {
+      "id": "gg-41192-071",
+      "cityId": "41192",
+      "name": "중동",
+      "dongCodes": [
+        "4119210800"
+      ],
+      "initialTier": 4.8
+    },
+    {
+      "id": "gg-41192-072",
+      "cityId": "41192",
+      "name": "상동",
+      "dongCodes": [
+        "4119210900"
+      ],
+      "initialTier": 4.8
+    },
+    {
+      "id": "gg-41192-073",
+      "cityId": "41192",
+      "name": "약대",
+      "dongCodes": [
+        "4119210500"
+      ],
+      "initialTier": 4.9
+    },
+    {
+      "id": "gg-41570-074",
+      "cityId": "41570",
+      "name": "운양",
+      "dongCodes": [
+        "4157010300"
+      ],
+      "initialTier": 5.0
+    },
+    {
+      "id": "gg-41570-075",
+      "cityId": "41570",
+      "name": "구래",
+      "dongCodes": [
+        "4157010900"
+      ],
+      "initialTier": 5.2
+    },
+    {
+      "id": "gg-41570-076",
+      "cityId": "41570",
+      "name": "풍무",
+      "dongCodes": [
+        "4157010700"
+      ],
+      "initialTier": 5.3
+    },
+    {
+      "id": "gg-41570-077",
+      "cityId": "41570",
+      "name": "사우",
+      "dongCodes": [
+        "4157010600"
+      ],
+      "initialTier": 5.3
+    },
+    {
+      "id": "gg-41281-078",
+      "cityId": "41281",
+      "name": "덕은",
+      "dongCodes": [
+        "4128113100"
+      ],
+      "initialTier": 3.7
+    },
+    {
+      "id": "gg-41281-079",
+      "cityId": "41281",
+      "name": "향동",
+      "dongCodes": [
+        "4128113200"
+      ],
+      "initialTier": 4.0
+    },
+    {
+      "id": "gg-41281-080",
+      "cityId": "41281",
+      "name": "삼송",
+      "dongCodes": [
+        "4128111100"
+      ],
+      "initialTier": 4.4
+    },
+    {
+      "id": "gg-41281-081",
+      "cityId": "41281",
+      "name": "원흥",
+      "dongCodes": [
+        "4128110400"
+      ],
+      "initialTier": 4.6
+    },
+    {
+      "id": "gg-41287-082",
+      "cityId": "41287",
+      "name": "주엽",
+      "dongCodes": [
+        "4128710200"
+      ],
+      "initialTier": 4.6
+    },
+    {
+      "id": "gg-41287-083",
+      "cityId": "41287",
+      "name": "대화",
+      "dongCodes": [
+        "4128710400"
+      ],
+      "initialTier": 4.6
+    },
+    {
+      "id": "gg-41281-084",
+      "cityId": "41281",
+      "name": "화정",
+      "dongCodes": [
+        "4128112300"
+      ],
+      "initialTier": 4.7
+    },
+    {
+      "id": "gg-41285-085",
+      "cityId": "41285",
+      "name": "백석",
+      "dongCodes": [
+        "4128510600"
+      ],
+      "initialTier": 4.9
+    },
+    {
+      "id": "gg-41285-086",
+      "cityId": "41285",
+      "name": "마두",
+      "dongCodes": [
+        "4128510500"
+      ],
+      "initialTier": 4.9
+    },
+    {
+      "id": "gg-41281-087",
+      "cityId": "41281",
+      "name": "행신",
+      "dongCodes": [
+        "4128112800"
+      ],
+      "initialTier": 5.1
+    },
+    {
+      "id": "gg-41285-088",
+      "cityId": "41285",
+      "name": "풍동",
+      "dongCodes": [
+        "4128510700"
+      ],
+      "initialTier": 5.3
+    },
+    {
+      "id": "gg-41287-089",
+      "cityId": "41287",
+      "name": "탄현",
+      "dongCodes": [
+        "4128710300"
+      ],
+      "initialTier": 5.4
+    },
+    {
+      "id": "gg-41480-090",
+      "cityId": "41480",
+      "name": "운정",
+      "dongCodes": [
+        "4148010700",
+        "4148010800",
+        "4148010900",
+        "4148011100",
+        "4148011300",
+        "4148011400",
+        "4148011700",
+        "4148012200"
+      ],
+      "initialTier": 5.2
+    },
+    {
+      "id": "gg-41480-091",
+      "cityId": "41480",
+      "name": "금촌",
+      "dongCodes": [
+        "4148010100",
+        "4148010200",
+        "4148012300"
+      ],
+      "initialTier": 5.8
+    },
+    {
+      "id": "gg-41310-092",
+      "cityId": "41310",
+      "name": "토평",
+      "dongCodes": [
+        "4131010700"
+      ],
+      "initialTier": 3.7
+    },
+    {
+      "id": "gg-41310-093",
+      "cityId": "41310",
+      "name": "교문",
+      "dongCodes": [
+        "4131010400"
+      ],
+      "initialTier": 3.9
+    },
+    {
+      "id": "gg-41310-094",
+      "cityId": "41310",
+      "name": "갈매",
+      "dongCodes": [
+        "4131010100"
+      ],
+      "initialTier": 4.1
+    },
+    {
+      "id": "gg-41310-095",
+      "cityId": "41310",
+      "name": "인창",
+      "dongCodes": [
+        "4131010300"
+      ],
+      "initialTier": 4.2
+    },
+    {
+      "id": "gg-41360-096",
+      "cityId": "41360",
+      "name": "다산진건",
+      "dongCodes": [
+        "4136011200"
+      ],
+      "initialTier": 3.9
+    },
+    {
+      "id": "gg-41360-098",
+      "cityId": "41360",
+      "name": "별내",
+      "dongCodes": [
+        "4136011100"
+      ],
+      "initialTier": 4.1
+    },
+    {
+      "id": "gg-41360-099",
+      "cityId": "41360",
+      "name": "덕소",
+      "dongCodes": [
+        "4136025000"
+      ],
+      "initialTier": 4.9
+    },
+    {
+      "id": "gg-41360-100",
+      "cityId": "41360",
+      "name": "평내",
+      "dongCodes": [
+        "4136010200"
+      ],
+      "initialTier": 5.2
+    },
+    {
+      "id": "gg-41360-101",
+      "cityId": "41360",
+      "name": "호평",
+      "dongCodes": [
+        "4136010100"
+      ],
+      "initialTier": 5.2
+    },
+    {
+      "id": "gg-41150-102",
+      "cityId": "41150",
+      "name": "민락",
+      "dongCodes": [
+        "4115010600"
+      ],
+      "initialTier": 5.2
+    },
+    {
+      "id": "gg-41150-103",
+      "cityId": "41150",
+      "name": "호원",
+      "dongCodes": [
+        "4115010200"
+      ],
+      "initialTier": 5.2
+    },
+    {
+      "id": "gg-41150-104",
+      "cityId": "41150",
+      "name": "금오",
+      "dongCodes": [
+        "4115010900"
+      ],
+      "initialTier": 5.4
+    },
+    {
+      "id": "gg-41630-105",
+      "cityId": "41630",
+      "name": "옥정",
+      "dongCodes": [
+        "4163011400"
+      ],
+      "initialTier": 5.3
+    },
+    {
+      "id": "gg-41630-106",
+      "cityId": "41630",
+      "name": "덕정",
+      "dongCodes": [
+        "4163011000"
+      ],
+      "initialTier": 5.6
+    },
+    {
+      "id": "gg-41131-107",
+      "cityId": "41131",
+      "name": "위례성남",
+      "dongCodes": [
+        "4113110800"
+      ],
+      "initialTier": 2.7
+    },
+    {
+      "id": "gg-41135-108",
+      "cityId": "41135",
+      "name": "분당",
+      "dongCodes": [
+        "4113510100"
+      ],
+      "initialTier": 3.2
+    },
+    {
+      "id": "gg-41117-109",
+      "cityId": "41117",
+      "name": "원천",
+      "dongCodes": [
+        "4111710200"
+      ],
+      "initialTier": 3.8
+    },
+    {
+      "id": "gg-41210-110",
+      "cityId": "41210",
+      "name": "광명",
+      "dongCodes": [
+        "4121010100"
+      ],
+      "initialTier": 3.9
+    },
+    {
+      "id": "gg-41450-111",
+      "cityId": "41450",
+      "name": "감일",
+      "dongCodes": [
+        "4145011400"
+      ],
+      "initialTier": 3.7
+    },
+    {
+      "id": "gg-41463-112",
+      "cityId": "41463",
+      "name": "신갈",
+      "dongCodes": [
+        "4146310100"
+      ],
+      "initialTier": 4.4
+    },
+    {
+      "id": "gg-41463-113",
+      "cityId": "41463",
+      "name": "구갈",
+      "dongCodes": [
+        "4146310200"
+      ],
+      "initialTier": 5.0
+    },
+    {
+      "id": "gg-41463-114",
+      "cityId": "41463",
+      "name": "상갈",
+      "dongCodes": [
+        "4146310300"
+      ],
+      "initialTier": 4.7
+    },
+    {
+      "id": "gg-41463-115",
+      "cityId": "41463",
+      "name": "하갈",
+      "dongCodes": [
+        "4146310400"
+      ],
+      "initialTier": 4.7
+    },
+    {
+      "id": "gg-41463-116",
+      "cityId": "41463",
+      "name": "보라",
+      "dongCodes": [
+        "4146310500"
+      ],
+      "initialTier": 5.1
+    },
+    {
+      "id": "gg-41463-117",
+      "cityId": "41463",
+      "name": "지곡",
+      "dongCodes": [
+        "4146310600"
+      ],
+      "initialTier": 5.1
+    },
+    {
+      "id": "gg-41463-118",
+      "cityId": "41463",
+      "name": "농서",
+      "dongCodes": [
+        "4146310900"
+      ],
+      "initialTier": 4.5
+    },
+    {
+      "id": "gg-41463-119",
+      "cityId": "41463",
+      "name": "서천",
+      "dongCodes": [
+        "4146311000"
+      ],
+      "initialTier": 4.2
+    },
+    {
+      "id": "gg-41463-120",
+      "cityId": "41463",
+      "name": "영덕",
+      "dongCodes": [
+        "4146311100"
+      ],
+      "initialTier": 5.0
+    },
+    {
+      "id": "gg-41463-121",
+      "cityId": "41463",
+      "name": "마북",
+      "dongCodes": [
+        "4146311300"
+      ],
+      "initialTier": 4.7
+    },
+    {
+      "id": "gg-41463-122",
+      "cityId": "41463",
+      "name": "동백",
+      "dongCodes": [
+        "4146311500"
+      ],
+      "initialTier": 4.8
+    },
+    {
+      "id": "gg-41463-123",
+      "cityId": "41463",
+      "name": "중동",
+      "dongCodes": [
+        "4146311600"
+      ],
+      "initialTier": 4.8
+    },
+    {
+      "id": "gg-41463-124",
+      "cityId": "41463",
+      "name": "상하",
+      "dongCodes": [
+        "4146311700"
+      ],
+      "initialTier": 5.2
+    },
+    {
+      "id": "gg-41463-125",
+      "cityId": "41463",
+      "name": "보정",
+      "dongCodes": [
+        "4146311800"
+      ],
+      "initialTier": 4.5
+    },
+    {
+      "id": "gg-41465-126",
+      "cityId": "41465",
+      "name": "죽전",
+      "dongCodes": [
+        "4146510200"
+      ],
+      "initialTier": 4.1
+    },
+    {
+      "id": "gg-41465-127",
+      "cityId": "41465",
+      "name": "신봉",
+      "dongCodes": [
+        "4146510500"
+      ],
+      "initialTier": 4.0
+    },
+    {
+      "id": "gg-41465-128",
+      "cityId": "41465",
+      "name": "성복",
+      "dongCodes": [
+        "4146510600"
+      ],
+      "initialTier": 3.9
+    },
+    {
+      "id": "gg-41220-132",
+      "cityId": "41220",
+      "name": "세교",
+      "dongCodes": [
+        "4122012000"
+      ],
+      "initialTier": 5.5
+    },
+    {
+      "id": "yeonsu-songdo",
+      "cityId": "28185",
+      "name": "송도",
+      "dongCodes": [
+        "2818510600"
+      ],
+      "initialTier": 3.5
     },
     {
       "id": "geomdan-geomdan",
@@ -1682,104 +3214,6 @@
         "2827511100"
       ],
       "initialTier": 4.5
-    },
-    {
-      "id": "gangbuk-beondong",
-      "cityId": "11305",
-      "name": "번동",
-      "dongCodes": [
-        "1130510200"
-      ],
-      "initialTier": 4.6
-    },
-    {
-      "id": "jungrang-sinnae",
-      "cityId": "11260",
-      "name": "신내",
-      "dongCodes": [
-        "1126010600"
-      ],
-      "initialTier": 4.6
-    },
-    {
-      "id": "eunpyeong-galhyeon",
-      "cityId": "11380",
-      "name": "갈현",
-      "dongCodes": [
-        "1138010400"
-      ],
-      "initialTier": 4.8
-    },
-    {
-      "id": "gangseo-gonghang",
-      "cityId": "11500",
-      "name": "공항",
-      "dongCodes": [
-        "1150010800"
-      ],
-      "initialTier": 4.8
-    },
-    {
-      "id": "dobong-dobong",
-      "cityId": "11320",
-      "name": "도봉",
-      "dongCodes": [
-        "1132010800"
-      ],
-      "initialTier": 4.8
-    },
-    {
-      "id": "gangbuk-ui",
-      "cityId": "11305",
-      "name": "우이",
-      "dongCodes": [
-        "1130510400"
-      ],
-      "initialTier": 4.8
-    },
-    {
-      "id": "geumcheon-siheung",
-      "cityId": "11545",
-      "name": "시흥",
-      "dongCodes": [
-        "1154510300"
-      ],
-      "initialTier": 4.9
-    },
-    {
-      "id": "giheung-giheung",
-      "cityId": "41463",
-      "name": "기흥",
-      "dongCodes": [
-        "4146310100",
-        "4146310200",
-        "4146310300",
-        "4146310400",
-        "4146310500",
-        "4146310600",
-        "4146310700",
-        "4146310800",
-        "4146310900",
-        "4146311000",
-        "4146311100",
-        "4146311200",
-        "4146311300",
-        "4146311400",
-        "4146311500",
-        "4146311600",
-        "4146311700",
-        "4146311800"
-      ],
-      "initialTier": 5.1
-    },
-    {
-      "id": "byeongjeom-byeongjeom",
-      "cityId": "41595",
-      "name": "병점",
-      "dongCodes": [
-        "4159510200"
-      ],
-      "initialTier": 5.4
     }
   ]
 }

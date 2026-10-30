@@ -16,13 +16,13 @@ DEFAULT_MANIFEST = (
 )
 
 
-def completed_count(manifest, codes):
-    latest = import_complexes.latest_manifest(manifest, set(codes))
+def completed_count(manifest, codes, valid_codes=None):
+    latest = import_complexes.latest_manifest(manifest, set(valid_codes or codes))
     return sum(latest.get(code, {}).get("status") in import_complexes.TERMINAL for code in codes)
 
 
-def source_gap_count(manifest, codes):
-    latest = import_complexes.latest_manifest(manifest, set(codes))
+def source_gap_count(manifest, codes, valid_codes=None):
+    latest = import_complexes.latest_manifest(manifest, set(valid_codes or codes))
     return sum(latest.get(code, {}).get("status") == import_complexes.SOURCE_GAP
                for code in codes)
 
@@ -43,34 +43,51 @@ def run_until_complete(
     max_rounds,
     import_main=import_complexes.main,
     sleeper=time.sleep,
+    start_index=None,
+    end_index=None,
+    env_file=None,
+    timeout_seconds=None,
+    valid_codes=None,
+    max_consecutive_list_failures=3,
+    max_consecutive_api_failures=3,
 ):
     no_progress_rounds = 0
     for round_number in range(1, max_rounds + 1):
-        before = completed_count(manifest, codes)
+        before = completed_count(manifest, codes, valid_codes)
         before_created = recorded_created_count(manifest)
         if before == len(codes):
             print(
                 f"전체 처리: {before}/{len(codes)}, "
-                f"원본 결측 법정동 {source_gap_count(manifest, codes)}곳",
+                f"원본 결측 법정동 {source_gap_count(manifest, codes, valid_codes)}곳",
                 flush=True,
             )
             return 0
 
         print(
             f"재개 {round_number}/{max_rounds}: 처리 {before}/{len(codes)}, "
-            f"원본 결측 법정동 {source_gap_count(manifest, codes)}곳",
+            f"원본 결측 법정동 {source_gap_count(manifest, codes, valid_codes)}곳",
             flush=True,
         )
-        result = import_main([
+        arguments = [
             "--run", "--manifest", str(manifest),
             "--batch-size", str(batch_size),
-            "--max-consecutive-list-failures", "3",
-        ])
-        after = completed_count(manifest, codes)
+            "--max-consecutive-list-failures", str(max_consecutive_list_failures),
+            "--max-consecutive-api-failures", str(max_consecutive_api_failures),
+        ]
+        if start_index is not None:
+            arguments.extend(("--start-index", str(start_index)))
+        if end_index is not None:
+            arguments.extend(("--end-index", str(end_index)))
+        if env_file is not None:
+            arguments.extend(("--env-file", str(env_file)))
+        if timeout_seconds is not None:
+            arguments.extend(("--timeout-seconds", str(timeout_seconds)))
+        result = import_main(arguments)
+        after = completed_count(manifest, codes, valid_codes)
         newly_created = recorded_created_count(manifest) - before_created
         print(
             f"재개 결과: 처리 {after}/{len(codes)}, "
-            f"원본 결측 법정동 {source_gap_count(manifest, codes)}곳, "
+            f"원본 결측 법정동 {source_gap_count(manifest, codes, valid_codes)}곳, "
             f"신규 단지 {newly_created}건",
             flush=True,
         )
@@ -109,7 +126,13 @@ def main(argv=None):
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--cooldown-seconds", type=int, default=120)
     parser.add_argument("--max-no-progress-rounds", type=int, default=3)
+    parser.add_argument("--max-consecutive-list-failures", type=int, default=3)
+    parser.add_argument("--max-consecutive-api-failures", type=int, default=3)
     parser.add_argument("--max-rounds", type=int, default=100)
+    parser.add_argument("--start-index", type=int)
+    parser.add_argument("--end-index", type=int)
+    parser.add_argument("--env-file", type=Path)
+    parser.add_argument("--timeout-seconds", type=int)
     args = parser.parse_args(argv)
 
     if not 1 <= args.batch_size <= 20:
@@ -118,11 +141,21 @@ def main(argv=None):
         parser.error("--cooldown-seconds는 0 이상이어야 합니다")
     if args.max_no_progress_rounds < 1 or args.max_rounds < 1:
         parser.error("최대 재개 횟수는 1 이상이어야 합니다")
+    if args.max_consecutive_list_failures < 1:
+        parser.error("연속 목록 실패 허용 횟수는 1 이상이어야 합니다")
+    if args.max_consecutive_api_failures < 1:
+        parser.error("연속 API 실패 허용 횟수는 1 이상이어야 합니다")
     try:
         codes = import_complexes.mapping_codes(import_complexes.DEFAULT_MAPPING)
         import_complexes.latest_manifest(args.manifest, set(codes))
     except (OSError, ValueError, KeyError, TypeError) as exc:
         parser.error(str(exc))
+    start_index = args.start_index if args.start_index is not None else 0
+    end_index = args.end_index if args.end_index is not None else len(codes)
+    if not 0 <= start_index < end_index <= len(codes):
+        parser.error("매핑 인덱스 범위가 잘못됐습니다")
+    valid_codes = codes
+    codes = codes[start_index:end_index]
 
     lock_path = Path(str(args.manifest) + ".lock")
     try:
@@ -145,6 +178,13 @@ def main(argv=None):
                 args.cooldown_seconds,
                 args.max_no_progress_rounds,
                 args.max_rounds,
+                start_index=start_index,
+                end_index=end_index,
+                env_file=args.env_file,
+                timeout_seconds=args.timeout_seconds,
+                valid_codes=valid_codes,
+                max_consecutive_list_failures=args.max_consecutive_list_failures,
+                max_consecutive_api_failures=args.max_consecutive_api_failures,
             )
         finally:
             fcntl.flock(lock_file, fcntl.LOCK_UN)

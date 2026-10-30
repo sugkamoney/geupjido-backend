@@ -197,8 +197,8 @@ def local_api_settings(path):
     return settings
 
 
-def run_batch(codes, mapping_path, timeout_seconds):
-    settings = local_api_settings(ROOT / ".env")
+def run_batch(codes, mapping_path, timeout_seconds, env_file=None):
+    settings = local_api_settings(env_file or ROOT / ".env")
     missing = [name for name in REQUIRED_ENV if not (os.environ.get(name) or settings.get(name))]
     if missing:
         raise ValueError("필수 API 설정이 없습니다: " + ", ".join(missing))
@@ -245,6 +245,7 @@ def append_rows(path, rows):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mapping", type=Path, default=DEFAULT_MAPPING)
+    parser.add_argument("--env-file", type=Path, default=ROOT / ".env")
     parser.add_argument("--known-source-gaps", type=Path, default=DEFAULT_SOURCE_GAPS)
     parser.add_argument("--manifest", type=Path, help="재개용 JSONL 파일 경로")
     parser.add_argument("--batch-size", type=int, default=5)
@@ -308,7 +309,9 @@ def main(argv=None):
     for index, batch in enumerate(batches(pending, args.batch_size), 1):
         print(f"배치 {index}: {len(batch)}개 실행", flush=True)
         try:
-            exit_code, output = run_batch(batch, args.mapping, args.timeout_seconds)
+            exit_code, output = run_batch(
+                batch, args.mapping, args.timeout_seconds, args.env_file
+            )
             rows = parse_results(output, batch, exit_code, source_gaps)
         except ValueError as exc:
             print(str(exc), file=sys.stderr)
