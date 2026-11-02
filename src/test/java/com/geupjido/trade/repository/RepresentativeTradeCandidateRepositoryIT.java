@@ -99,18 +99,7 @@ class RepresentativeTradeCandidateRepositoryIT {
 			"중개거래", false, "test-rep-price-one");
 		long safe = insertTrade("2026-09-01", 100, "59.000000",
 			"중개거래", false, "test-rep-price-one");
-		jdbcTemplate.update("""
-			INSERT INTO apartment_trade_conflict (
-				district_code, deal_year_month, source_ordinal,
-				conflict_reason, existing_trade_id, legal_dong_name,
-				raw_apartment_name, deal_date, deal_amount, exclusive_area,
-				is_canceled
-			) VALUES (
-				'11680', '202610', 0, 'SOURCE_STATUS_CONFLICT', ?,
-				'역삼동', '테스트 단지', '2026-10-01', 200,
-				59.000000, false
-			)
-			""", disputed);
+		insertConflict(disputed, 0, "2026-10-01", 200);
 
 		var candidates = tradeRepository.findRepresentativeCandidates(
 			List.of("TPRC00001"), BigDecimal.valueOf(58),
@@ -159,18 +148,7 @@ class RepresentativeTradeCandidateRepositoryIT {
 			"중개거래", false, "test-rep-price-one");
 		long disputed = insertTrade("2026-10-06", 700, "59.000000",
 			"직거래", false, "test-rep-price-one");
-		jdbcTemplate.update("""
-			INSERT INTO apartment_trade_conflict (
-				district_code, deal_year_month, source_ordinal,
-				conflict_reason, existing_trade_id, legal_dong_name,
-				raw_apartment_name, deal_date, deal_amount, exclusive_area,
-				is_canceled
-			) VALUES (
-				'11680', '202610', 1, 'SOURCE_STATUS_CONFLICT', ?,
-				'역삼동', '테스트 단지', '2026-10-06', 700,
-				59.000000, false
-			)
-			""", disputed);
+		insertConflict(disputed, 1, "2026-10-06", 700);
 
 		assertThat(tradeRepository.findDirectRepresentativeCandidates(
 			List.of("TPRC00001"), BigDecimal.valueOf(58),
@@ -241,6 +219,30 @@ class RepresentativeTradeCandidateRepositoryIT {
 			)
 			""", zoneId, ordinal, date, amount, area, canceled,
 			canceled, date);
+	}
+
+	private void insertConflict(long tradeId, int ordinal, String date, long amount) {
+		long sourceSeenId = jdbcTemplate.queryForObject("""
+			INSERT INTO apartment_trade_conflict_seen (
+				district_code, deal_year_month, legal_dong_name,
+				raw_apartment_name, deal_date, deal_amount, exclusive_area,
+				is_canceled
+			) VALUES (
+				'11680', '202610', '역삼동', '테스트 단지',
+				?::date, ?, 59.000000, false
+			) RETURNING id
+			""", Long.class, date, amount);
+		jdbcTemplate.update("""
+			INSERT INTO apartment_trade_conflict (
+				district_code, deal_year_month, source_ordinal, source_seen_id,
+				conflict_reason, existing_trade_id, legal_dong_name,
+				raw_apartment_name, deal_date, deal_amount, exclusive_area,
+				is_canceled
+			) VALUES (
+				'11680', '202610', ?, ?, 'SOURCE_STATUS_CONFLICT', ?,
+				'역삼동', '테스트 단지', ?::date, ?, 59.000000, false
+			)
+			""", ordinal, sourceSeenId, tradeId, date, amount);
 	}
 
 	private long insertTrade(

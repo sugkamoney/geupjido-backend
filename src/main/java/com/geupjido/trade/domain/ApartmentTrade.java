@@ -98,6 +98,9 @@ public class ApartmentTrade {
 	@Column(name = "cancellation_date")
 	private LocalDate cancellationDate;
 
+	@Column(name = "registration_date")
+	private LocalDate registrationDate;
+
 	@CreationTimestamp
 	@Column(
 		name = "created_at",
@@ -124,6 +127,28 @@ public class ApartmentTrade {
 		boolean canceled,
 		LocalDate cancellationDate
 	) {
+		this(dealDate, dealAmountTenThousandWon, exclusiveArea, floor,
+			buildYear, districtCode, legalDongName, rawApartmentName,
+			lotNumber, apartmentDong, dealingType, canceled,
+			cancellationDate, null);
+	}
+
+	public ApartmentTrade(
+		LocalDate dealDate,
+		long dealAmountTenThousandWon,
+		BigDecimal exclusiveArea,
+		Short floor,
+		Short buildYear,
+		String districtCode,
+		String legalDongName,
+		String rawApartmentName,
+		String lotNumber,
+		String apartmentDong,
+		String dealingType,
+		boolean canceled,
+		LocalDate cancellationDate,
+		LocalDate registrationDate
+	) {
 		this.dealDate = requireDealDate(dealDate);
 		this.dealAmountTenThousandWon =
 			requirePositiveDealAmount(dealAmountTenThousandWon);
@@ -148,6 +173,7 @@ public class ApartmentTrade {
 
 		this.canceled = canceled;
 		this.cancellationDate = cancellationDate;
+		this.registrationDate = registrationDate;
 	}
 
 	private static String requireDistrictCode(String value) {
@@ -273,6 +299,18 @@ public class ApartmentTrade {
 		cancellationDate = date;
 	}
 
+	/** 이미 알려진 등기일과 충돌하지 않는 범위에서 새 등기일을 보충한다. */
+	public boolean fillRegistrationDate(LocalDate date) {
+		if (date == null || date.equals(registrationDate)) {
+			return false;
+		}
+		if (registrationDate != null) {
+			throw new IllegalStateException("기존 거래의 등기일과 새 등기일이 다릅니다.");
+		}
+		registrationDate = date;
+		return true;
+	}
+
 	/**
 	 * 확인된 단지와 그 단지의 현재 권역을 함께 연결한다.
 	 * 이미 다른 값으로 연결된 거래는 덮어쓰지 않는다.
@@ -366,6 +404,10 @@ public class ApartmentTrade {
 
 	public LocalDate getCancellationDate() {
 		return cancellationDate;
+	}
+
+	public LocalDate getRegistrationDate() {
+		return registrationDate;
 	}
 
 	public LocalDateTime getCreatedAt() {

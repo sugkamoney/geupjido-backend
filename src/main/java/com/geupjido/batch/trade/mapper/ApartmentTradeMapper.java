@@ -22,6 +22,9 @@ public class ApartmentTradeMapper {
 	private static final DateTimeFormatter CANCELLATION_DATE_FORMATTER =
 		DateTimeFormatter.ofPattern("uu.MM.dd")
 			.withResolverStyle(ResolverStyle.STRICT);
+	private static final DateTimeFormatter REGISTRATION_DATE_FORMATTER =
+		DateTimeFormatter.ofPattern("uu.MM.dd")
+			.withResolverStyle(ResolverStyle.STRICT);
 
 	/**
 	 * 아파트 매매 실거래가 API 응답 한 건을 내부 도메인 모델로 변환한다.
@@ -56,8 +59,24 @@ public class ApartmentTradeMapper {
 			toNullableInteger(item.floor(), "층"),
 			normalizeNullableText(item.dealingGbn()),
 			canceled,
-			cancellationDate
+			cancellationDate,
+			toRegistrationDate(item.rgstDate())
 		);
+	}
+
+	private LocalDate toRegistrationDate(String value) {
+		String normalized = normalizeNullableText(value);
+		if (normalized == null) {
+			return null;
+		}
+		try {
+			return LocalDate.parse(normalized, REGISTRATION_DATE_FORMATTER);
+		} catch (DateTimeParseException exception) {
+			throw new ApartmentTradeMappingException(
+				"등기일을 날짜로 변환할 수 없습니다: " + value,
+				exception
+			);
+		}
 	}
 
 	private String normalizeRequiredText(

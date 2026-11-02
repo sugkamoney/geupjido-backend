@@ -3,7 +3,6 @@ package com.geupjido.trade.repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -207,7 +206,7 @@ public interface ApartmentTradeRepository
 		  AND floor IS NOT DISTINCT FROM :floor
 		  AND deal_amount = :dealAmount
 		""", nativeQuery = true)
-	Optional<ApartmentTrade> findBySourceKey(
+	List<ApartmentTrade> findAllBySourceKey(
 		@Param("districtCode") String districtCode,
 		@Param("legalDongName") String legalDongName,
 		@Param("rawApartmentName") String rawApartmentName,
