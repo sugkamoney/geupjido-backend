@@ -77,8 +77,23 @@ class LocationMappingReaderTest {
 
 		assertThat(mapping.regions()).hasSize(3);
 		assertThat(mapping.cities()).hasSize(62);
-		assertThat(mapping.zones()).hasSize(279);
-		assertThat(assignedDongCodeCount).isEqualTo(651);
+		assertThat(mapping.zones()).hasSize(276);
+		assertThat(assignedDongCodeCount).isEqualTo(650);
+		assertThat(mapping.zones())
+			.filteredOn(zone -> zone.id().equals("gangbuk-suyu"))
+			.singleElement()
+			.satisfies(zone -> assertThat(zone.dongCodes())
+				.containsExactly("1130510200", "1130510300", "1130510400"));
+		assertThat(mapping.zones())
+			.noneMatch(zone -> zone.id().equals("gangbuk-ui")
+				|| zone.id().equals("gg-41360-099"));
+		assertThat(mapping.zones())
+			.filteredOn(zone -> zone.id().equals("gg-41173-054"))
+			.singleElement()
+			.satisfies(zone -> assertThat(zone.dongCodes())
+				.containsExactly("4117310300", "4117310200"));
+		assertThat(mapping.zones())
+			.noneMatch(zone -> zone.id().equals("gg-41173-055"));
 		assertThat(mapping.zones())
 			.filteredOn(zone -> zone.id().equals("seongdong-majang"))
 			.singleElement()

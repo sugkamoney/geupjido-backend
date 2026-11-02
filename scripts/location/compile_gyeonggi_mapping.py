@@ -22,18 +22,19 @@ SPECIAL_COMPONENTS = {
     ("하남시", "위례"): "학암동·감이동",
     ("하남시", "미사"): "미사동·망월동·선동·풍산동",
     ("평택시", "고덕"): "고덕동",
-    ("안양시", "인덕원"): "동안구 관양동",
+    ("안양시", "평촌"): "동안구 평촌동·관양동",
     ("시흥시", "목감"): "목감동·조남동·산현동·논곡동·물왕동",
     ("파주시", "운정"): "교하동·야당동·다율동·상지석동·동패동·당하동·목동동·와동동",
     ("파주시", "금촌"): "금촌동·아동동·금릉동",
     ("남양주시", "다산진건"): "다산동",
-    ("남양주시", "덕소"): "와부읍",
 }
 SPECIAL_OUTSIDE_MAPPING = {
     ("남양주시", "다산지금"),
     ("하남시", "감이"),
     ("안양시", "관양"),
+    ("안양시", "인덕원"),
     ("남양주시", "다산기타"),
+    ("남양주시", "덕소"),
 }
 
 
@@ -116,8 +117,8 @@ def build_mapping(mapping: dict, rows: list[dict],
                 "name": " ".join(full[1:-1]),
             }
 
-    if len(zones) != 128:
-        raise ValueError(f"경기 일반 권역 128개 중 {len(zones)}개가 있습니다")
+    if len(zones) != 126:
+        raise ValueError(f"경기 일반 권역 126개 중 {len(zones)}개가 있습니다")
     cities = [c for c in mapping["cities"] if c["regionCode"] != "gyeonggi"]
     for city_data in old_cities.values():
         if city_data["regionCode"] != "gyeonggi":
@@ -136,7 +137,7 @@ def main() -> None:
         json.dumps(result, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
-    print("경기 일반 권역 128개, 부분 경계로 추가할 권역 4개")
+    print("경기 일반 권역 126개, 부분 경계로 추가할 권역 4개")
 
 
 if __name__ == "__main__":

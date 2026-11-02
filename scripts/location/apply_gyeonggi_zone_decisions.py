@@ -15,7 +15,6 @@ ROOT = Path(__file__).resolve().parents[2]
 MAPPING = ROOT / "data/location/mapping/location-mapping.json"
 DECISIONS = ROOT / "data/location/mapping/gyeonggi-zone-decisions.tsv"
 ADMIN = ROOT / "data/location/boundary/gyeonggi-admin-dong-boundaries-20261001.geojson"
-RI = ROOT / "data/location/boundary/gyeonggi-legal-ri-boundaries.geojson"
 LEGAL = ROOT / "data/location/boundary/legal-dong-boundaries.geojson"
 EXCEPTION_PARCELS = ROOT / "data/location/boundary/gyeonggi-complex-exception-parcels.geojson"
 DASAN_DISTRICTS = ROOT / "data/location/boundary/dasan-district-boundaries.geojson"
@@ -43,7 +42,6 @@ PARCEL_ZONE_EXPANSIONS = {
 ADMIN_CLIPS = {
     ("41450", "위례"): ("4145058500",),
     ("41450", "미사"): ("4145061000", "4145062000", "4145063000"),
-    ("41173", "인덕원"): ("4117355900",),
     ("41390", "목감"): ("4139057000",),
     ("41480", "운정"): (
         "4148055000", "4148056000", "4148057000",
@@ -65,8 +63,8 @@ def geo_literal(geometry: dict) -> str:
 def build_sql(apply: bool) -> str:
     mapping = json.loads(MAPPING.read_text(encoding="utf-8"))
     zones = [zone for zone in mapping["zones"] if zone["id"].startswith("gg-")]
-    if len(zones) != 128:
-        raise ValueError(f"경기 일반 권역은 128개여야 합니다: {len(zones)}")
+    if len(zones) != 126:
+        raise ValueError(f"경기 일반 권역은 126개여야 합니다: {len(zones)}")
     by_name = {(zone["cityId"], zone["name"]): zone for zone in zones}
     with DECISIONS.open(encoding="utf-8-sig", newline="") as source:
         decision_rows = list(csv.DictReader(source, delimiter="\t"))
@@ -94,18 +92,13 @@ def build_sql(apply: bool) -> str:
         raise ValueError(f"부분 경계 권역을 찾지 못했습니다: {missing}")
 
     admin_codes = {code for codes in ADMIN_CLIPS.values() for code in codes}
+    admin_codes.add("4117355900")
     admin_features = [
         feature for feature in json.loads(ADMIN.read_text(encoding="utf-8"))["features"]
         if feature["properties"].get("adm_cd2") in admin_codes
     ]
     if {f["properties"]["adm_cd2"] for f in admin_features} != admin_codes:
         raise ValueError("경기 행정동 공식 경계가 누락됐습니다")
-    ri_features = [
-        feature for feature in json.loads(RI.read_text(encoding="utf-8"))["features"]
-        if feature["properties"].get("li_cd") == "4136025021"
-    ]
-    if len(ri_features) != 1 or ri_features[0]["properties"]["li_kor_nm"] != "덕소리":
-        raise ValueError("덕소리 공식 경계가 누락됐습니다")
     godeok_features = [
         feature for feature in json.loads(LEGAL.read_text(encoding="utf-8"))["features"]
         if feature["properties"].get("emd_cd") == "41220128"
@@ -126,8 +119,13 @@ def build_sql(apply: bool) -> str:
         feature for feature in json.loads(LEGAL.read_text(encoding="utf-8"))["features"]
         if feature["properties"].get("emd_cd") == "41173102"
     ]
-    if len(gami_legal_features) != 1 or len(gwanyang_legal_features) != 1:
-        raise ValueError("감이동·관양동 법정동 경계가 누락됐습니다")
+    pyeongchon_legal_features = [
+        feature for feature in json.loads(LEGAL.read_text(encoding="utf-8"))["features"]
+        if feature["properties"].get("emd_cd") == "41173103"
+    ]
+    if (len(gami_legal_features) != 1 or len(gwanyang_legal_features) != 1
+            or len(pyeongchon_legal_features) != 1):
+        raise ValueError("감이동·관양동·평촌동 법정동 경계가 누락됐습니다")
     dasan_features = {
         feature["properties"]["district"]: feature
         for feature in json.loads(DASAN_DISTRICTS.read_text(encoding="utf-8"))["features"]
@@ -189,14 +187,14 @@ def build_sql(apply: bool) -> str:
         for complex_id, (name, road, old_code, new_code)
         in LEGAL_DONG_CORRECTIONS.items()
     )
-    deokso_id = by_name[("41360", "덕소")]["id"]
     dasan_jingeon_id = by_name[("41360", "다산진건")]["id"]
     dasan_jigeum_id = dasan_jigeum["id"]
     gami_id, gwanyang_id, dasan_other_id = (
         gami["id"], gwanyang["id"], dasan_other["id"]
     )
     wirye_id = by_name[("41450", "위례")]["id"]
-    indeokwon_id = by_name[("41173", "인덕원")]["id"]
+    pyeongchon_id = by_name[("41173", "평촌")]["id"]
+    retired_indeokwon_id = "gg-41173-055"
     godeok_id = by_name[("41220", "고덕")]["id"]
     finish = "COMMIT;" if apply else "ROLLBACK;"
     assert_candidates = """
@@ -218,6 +216,10 @@ FROM complex_zone_candidates a WHERE c.id=a.id
 UPDATE apartment_trade t SET zone_id=c.zone_id
 FROM complex c WHERE t.complex_id=c.id AND c.legal_dong_code LIKE '41%'
  AND t.zone_id IS DISTINCT FROM c.zone_id;
+UPDATE apartment_trade SET zone_id={sql_string(pyeongchon_id)}
+WHERE zone_id={sql_string(retired_indeokwon_id)};
+UPDATE apartment_presale_trade SET zone_id={sql_string(pyeongchon_id)}
+WHERE zone_id={sql_string(retired_indeokwon_id)};
 DO $$ BEGIN
  IF EXISTS (SELECT 1 FROM apartment_trade t JOIN zone z ON z.id=t.zone_id
     WHERE z.city_id LIKE '41%' AND z.id NOT IN (SELECT id FROM final_zone_id)) THEN
@@ -228,6 +230,20 @@ DELETE FROM zone_adjacency
 WHERE zone_id IN (SELECT id FROM zone WHERE city_id LIKE '41%' AND id NOT IN (SELECT id FROM final_zone_id))
  OR adjacent_zone_id IN (SELECT id FROM zone WHERE city_id LIKE '41%' AND id NOT IN (SELECT id FROM final_zone_id));
 DELETE FROM zone WHERE city_id LIKE '41%' AND id NOT IN (SELECT id FROM final_zone_id);
+DELETE FROM zone_adjacency WHERE source='auto_touch'
+ AND (zone_id={sql_string(pyeongchon_id)}
+  OR adjacent_zone_id={sql_string(pyeongchon_id)});
+INSERT INTO zone_adjacency (zone_id,adjacent_zone_id,source)
+SELECT {sql_string(pyeongchon_id)}, z.id, 'auto_touch'
+FROM zone p JOIN zone z ON z.id<>p.id
+WHERE p.id={sql_string(pyeongchon_id)}
+ AND p.polygon && z.polygon AND ST_Touches(p.polygon,z.polygon)
+UNION ALL
+SELECT z.id, {sql_string(pyeongchon_id)}, 'auto_touch'
+FROM zone p JOIN zone z ON z.id<>p.id
+WHERE p.id={sql_string(pyeongchon_id)}
+ AND p.polygon && z.polygon AND ST_Touches(p.polygon,z.polygon)
+ON CONFLICT (zone_id,adjacent_zone_id) DO NOTHING;
 UPDATE city c SET name=a.name,
  polygon=s.geom,center=ST_PointOnSurface(s.geom)
 FROM approved_city a JOIN (
@@ -236,8 +252,8 @@ FROM approved_city a JOIN (
  FROM zone WHERE id IN (SELECT id FROM final_zone_id) GROUP BY city_id
 ) s ON s.city_id=a.id WHERE c.id=a.id;
 DO $$ BEGIN
- IF (SELECT count(*) FROM zone WHERE city_id LIKE '41%') <> 132 THEN
-  RAISE EXCEPTION '최종 경기 권역 수가 132개가 아닙니다';
+ IF (SELECT count(*) FROM zone WHERE city_id LIKE '41%') <> 130 THEN
+  RAISE EXCEPTION '최종 경기 권역 수가 130개가 아닙니다';
  END IF;
  IF EXISTS (SELECT 1 FROM complex c JOIN zone z ON z.id=c.zone_id
     WHERE c.legal_dong_code LIKE '41%' AND NOT ST_Covers(z.polygon,c.location)) THEN
@@ -284,9 +300,12 @@ SELECT z.id,
 FROM zone z JOIN admin_clip c ON c.zone_id=z.id
  JOIN admin_boundary a ON a.code=c.admin_code GROUP BY z.id,z.polygon;
 INSERT INTO clipped_zone VALUES (
- {sql_string(deokso_id)},
- (SELECT ST_Multi(ST_CollectionExtract(ST_Intersection(z.polygon,{geo_literal(ri_features[0]['geometry'])}),3))
-  ::geometry(MultiPolygon,4326) FROM zone z WHERE z.id={sql_string(deokso_id)})
+ {sql_string(pyeongchon_id)},
+ ST_Multi(ST_CollectionExtract(ST_UnaryUnion(ST_Collect(
+  {geo_literal(pyeongchon_legal_features[0]['geometry'])},
+  ST_Intersection({geo_literal(gwanyang_legal_features[0]['geometry'])},
+   (SELECT geom FROM admin_boundary WHERE code='4117355900')))),3))
+ ::geometry(MultiPolygon,4326)
 ),(
  {sql_string(godeok_id)},
  (SELECT ST_Multi(ST_CollectionExtract(ST_Intersection(z.polygon,{geo_literal(godeok_features[0]['geometry'])}),3))
@@ -310,7 +329,7 @@ INSERT INTO clipped_zone VALUES (
  {sql_string(gwanyang_id)},
  (SELECT ST_Multi(ST_CollectionExtract(ST_Difference(
   {geo_literal(gwanyang_legal_features[0]['geometry'])}, geom),3))
-  ::geometry(MultiPolygon,4326) FROM clipped_zone WHERE id={sql_string(indeokwon_id)})
+  ::geometry(MultiPolygon,4326) FROM clipped_zone WHERE id={sql_string(pyeongchon_id)})
 ),(
  {sql_string(dasan_other_id)},
  (SELECT ST_Multi(ST_CollectionExtract(ST_Difference(
@@ -341,7 +360,7 @@ INSERT INTO legal_dong_correction VALUES {legal_corrections};
 DO $$ BEGIN
  IF (SELECT count(*) FROM zone z JOIN final_zone_id f ON f.id=z.id
      WHERE z.id NOT IN ({sql_string(dasan_jigeum_id)},{sql_string(gami_id)},
-                       {sql_string(gwanyang_id)},{sql_string(dasan_other_id)})) <> 128 THEN
+                       {sql_string(gwanyang_id)},{sql_string(dasan_other_id)})) <> 126 THEN
   RAISE EXCEPTION '경기 일반 권역 적재를 먼저 실행해야 합니다';
  END IF;
  IF EXISTS (SELECT 1 FROM clipped_zone WHERE geom IS NULL OR ST_IsEmpty(geom) OR NOT ST_IsValid(geom)) THEN
