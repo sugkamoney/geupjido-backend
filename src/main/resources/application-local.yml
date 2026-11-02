@@ -24,6 +24,9 @@ springdoc:
     enabled: true
 
 app:
+  zone-adjacency-auto-touch:
+    enabled: ${ZONE_ADJACENCY_AUTO_TOUCH_ENABLED:false}
+
   location-import:
     enabled: ${LOCATION_IMPORT_ENABLED:false}
     mapping-path: ${LOCATION_MAPPING_PATH:}

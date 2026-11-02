@@ -41,7 +41,7 @@ python3 -B scripts/complex/import_locations.py --run --start-over \
 
 범위를 지정하지 않은 `complete_import.py`는 전체 매핑을 대상으로 하므로 과거에 적재됐지만 매니페스트에서 아직 완료 확인을 받지 않은 법정동도 다시 조회한다. 같은 단지는 DB에서 건너뛴다. 운영 DB나 월간 스케줄은 이 명령의 대상이 아니다.
 
-#101의 초기 경기 승인 범위는 매핑 순서 467~615의 법정동 149개다. 2026-10-30 미배정 지역 확대 후 616~638에 새 법정동 23개를 추가했다. 서울 적재에 쓰던 매니페스트에는 과거 매핑 코드가 남아 있을 수 있으므로 경기용 매니페스트를 따로 쓴다. 먼저 `scripts/location/compile_gyeonggi_mapping.py`, 일반 지역 적재, `scripts/location/download_gyeonggi_exception_parcels.py`, `scripts/location/download_dasan_district_boundaries.py`, `scripts/location/apply_gyeonggi_zone_decisions.py --apply`를 실행해 새 권역을 준비한다. 다산진건·다산지금은 VWorld 공식 지구단위계획 경계를 사용한다. 일반 매핑 JSON의 경기 권역 128개 외에 다산지금·감이·관양·다산기타 4개 부분 권역을 적용기에서 추가한다. 다음 명령은 경기 단지를 수집하며, 완료 후 좌표 배치와 권역 적용기를 다시 실행한다. 일반 적재기를 다시 실행하면 부분 권역의 도형을 재적용해야 한다.
+#101의 초기 경기 승인 범위는 매핑 순서 467~615의 법정동 149개다. 2026-10-30 미배정 지역 확대 후 616~638에 새 법정동 23개를 추가했다. 서울 적재에 쓰던 매니페스트에는 과거 매핑 코드가 남아 있을 수 있으므로 경기용 매니페스트를 따로 쓴다. 먼저 `scripts/location/compile_gyeonggi_mapping.py`, 일반 지역 적재, `scripts/location/download_gyeonggi_exception_parcels.py`, `scripts/location/download_dasan_district_boundaries.py`, `scripts/location/apply_gyeonggi_zone_decisions.py --apply`를 실행해 새 권역을 준비한다. 다산진건·다산지금은 VWorld 공식 지구단위계획 경계를 사용한다. 2026-11-02 인덕원·평촌 통합과 덕소 독립 권역 폐지 뒤 일반 매핑 JSON의 경기 권역 126개 외에 다산지금·감이·관양·다산기타 4개 부분 권역을 적용기에서 추가한다. 다음 명령은 경기 단지를 수집하며, 완료 후 좌표 배치와 권역 적용기를 다시 실행한다. 일반 적재기를 다시 실행하면 부분 권역의 도형을 재적용해야 한다.
 
 ```sh
 python3 -B scripts/complex/complete_import.py \

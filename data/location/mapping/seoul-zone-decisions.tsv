@@ -16,8 +16,7 @@
 강동구	길동	길동	3.6	1174010500	gangdong-gildong	현재 매핑
 강동구	강일·상일	강일동·상일동	3.8	1174010300,1174011000	gangdong-gangil,gangdong-sangil	배치표 지명,현재 매핑
 강북구	미아	미아동	3.7	1130510100	gangbuk-mia	현재 매핑
-강북구	수유·번동	번동·수유동	4.5 (4.4~4.6)	1130510200,1130510300	gangbuk-suyu,gangbuk-beondong	현재 매핑
-강북구	우이	우이동	4.8	1130510400	gangbuk-ui	현재 매핑
+강북구	수유·번동	번동·수유동·우이동	4.5 (4.4~4.6)	1130510200,1130510300,1130510400	gangbuk-suyu,gangbuk-beondong,gangbuk-ui	우이 독립 권역 폐지; 단지와 거래는 수유·번동에 포함
 강서구	마곡	마곡동	3.2	1150010500	gangseo-magok	현재 매핑
 강서구	염창	염창동	3.4	1150010100	gangseo-yeomchang	현재 매핑
 강서구	가양	가양동	3.5	1150010400	gangseo-gayang	현재 매핑
