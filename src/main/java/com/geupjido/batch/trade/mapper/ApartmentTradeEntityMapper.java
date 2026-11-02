@@ -31,7 +31,8 @@ public class ApartmentTradeEntityMapper {
 			data.apartmentDong(),
 			data.dealingType(),
 			data.canceled(),
-			data.cancellationDate()
+			data.cancellationDate(),
+			data.registrationDate()
 		);
 	}
 

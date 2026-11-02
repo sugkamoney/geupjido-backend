@@ -82,6 +82,18 @@ app:
     max-pairs: ${APARTMENT_TRADE_BACKFILL_MAX_PAIRS:40}
     manifest-path: ${APARTMENT_TRADE_BACKFILL_MANIFEST_PATH:data/trade/import-runs/local.tsv}
 
+  weekly-trade-refresh:
+    run-on-startup: ${WEEKLY_TRADE_REFRESH_RUN_ON_STARTUP:false}
+    schedule-enabled: ${WEEKLY_TRADE_REFRESH_SCHEDULE_ENABLED:false}
+    smoke-run-on-startup: ${WEEKLY_TRADE_REFRESH_SMOKE_RUN_ON_STARTUP:false}
+    smoke-district-code: ${WEEKLY_TRADE_REFRESH_SMOKE_DISTRICT_CODE:}
+    smoke-deal-year-month: ${WEEKLY_TRADE_REFRESH_SMOKE_DEAL_YEAR_MONTH:}
+    schedule-cron: ${WEEKLY_TRADE_REFRESH_SCHEDULE_CRON:0 0 3 * * MON}
+    mapping-path: ${WEEKLY_TRADE_REFRESH_MAPPING_PATH:data/location/mapping/location-mapping.json}
+    reference-path: ${WEEKLY_TRADE_REFRESH_REFERENCE_PATH:data/location/reference/legal-dongs-20260917.tsv}
+    months-to-collect: ${WEEKLY_TRADE_REFRESH_MONTHS_TO_COLLECT:3}
+    report-path: ${WEEKLY_TRADE_REFRESH_REPORT_PATH:data/trade/import-runs/weekly-local.tsv}
+
   complex-price-recalculation:
     enabled: ${COMPLEX_PRICE_RECALCULATION_ENABLED:false}
 

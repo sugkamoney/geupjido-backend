@@ -76,11 +76,11 @@ class ApartmentTradeRepositoryIT {
 		assertThat(found.getZone()).isNull();
 		assertThat(found.getCreatedAt()).isNotNull();
 
-		assertThat(apartmentTradeRepository.findBySourceKey(
+		assertThat(apartmentTradeRepository.findAllBySourceKey(
 			"11170", "한남동", "통합테스트아파트",
 			LocalDate.of(2026, 9, 15), new BigDecimal("59.98"),
 			(short) 12, 250_000L
-		)).hasValueSatisfying(sourceTrade ->
+		)).singleElement().satisfies(sourceTrade ->
 			assertThat(sourceTrade.getId()).isEqualTo(savedId)
 		);
 	}
@@ -98,10 +98,10 @@ class ApartmentTradeRepositoryIT {
 
 		entityManager.clear();
 
-		assertThat(apartmentTradeRepository.findBySourceKey(
+		assertThat(apartmentTradeRepository.findAllBySourceKey(
 			"11170", "한남동", "선택값없는아파트",
 			LocalDate.of(2026, 9, 16), null, null, 260_000L
-		)).hasValueSatisfying(sourceTrade ->
+		)).singleElement().satisfies(sourceTrade ->
 			assertThat(sourceTrade.getId()).isEqualTo(saved.getId())
 		);
 	}

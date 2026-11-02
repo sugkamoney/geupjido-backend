@@ -1,6 +1,7 @@
 package com.geupjido.batch.trade.service;
 
 import java.nio.file.Path;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -28,6 +29,8 @@ import com.geupjido.trade.repository.ApartmentTradeRepository;
 public class ApartmentTradeExactLinkService {
 
 	private static final int BATCH_SIZE = 500;
+	private static final DateTimeFormatter DEAL_MONTH_FORMAT =
+		DateTimeFormatter.ofPattern("yyyyMM");
 
 	private final LegalDongCodeReferenceReader referenceReader;
 	private final LocationMappingReader mappingReader;
@@ -56,6 +59,12 @@ public class ApartmentTradeExactLinkService {
 	}
 
 	public Result linkExact(Path referencePath, Path mappingPath) {
+		return linkExact(referencePath, mappingPath, Set.of());
+	}
+
+	public Result linkExact(
+		Path referencePath, Path mappingPath, Set<TradeMonth> currentPairs
+	) {
 		Integer detached = transactionTemplate.execute(
 			ignored -> tradeRepository.detachRentalOnlyLinks()
 		);
@@ -71,14 +80,17 @@ public class ApartmentTradeExactLinkService {
 		long inScope = 0;
 		long outOfScope = 0;
 		long unknown = 0;
+		long currentUnknown = 0;
 		long linked = 0;
 		long zoneMismatch = 0;
+		long currentZoneMismatch = 0;
 		Map<Status, Long> assessments = new EnumMap<>(Status.class);
 
 		while (true) {
 			long cursor = afterId;
 			BatchResult batch = transactionTemplate.execute(
-				ignored -> linkBatch(cursor, classifier, verifiedMappings)
+				ignored -> linkBatch(cursor, classifier, verifiedMappings,
+					currentPairs)
 			);
 			if (batch == null || batch.scanned() == 0) {
 				break;
@@ -88,28 +100,33 @@ public class ApartmentTradeExactLinkService {
 			inScope += batch.inScope();
 			outOfScope += batch.outOfScope();
 			unknown += batch.unknown();
+			currentUnknown += batch.currentUnknown();
 			linked += batch.linked();
 			zoneMismatch += batch.zoneMismatch();
+			currentZoneMismatch += batch.currentZoneMismatch();
 			batch.assessments().forEach((status, count) ->
 				assessments.merge(status, count, Long::sum)
 			);
 		}
 		return new Result(detached == null ? 0 : detached,
 			scanned, inScope, outOfScope, unknown,
-			linked, zoneMismatch, Map.copyOf(assessments));
+			linked, zoneMismatch, Map.copyOf(assessments),
+			currentUnknown, currentZoneMismatch);
 	}
 
 	private BatchResult linkBatch(
 		long afterId,
 		ApartmentTradeScopeClassifier classifier,
-		Map<SourceKey, VerifiedLink> verifiedMappings
+		Map<SourceKey, VerifiedLink> verifiedMappings,
+		Set<TradeMonth> currentPairs
 	) {
 		List<ApartmentTrade> trades = tradeRepository
 			.findByIdGreaterThanAndComplexIsNullAndZoneIsNullOrderByIdAsc(
 				afterId, PageRequest.of(0, BATCH_SIZE)
 			);
 		if (trades.isEmpty()) {
-			return new BatchResult(afterId, 0, 0, 0, 0, 0, 0, Map.of());
+			return new BatchResult(afterId, 0, 0, 0, 0, 0, 0, 0,
+				0, Map.of());
 		}
 
 		List<ApartmentTradeScope> scopes = new ArrayList<>(trades.size());
@@ -117,6 +134,7 @@ public class ApartmentTradeExactLinkService {
 		int inScope = 0;
 		int outOfScope = 0;
 		int unknown = 0;
+		int currentUnknown = 0;
 		for (ApartmentTrade trade : trades) {
 			ApartmentTradeScope scope = classifier.classify(
 				trade.getDistrictCode(), trade.getLegalDongName()
@@ -128,7 +146,12 @@ public class ApartmentTradeExactLinkService {
 					legalDongCodes.add(scope.legalDongCode());
 				}
 				case OUT_OF_SCOPE -> outOfScope++;
-				case UNKNOWN_LEGAL_DONG -> unknown++;
+				case UNKNOWN_LEGAL_DONG -> {
+					unknown++;
+					if (currentPairs.contains(TradeMonth.of(trade))) {
+						currentUnknown++;
+					}
+				}
 			}
 		}
 
@@ -137,6 +160,7 @@ public class ApartmentTradeExactLinkService {
 		Map<Status, Long> assessments = new EnumMap<>(Status.class);
 		int linked = 0;
 		int zoneMismatch = 0;
+		int currentZoneMismatch = 0;
 		for (int index = 0; index < trades.size(); index++) {
 			ApartmentTradeScope scope = scopes.get(index);
 			if (scope.status() != ApartmentTradeScope.Status.IN_SCOPE) {
@@ -187,6 +211,9 @@ public class ApartmentTradeExactLinkService {
 				));
 			if (candidate.getZone() == null) {
 				zoneMismatch++;
+				if (currentPairs.contains(TradeMonth.of(trade))) {
+					currentZoneMismatch++;
+				}
 				continue;
 			}
 			if (trade.linkToComplex(candidate)) {
@@ -194,7 +221,8 @@ public class ApartmentTradeExactLinkService {
 			}
 		}
 		return new BatchResult(trades.getLast().getId(), trades.size(),
-			inScope, outOfScope, unknown, linked, zoneMismatch,
+			inScope, outOfScope, unknown, currentUnknown, linked,
+			zoneMismatch, currentZoneMismatch,
 			Map.copyOf(assessments));
 	}
 
@@ -237,6 +265,13 @@ public class ApartmentTradeExactLinkService {
 	private record VerifiedLink(String complexId, String zoneId) {
 	}
 
+	public record TradeMonth(String districtCode, String dealYearMonth) {
+		static TradeMonth of(ApartmentTrade trade) {
+			return new TradeMonth(trade.getDistrictCode(),
+				trade.getDealDate().format(DEAL_MONTH_FORMAT));
+		}
+	}
+
 	public record Result(
 		long detachedRentalLinks,
 		long scanned,
@@ -245,8 +280,18 @@ public class ApartmentTradeExactLinkService {
 		long unknown,
 		long linked,
 		long zoneMismatch,
-		Map<Status, Long> assessments
+		Map<Status, Long> assessments,
+		long currentUnknown,
+		long currentZoneMismatch
 	) {
+		public Result(
+			long detachedRentalLinks, long scanned, long inScope,
+			long outOfScope, long unknown, long linked,
+			long zoneMismatch, Map<Status, Long> assessments
+		) {
+			this(detachedRentalLinks, scanned, inScope, outOfScope,
+				unknown, linked, zoneMismatch, assessments, 0, 0);
+		}
 	}
 
 	private record BatchResult(
@@ -255,8 +300,10 @@ public class ApartmentTradeExactLinkService {
 		int inScope,
 		int outOfScope,
 		int unknown,
+		int currentUnknown,
 		int linked,
 		int zoneMismatch,
+		int currentZoneMismatch,
 		Map<Status, Long> assessments
 	) {
 	}

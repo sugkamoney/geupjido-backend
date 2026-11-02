@@ -34,7 +34,11 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @EnabledIfEnvironmentVariable(named = "RUN_POSTGIS_IT", matches = "true")
-@SpringBootTest
+@SpringBootTest(properties = {
+	"app.external.apartment-trade.enabled=true",
+	"app.external.apartment-trade.base-url=https://example.com",
+	"app.external.apartment-trade.service-key=test-service-key"
+})
 @ActiveProfiles("local")
 class ApartmentTradeImportRunnerIT {
 
@@ -180,10 +184,10 @@ class ApartmentTradeImportRunnerIT {
 	}
 
 	private ApartmentTrade find(String name) {
-		return repository.findBySourceKey(
+		return repository.findAllBySourceKey(
 			"11170", "한남동", name, LocalDate.of(2026, 9, 15),
 			new BigDecimal("59.98"), (short) 12, 250_000L
-		).orElseThrow();
+		).getFirst();
 	}
 
 	private long count(String name) {

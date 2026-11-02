@@ -4,6 +4,13 @@ package com.geupjido.batch.trade.model;
 public record ApartmentTradePartialImportResult(
 	ApartmentTradeImportResult imported,
 	int conflictRecords,
-	int conflictKeys
+	int conflictKeys,
+	int newConflictRecords
 ) {
+	public ApartmentTradePartialImportResult(
+		ApartmentTradeImportResult imported, int conflictRecords,
+		int conflictKeys
+	) {
+		this(imported, conflictRecords, conflictKeys, 0);
+	}
 }

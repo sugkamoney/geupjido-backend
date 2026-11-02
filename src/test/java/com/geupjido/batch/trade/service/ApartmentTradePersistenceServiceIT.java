@@ -88,6 +88,25 @@ class ApartmentTradePersistenceServiceIT {
 	}
 
 	@Test
+	void 재수집한_정상_거래의_등기일을_채우고_중복_저장을_피한다() {
+		String name = testPrefix + "-A";
+		LocalDate registrationDate = LocalDate.of(2026, 10, 15);
+		service.persist(List.of(trade(name, false, null)));
+
+		ApartmentTradeImportResult filled = service.persist(List.of(
+			trade(name, false, null, registrationDate)
+		));
+		ApartmentTradeImportResult repeated = service.persist(List.of(
+			trade(name, false, null, registrationDate)
+		));
+
+		assertThat(filled.updatedCount()).isEqualTo(1);
+		assertThat(repeated.skippedCount()).isEqualTo(1);
+		assertThat(find(name).getRegistrationDate()).isEqualTo(registrationDate);
+		assertThat(count(name)).isEqualTo(1);
+	}
+
+	@Test
 	void 충돌이_나면_앞선_신규_저장과_해제_갱신을_모두_롤백한다() {
 		String existingName = testPrefix + "-A";
 		String newName = testPrefix + "-B";
@@ -183,6 +202,20 @@ class ApartmentTradePersistenceServiceIT {
 		String name,
 		boolean canceled,
 		LocalDate cancellationDate,
+		LocalDate registrationDate
+	) {
+		return new ApartmentTradeData(
+			"11170", "한남동", name, "810", "101동",
+			2011, LocalDate.of(2026, 9, 15), 250_000L,
+			new BigDecimal("59.98"), 12, "중개거래",
+			canceled, cancellationDate, registrationDate
+		);
+	}
+
+	private ApartmentTradeData trade(
+		String name,
+		boolean canceled,
+		LocalDate cancellationDate,
 		BigDecimal exclusiveArea
 	) {
 		return new ApartmentTradeData(
@@ -198,10 +231,10 @@ class ApartmentTradePersistenceServiceIT {
 	}
 
 	private ApartmentTrade find(String name, BigDecimal exclusiveArea) {
-		return repository.findBySourceKey(
+		return repository.findAllBySourceKey(
 			"11170", "한남동", name, LocalDate.of(2026, 9, 15),
 			exclusiveArea, (short) 12, 250_000L
-		).orElseThrow();
+		).getFirst();
 	}
 
 	private long count(String name) {

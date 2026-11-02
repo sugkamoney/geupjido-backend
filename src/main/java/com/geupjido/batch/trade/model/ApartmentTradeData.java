@@ -19,6 +19,19 @@ public record ApartmentTradeData(
 	Integer floor,
 	String dealingType,
 	boolean canceled,
-	LocalDate cancellationDate
+	LocalDate cancellationDate,
+	LocalDate registrationDate
 ) {
+	public ApartmentTradeData(
+		String districtCode, String legalDongName, String apartmentName,
+		String lotNumber, String apartmentDong, Integer buildYear,
+		LocalDate dealDate, long dealAmountTenThousandWon,
+		BigDecimal exclusiveArea, Integer floor, String dealingType,
+		boolean canceled, LocalDate cancellationDate
+	) {
+		this(districtCode, legalDongName, apartmentName, lotNumber,
+			apartmentDong, buildYear, dealDate, dealAmountTenThousandWon,
+			exclusiveArea, floor, dealingType, canceled, cancellationDate,
+			null);
+	}
 }

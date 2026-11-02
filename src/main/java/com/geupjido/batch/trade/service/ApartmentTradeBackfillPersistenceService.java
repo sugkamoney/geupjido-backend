@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -14,6 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.geupjido.batch.trade.exception.ApartmentTradeMappingException;
 import com.geupjido.batch.trade.mapper.ApartmentTradeEntityMapper;
 import com.geupjido.batch.trade.model.ApartmentTradeData;
 import com.geupjido.batch.trade.model.ApartmentTradeImportResult;
@@ -54,7 +54,7 @@ public class ApartmentTradeBackfillPersistenceService {
 			if (!districtCode.equals(entity.getDistrictCode())
 				|| !dealYearMonth.equals(entity.getDealDate()
 					.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM")))) {
-				throw new IllegalArgumentException(
+				throw new ApartmentTradeMappingException(
 					"API 거래의 시군구 또는 계약월이 요청과 다릅니다."
 				);
 			}
@@ -63,11 +63,13 @@ public class ApartmentTradeBackfillPersistenceService {
 		}
 
 		List<ApartmentTradeData> safeTrades = new ArrayList<>();
+		List<List<IndexedTrade>> resolvedGroups = new ArrayList<>();
 		int conflictRecords = 0;
 		int conflictKeys = 0;
+		int newConflictRecords = 0;
 		for (List<IndexedTrade> group : groups.values()) {
 			ApartmentTrade incoming = group.getFirst().entity();
-			Optional<ApartmentTrade> stored = repository.findBySourceKey(
+			List<ApartmentTrade> stored = repository.findAllBySourceKey(
 				incoming.getDistrictCode(), incoming.getLegalDongName(),
 				incoming.getRawApartmentName(), incoming.getDealDate(),
 				incoming.getExclusiveArea(), incoming.getFloor(),
@@ -78,67 +80,184 @@ public class ApartmentTradeBackfillPersistenceService {
 				for (IndexedTrade item : group) {
 					safeTrades.add(trades.get(item.ordinal()));
 				}
+				if (group.size() == 2
+					&& group.get(0).entity().isCanceled()
+						!= group.get(1).entity().isCanceled()) {
+					resolvedGroups.add(group);
+				}
 				continue;
 			}
 			conflictKeys++;
 			conflictRecords += group.size();
 			for (IndexedTrade item : group) {
-				saveConflict(dealYearMonth, item, stored.orElse(null), reason);
+				if (saveConflict(dealYearMonth, item,
+					stored.isEmpty() ? null : stored.getFirst(), reason)) {
+					newConflictRecords++;
+				}
 			}
 		}
 
 		ApartmentTradeImportResult imported = persistenceService.persist(safeTrades);
+		for (List<IndexedTrade> group : resolvedGroups) {
+			resolveConflict(districtCode, dealYearMonth, group.getFirst().entity());
+		}
 		return new ApartmentTradePartialImportResult(
-			imported, conflictRecords, conflictKeys
+			imported, conflictRecords, conflictKeys, newConflictRecords
 		);
 	}
 
 	private static String conflictReason(
 		List<IndexedTrade> group,
-		Optional<ApartmentTrade> stored
+		List<ApartmentTrade> stored
 	) {
 		Set<Boolean> statuses = group.stream()
 			.map(item -> item.entity().isCanceled())
 			.collect(Collectors.toSet());
 		if (statuses.size() > 1) {
-			return "SOURCE_STATUS_CONFLICT";
+			if (group.size() != 2) {
+				return "SOURCE_STATUS_CONFLICT";
+			}
+			ApartmentTrade first = group.get(0).entity();
+			ApartmentTrade second = group.get(1).entity();
+			ApartmentTrade normal = first.isCanceled() ? second : first;
+			ApartmentTrade canceled = first.isCanceled() ? first : second;
+			if (!ApartmentTradeSourceIdentity.isRegisteredAfterCancellation(
+				normal, canceled)) {
+				return "SOURCE_STATUS_CONFLICT";
+			}
 		}
 		Set<LocalDate> cancellationDates = group.stream()
 			.map(item -> item.entity().getCancellationDate())
+			.filter(java.util.Objects::nonNull)
 			.collect(Collectors.toSet());
 		if (cancellationDates.size() > 1) {
 			return "SOURCE_CANCELLATION_DATE_MISMATCH";
 		}
-		if (stored.isPresent() && stored.get().isCanceled()) {
-			ApartmentTrade incoming = group.getFirst().entity();
-			if (!incoming.isCanceled()) {
-				return "CANCELED_TO_NORMAL";
+		Set<LocalDate> registrationDates = group.stream()
+			.map(item -> item.entity().getRegistrationDate())
+			.filter(java.util.Objects::nonNull)
+			.collect(Collectors.toSet());
+		if (registrationDates.size() > 1) {
+			return "SOURCE_REGISTRATION_DATE_MISMATCH";
+		}
+		for (IndexedTrade item : group) {
+			ApartmentTrade incoming = item.entity();
+			List<ApartmentTrade> matching = stored.stream()
+				.filter(trade -> trade.isCanceled() == incoming.isCanceled())
+				.toList();
+			if (matching.size() > 1) {
+				return "REGISTRATION_DATE_MISMATCH";
 			}
-			if (!stored.get().getCancellationDate()
-				.equals(incoming.getCancellationDate())) {
-				return "CANCELLATION_DATE_MISMATCH";
+			if (!matching.isEmpty()) {
+				ApartmentTrade current = matching.getFirst();
+				if (incoming.isCanceled() && !current.getCancellationDate()
+					.equals(incoming.getCancellationDate())) {
+					return "CANCELLATION_DATE_MISMATCH";
+				}
+				if (current.getRegistrationDate() != null
+					&& incoming.getRegistrationDate() != null
+					&& !current.getRegistrationDate()
+						.equals(incoming.getRegistrationDate())) {
+					return "REGISTRATION_DATE_MISMATCH";
+				}
+				continue;
+			}
+			if (stored.size() == 1) {
+				ApartmentTrade opposite = stored.getFirst();
+				if (!incoming.isCanceled()) {
+					if (!ApartmentTradeSourceIdentity
+						.isRegisteredAfterCancellation(incoming, opposite)) {
+						return "CANCELED_TO_NORMAL";
+					}
+				} else if (opposite.getRegistrationDate() != null
+					&& opposite.getRegistrationDate().isAfter(
+						incoming.getCancellationDate())
+					&& !ApartmentTradeSourceIdentity
+						.isRegisteredAfterCancellation(opposite, incoming)) {
+					return "CANCELED_BEFORE_REGISTRATION";
+				}
 			}
 		}
 		return null;
 	}
 
-	private void saveConflict(
+	private void resolveConflict(
+		String districtCode, String dealYearMonth, ApartmentTrade trade
+	) {
+		jdbcTemplate.update("""
+			UPDATE apartment_trade_conflict
+			SET review_status = 'RESOLVED', observed_at = CURRENT_TIMESTAMP
+			WHERE district_code = ? AND deal_year_month = ?
+			  AND legal_dong_name = ? AND raw_apartment_name = ?
+			  AND deal_date = ? AND deal_amount = ?
+			  AND exclusive_area IS NOT DISTINCT FROM ?
+			  AND floor IS NOT DISTINCT FROM ?
+			  AND review_status = 'OPEN'
+			""", districtCode, dealYearMonth, trade.getLegalDongName(),
+			trade.getRawApartmentName(), trade.getDealDate(),
+			trade.getDealAmountTenThousandWon(), trade.getExclusiveArea(),
+			trade.getFloor());
+	}
+
+	private boolean saveConflict(
 		String dealYearMonth,
 		IndexedTrade item,
 		ApartmentTrade stored,
 		String reason
 	) {
 		ApartmentTrade trade = item.entity();
+		List<Long> insertedIds = jdbcTemplate.query("""
+			INSERT INTO apartment_trade_conflict_seen (
+				district_code, deal_year_month, legal_dong_name,
+				raw_apartment_name, lot_number, apartment_dong, build_year,
+				deal_date, deal_amount, exclusive_area, floor, dealing_type,
+				is_canceled, cancellation_date, registration_date
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			ON CONFLICT DO NOTHING
+			RETURNING id
+			""",
+			(rs, rowNum) -> rs.getLong(1),
+			trade.getDistrictCode(), dealYearMonth,
+			trade.getLegalDongName(), trade.getRawApartmentName(),
+			trade.getLotNumber(), trade.getApartmentDong(), trade.getBuildYear(),
+			trade.getDealDate(), trade.getDealAmountTenThousandWon(),
+			trade.getExclusiveArea(), trade.getFloor(), trade.getDealingType(),
+			trade.isCanceled(), trade.getCancellationDate(),
+			trade.getRegistrationDate());
+		Long sourceSeenId = insertedIds.isEmpty()
+			? jdbcTemplate.queryForObject("""
+				SELECT id FROM apartment_trade_conflict_seen
+				WHERE district_code = ? AND deal_year_month = ?
+				  AND legal_dong_name = ? AND raw_apartment_name = ?
+				  AND lot_number IS NOT DISTINCT FROM ?
+				  AND apartment_dong IS NOT DISTINCT FROM ?
+				  AND build_year IS NOT DISTINCT FROM ?
+				  AND deal_date = ? AND deal_amount = ?
+				  AND exclusive_area IS NOT DISTINCT FROM ?
+				  AND floor IS NOT DISTINCT FROM ?
+				  AND dealing_type IS NOT DISTINCT FROM ?
+				  AND is_canceled = ?
+				  AND cancellation_date IS NOT DISTINCT FROM ?
+				  AND registration_date IS NOT DISTINCT FROM ?
+				""", Long.class, trade.getDistrictCode(), dealYearMonth,
+				trade.getLegalDongName(), trade.getRawApartmentName(),
+				trade.getLotNumber(), trade.getApartmentDong(),
+				trade.getBuildYear(), trade.getDealDate(),
+				trade.getDealAmountTenThousandWon(), trade.getExclusiveArea(),
+				trade.getFloor(), trade.getDealingType(), trade.isCanceled(),
+				trade.getCancellationDate(), trade.getRegistrationDate())
+			: insertedIds.getFirst();
 		jdbcTemplate.update("""
 			INSERT INTO apartment_trade_conflict (
-				district_code, deal_year_month, source_ordinal,
+				district_code, deal_year_month, source_ordinal, source_seen_id,
 				conflict_reason, existing_trade_id, legal_dong_name,
 				raw_apartment_name, lot_number, apartment_dong, build_year,
 				deal_date, deal_amount, exclusive_area, floor, dealing_type,
-				is_canceled, cancellation_date
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-			ON CONFLICT (district_code, deal_year_month, source_ordinal)
-			DO UPDATE SET conflict_reason = EXCLUDED.conflict_reason,
+				is_canceled, cancellation_date, registration_date
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			ON CONFLICT (source_seen_id) WHERE review_status = 'OPEN'
+			DO UPDATE SET source_ordinal = EXCLUDED.source_ordinal,
+				conflict_reason = EXCLUDED.conflict_reason,
 				review_status = 'OPEN',
 				existing_trade_id = EXCLUDED.existing_trade_id,
 				legal_dong_name = EXCLUDED.legal_dong_name,
@@ -153,16 +272,19 @@ public class ApartmentTradeBackfillPersistenceService {
 				dealing_type = EXCLUDED.dealing_type,
 				is_canceled = EXCLUDED.is_canceled,
 				cancellation_date = EXCLUDED.cancellation_date,
+				registration_date = EXCLUDED.registration_date,
 				observed_at = CURRENT_TIMESTAMP
 			""",
-			trade.getDistrictCode(), dealYearMonth, item.ordinal(), reason,
+			trade.getDistrictCode(), dealYearMonth, item.ordinal(),
+			sourceSeenId, reason,
 			stored == null ? null : stored.getId(), trade.getLegalDongName(),
 			trade.getRawApartmentName(), trade.getLotNumber(),
 			trade.getApartmentDong(), trade.getBuildYear(), trade.getDealDate(),
 			trade.getDealAmountTenThousandWon(), trade.getExclusiveArea(),
 			trade.getFloor(), trade.getDealingType(), trade.isCanceled(),
-			trade.getCancellationDate()
+			trade.getCancellationDate(), trade.getRegistrationDate()
 		);
+		return !insertedIds.isEmpty();
 	}
 
 	private record IndexedTrade(int ordinal, ApartmentTrade entity) {
