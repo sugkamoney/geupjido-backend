@@ -258,6 +258,7 @@ public class Complex {
 
 		this.location = (Point) point.copy();
 		this.zone = null;
+		refreshActivity();
 	}
 
 	public void assignZone(Zone zone) {
@@ -265,6 +266,7 @@ public class Complex {
 			throw new IllegalStateException("권역 배정 전에 단지 좌표가 필요합니다.");
 		}
 		this.zone = Objects.requireNonNull(zone, "권역이 필요합니다.");
+		refreshActivity();
 	}
 
 	/** 선택된 정상 거래 한 건의 가격·실제 면적·계약일을 함께 반영한다. */
@@ -289,6 +291,7 @@ public class Complex {
 			this.priceSource = null;
 			this.representativeArea = null;
 			this.lastDealDate = null;
+			refreshActivity();
 			return;
 		}
 		if (price == null || price <= 0 || area == null
@@ -301,6 +304,19 @@ public class Complex {
 		this.priceSource = source;
 		this.representativeArea = area;
 		this.lastDealDate = dealDate;
+		refreshActivity();
+	}
+
+	private void refreshActivity() {
+		this.active = zone != null
+			&& location != null
+			&& households != null && households >= 300
+			&& approvalDate != null
+			&& price != null && price > 0
+			&& representativeArea != null
+			&& representativeArea.signum() > 0
+			&& lastDealDate != null
+			&& priceSource == RepresentativePriceSource.APARTMENT_SALE;
 	}
 
 	public void updateProvisionalZoneRank(Integer rank) {

@@ -84,7 +84,7 @@ def load_boundaries() -> tuple[dict, list[dict], list[dict], list[dict]]:
 def build_sql(apply: bool) -> str:
     mapping = json.loads(MAPPING.read_text(encoding="utf-8"))
     zones = [zone for zone in mapping["zones"] if zone["cityId"].startswith("11")]
-    if len(zones) != 148:
+    if len(zones) != 147:
         raise ValueError(f"서울 지리 권역 수가 예상과 다릅니다: {len(zones)}")
     ichon, admin, parcels, exception_parcels = load_boundaries()
     ids = [zone["id"] for zone in zones]
@@ -160,8 +160,8 @@ INSERT INTO exception_expected VALUES {exception_expected_values};
 
 DO $$
 BEGIN
- IF (SELECT count(*) FROM zone z JOIN zone_tier t ON z.id=t.id) <> 148 THEN
-  RAISE EXCEPTION '일반 지역 적재를 먼저 실행해야 합니다: 서울 권역 148개 필요';
+ IF (SELECT count(*) FROM zone z JOIN zone_tier t ON z.id=t.id) <> 147 THEN
+  RAISE EXCEPTION '일반 지역 적재를 먼저 실행해야 합니다: 서울 권역 147개 필요';
  END IF;
  IF (SELECT count(*) FROM canonical_complex a JOIN complex c ON a.complex_id=c.id
      WHERE c.legal_dong_code=a.dong_code
@@ -272,8 +272,8 @@ DELETE FROM zone WHERE city_id LIKE '11%'
  AND id NOT IN (SELECT id FROM final_zone_id);
 DO $$
 BEGIN
- IF (SELECT count(*) FROM zone WHERE city_id LIKE '11%') <> 150 THEN
-  RAISE EXCEPTION '최종 서울 권역 수가 150개가 아닙니다';
+ IF (SELECT count(*) FROM zone WHERE city_id LIKE '11%') <> 149 THEN
+  RAISE EXCEPTION '최종 서울 권역 수가 149개가 아닙니다';
  END IF;
  IF EXISTS (
   SELECT 1 FROM complex c JOIN zone z ON c.zone_id=z.id

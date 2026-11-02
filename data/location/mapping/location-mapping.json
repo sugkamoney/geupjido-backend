@@ -498,18 +498,10 @@
       "name": "수유·번동",
       "dongCodes": [
         "1130510200",
-        "1130510300"
-      ],
-      "initialTier": 4.5
-    },
-    {
-      "id": "gangbuk-ui",
-      "cityId": "11305",
-      "name": "우이",
-      "dongCodes": [
+        "1130510300",
         "1130510400"
       ],
-      "initialTier": 4.8
+      "initialTier": 4.5
     },
     {
       "id": "gangseo-magok",
@@ -2491,18 +2483,10 @@
       "cityId": "41173",
       "name": "평촌",
       "dongCodes": [
-        "4117310300"
-      ],
-      "initialTier": 3.5
-    },
-    {
-      "id": "gg-41173-055",
-      "cityId": "41173",
-      "name": "인덕원",
-      "dongCodes": [
+        "4117310300",
         "4117310200"
       ],
-      "initialTier": 3.6
+      "initialTier": 3.5
     },
     {
       "id": "gg-41173-056",
@@ -2899,15 +2883,6 @@
         "4136011100"
       ],
       "initialTier": 4.1
-    },
-    {
-      "id": "gg-41360-099",
-      "cityId": "41360",
-      "name": "덕소",
-      "dongCodes": [
-        "4136025000"
-      ],
-      "initialTier": 4.9
     },
     {
       "id": "gg-41360-100",

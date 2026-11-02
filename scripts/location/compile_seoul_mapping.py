@@ -57,6 +57,8 @@ def build_mapping(mapping: dict, rows: list[dict]) -> dict:
 
     if len(seen_codes) != 467:
         raise ValueError(f"서울 법정동 467개 중 {len(seen_codes)}개 배정")
+    if len(seoul) != 147:
+        raise ValueError(f"서울 일반 권역 147개 중 {len(seoul)}개가 있습니다")
     return {**mapping, "zones": seoul + non_seoul}
 
 
