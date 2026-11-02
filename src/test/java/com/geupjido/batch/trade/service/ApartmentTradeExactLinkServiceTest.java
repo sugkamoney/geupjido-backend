@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -32,6 +33,59 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class ApartmentTradeExactLinkServiceTest {
+
+	@Test
+	void 이번_계약월의_미확인_법정동만_완료_판정용으로_센다() {
+		var referenceReader = mock(LegalDongCodeReferenceReader.class);
+		var mappingReader = mock(LocationMappingReader.class);
+		var tradeRepository = mock(ApartmentTradeRepository.class);
+		var complexRepository = mock(ComplexRepository.class);
+		var transactionTemplate = mock(TransactionTemplate.class);
+		Path referencePath = Path.of("reference.tsv");
+		Path mappingPath = Path.of("mapping.json");
+		when(referenceReader.read(referencePath)).thenReturn(
+			new LegalDongCodeReference(Map.of(
+				new Key("11170", "이촌동"), "1117012900")));
+		when(mappingReader.read(mappingPath)).thenReturn(new LocationMapping(
+			List.of(new LocationMapping.RegionDefinition(
+				"seoul", "서울", true, 1)),
+			List.of(new LocationMapping.CityDefinition(
+				"11170", "seoul", "용산구")),
+			List.of(new LocationMapping.ZoneDefinition(
+				"yongsan-ichon", "11170", "이촌",
+				List.of("1117012900"), new BigDecimal("2.0")))));
+		ApartmentTrade historical = new ApartmentTrade(
+			LocalDate.of(2025, 9, 1), 100_000L, new BigDecimal("59.8"),
+			(short)1, (short)1998, "11200", "신당동", "한진해모로",
+			"845", null, "중개거래", false, null);
+		ApartmentTrade current = new ApartmentTrade(
+			LocalDate.of(2026, 9, 1), 100_000L, new BigDecimal("59.8"),
+			(short)1, (short)1998, "11170", "없는동", "미확인단지",
+			"1", null, "중개거래", false, null);
+		ReflectionTestUtils.setField(historical, "id", 1L);
+		ReflectionTestUtils.setField(current, "id", 2L);
+		when(tradeRepository
+			.findByIdGreaterThanAndComplexIsNullAndZoneIsNullOrderByIdAsc(
+				any(), any()))
+			.thenReturn(List.of(historical, current), List.of());
+		doAnswer(invocation -> invocation.getArgument(0,
+			org.springframework.transaction.support.TransactionCallback.class)
+			.doInTransaction(mock(TransactionStatus.class)))
+			.when(transactionTemplate).execute(any());
+		var candidateFinder = new ApartmentTradeCandidateFinder(complexRepository);
+		var service = new ApartmentTradeExactLinkService(
+			referenceReader, mappingReader, tradeRepository, complexRepository,
+			candidateFinder,
+			new ApartmentTradeCandidateAssessmentService(candidateFinder),
+			transactionTemplate);
+
+		var result = service.linkExact(referencePath, mappingPath,
+			Set.of(new ApartmentTradeExactLinkService.TradeMonth(
+				"11170", "202609")));
+
+		assertThat(result.unknown()).isEqualTo(2);
+		assertThat(result.currentUnknown()).isEqualTo(1);
+	}
 
 	@Test
 	void 연도와_법정동_기본권역이_달라도_검증된_단지에_연결한다() {

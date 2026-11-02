@@ -62,6 +62,28 @@ class ApartmentTradeMapperTest {
 		assertThat(result.dealingType()).isEqualTo("중개거래");
 		assertThat(result.canceled()).isFalse();
 		assertThat(result.cancellationDate()).isNull();
+		assertThat(result.registrationDate()).isNull();
+	}
+
+	@Test
+	void 등기일이_있는_거래를_날짜로_변환한다() {
+		ApartmentTradeApiItem item = createItem(
+			"250,000", null, null, "59.98", "26.10.15"
+		);
+
+		assertThat(mapper.map(item).registrationDate())
+			.isEqualTo(LocalDate.of(2026, 10, 15));
+	}
+
+	@Test
+	void 잘못된_등기일은_변환하지_않는다() {
+		ApartmentTradeApiItem item = createItem(
+			"250,000", null, null, "59.98", "26.02.30"
+		);
+
+		assertThatThrownBy(() -> mapper.map(item))
+			.isInstanceOf(ApartmentTradeMappingException.class)
+			.hasMessageContaining("등기일");
 	}
 
 	@Test
@@ -179,6 +201,17 @@ class ApartmentTradeMapperTest {
 		String cancellationType,
 		String exclusiveArea
 	) {
+		return createItem(dealAmount, cancellationDate, cancellationType,
+			exclusiveArea, null);
+	}
+
+	private ApartmentTradeApiItem createItem(
+		String dealAmount,
+		String cancellationDate,
+		String cancellationType,
+		String exclusiveArea,
+		String registrationDate
+	) {
 		return new ApartmentTradeApiItem(
 			"101",
 			"한남테스트아파트",
@@ -196,7 +229,7 @@ class ApartmentTradeMapperTest {
 			"12",
 			"810",
 			null,
-			null,
+			registrationDate,
 			"11170",
 			null,
 			"한남동"

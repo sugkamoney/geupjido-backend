@@ -34,8 +34,22 @@ class ApartmentTradeEntityMapperTest {
 		assertThat(trade.getDealingType()).isEqualTo("중개거래");
 		assertThat(trade.isCanceled()).isFalse();
 		assertThat(trade.getCancellationDate()).isNull();
+		assertThat(trade.getRegistrationDate()).isNull();
 		assertThat(trade.getComplex()).isNull();
 		assertThat(trade.getZone()).isNull();
+	}
+
+	@Test
+	void 등기일을_엔티티에_보존한다() {
+		ApartmentTradeData data = new ApartmentTradeData(
+			"11170", "한남동", "한남아파트", "810", "101동",
+			2011, LocalDate.of(2026, 9, 15), 250_000L,
+			new BigDecimal("59.98"), 12, "중개거래", false, null,
+			LocalDate.of(2026, 10, 15)
+		);
+
+		assertThat(mapper.map(data).getRegistrationDate())
+			.isEqualTo(LocalDate.of(2026, 10, 15));
 	}
 
 	@Test
