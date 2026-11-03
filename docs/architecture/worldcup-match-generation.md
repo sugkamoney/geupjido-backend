@@ -2,6 +2,7 @@
 
 - 관련 이슈: [#116](https://github.com/sugkamoney/geupjido-backend/issues/116), [투표 정책 #109](https://github.com/sugkamoney/geupjido-backend/issues/109)
 - 카드 표시값: [월드컵 카드 정보 계약](worldcup-card-api-contract.md)
+- 후속 게임 시작·재조회 API: [#119](worldcup-game-api.md)
 
 ## 입력과 결과
 

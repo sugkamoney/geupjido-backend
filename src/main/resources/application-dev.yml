@@ -19,3 +19,7 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
+
+app:
+  anonymous-cookie:
+    secure: ${ANONYMOUS_COOKIE_SECURE:true}

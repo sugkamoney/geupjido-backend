@@ -1,6 +1,6 @@
 # 아파트 월드컵 카드 정보·API 응답 계약
 
-- 상태: **카드 표시 항목 확정** — 실제 조회 API 구현 전
+- 상태: **카드 표시 항목 확정** — 게임 시작·재조회 API는 [#119](worldcup-game-api.md)에서 구현
 - 작성일: 2026-11-02
 - 관련 이슈: [#113](https://github.com/sugkamoney/geupjido-backend/issues/113), [투표 정책 #109](https://github.com/sugkamoney/geupjido-backend/issues/109)
 
