@@ -24,6 +24,9 @@ springdoc:
     enabled: true
 
 app:
+  anonymous-cookie:
+    secure: false
+
   zone-adjacency-auto-touch:
     enabled: ${ZONE_ADJACENCY_AUTO_TOUCH_ENABLED:false}
 
