@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.geupjido.match.service.MatchUnavailableException;
 import com.geupjido.match.service.WorldcupGameNotFoundException;
+import com.geupjido.match.service.WorldcupVoteRejectedException;
 
 @RestControllerAdvice(assignableTypes = WorldcupGameController.class)
 public class WorldcupGameExceptionHandler {
@@ -21,5 +22,13 @@ public class WorldcupGameExceptionHandler {
 	public ResponseEntity<ApiErrorResponse> handleNotFound(WorldcupGameNotFoundException exception) {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND)
 			.body(new ApiErrorResponse("GAME_NOT_FOUND", exception.getMessage()));
+	}
+
+	@ExceptionHandler(WorldcupVoteRejectedException.class)
+	public ResponseEntity<ApiErrorResponse> handleVoteRejected(WorldcupVoteRejectedException exception) {
+		HttpStatus status = "INVALID_VOTE".equals(exception.code())
+			? HttpStatus.BAD_REQUEST : HttpStatus.CONFLICT;
+		return ResponseEntity.status(status)
+			.body(new ApiErrorResponse(exception.code(), exception.getMessage()));
 	}
 }
