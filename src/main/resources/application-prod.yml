@@ -21,6 +21,9 @@ springdoc:
     enabled: false
 
 app:
+  anonymous-cookie:
+    secure: true
+
   external:
     apartment-trade:
       enabled: ${DATA_GO_KR_APT_TRADE_ENABLED:false}
