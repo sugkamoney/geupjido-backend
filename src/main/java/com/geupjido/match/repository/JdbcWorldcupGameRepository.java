@@ -1,7 +1,9 @@
 package com.geupjido.match.repository;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,8 +25,8 @@ import com.geupjido.match.model.WorldcupGameState;
 public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 
 	private static final String INSERT_SQL = """
-		INSERT INTO worldcup_game (anonymous_id, base_zone_id, tier_range_used, matchups)
-		VALUES (:anonymousId, :baseZoneId, :tierRangeUsed, CAST(:matchups AS jsonb))
+		INSERT INTO worldcup_game (anonymous_id, base_zone_id, tier_range_used, matchups, started_at)
+		VALUES (:anonymousId, :baseZoneId, :tierRangeUsed, CAST(:matchups AS jsonb), :startedAt)
 		RETURNING id
 		""";
 
@@ -43,10 +45,19 @@ public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 		ORDER BY round_number
 		""";
 
+	private static final String COUNT_STARTED_SQL = """
+		SELECT COUNT(*)
+		FROM worldcup_game
+		WHERE anonymous_id = :anonymousId
+		  AND started_at >= :fromInclusive
+		  AND started_at < :toExclusive
+		""";
+
 	private static final String INSERT_VOTE_SQL = """
 		INSERT INTO worldcup_vote
-		    (game_id, round_number, left_complex_id, right_complex_id, selected_complex_id)
-		VALUES (:gameId, :roundNumber, :leftComplexId, :rightComplexId, :selectedComplexId)
+		    (game_id, round_number, left_complex_id, right_complex_id, selected_complex_id, selected_at)
+		VALUES (:gameId, :roundNumber, :leftComplexId, :rightComplexId, :selectedComplexId,
+		    GREATEST(clock_timestamp(), (SELECT started_at FROM worldcup_game WHERE id = :gameId)))
 		ON CONFLICT (game_id, round_number) DO NOTHING
 		""";
 
@@ -77,7 +88,7 @@ public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 	}
 
 	@Override
-	public WorldcupGameState save(UUID anonymousId, GeneratedMatchGame game) {
+	public WorldcupGameState save(UUID anonymousId, GeneratedMatchGame game, Instant startedAt) {
 		try {
 			String matchupsJson = objectMapper.writeValueAsString(game.matchups());
 			Long id = jdbcTemplate.queryForObject(
@@ -86,7 +97,8 @@ public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 					.addValue("anonymousId", anonymousId)
 					.addValue("baseZoneId", game.baseZoneId())
 					.addValue("tierRangeUsed", game.tierRangeUsed())
-					.addValue("matchups", matchupsJson),
+					.addValue("matchups", matchupsJson)
+					.addValue("startedAt", OffsetDateTime.ofInstant(startedAt, ZoneOffset.UTC)),
 				Long.class
 			);
 			if (id == null) {
@@ -109,6 +121,19 @@ public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 	}
 
 	@Override
+	public long countStartedByAnonymousId(UUID anonymousId, Instant fromInclusive, Instant toExclusive) {
+		Long count = jdbcTemplate.queryForObject(
+			COUNT_STARTED_SQL,
+			new MapSqlParameterSource()
+				.addValue("anonymousId", anonymousId)
+				.addValue("fromInclusive", OffsetDateTime.ofInstant(fromInclusive, ZoneOffset.UTC))
+				.addValue("toExclusive", OffsetDateTime.ofInstant(toExclusive, ZoneOffset.UTC)),
+			Long.class
+		);
+		return count == null ? 0 : count;
+	}
+
+	@Override
 	public void saveVote(long gameId, int roundNumber, String leftComplexId,
 		String rightComplexId, String selectedComplexId) {
 		int inserted = jdbcTemplate.update(
@@ -128,7 +153,7 @@ public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 	@Override
 	public void complete(long gameId) {
 		int updated = jdbcTemplate.update(
-			"UPDATE worldcup_game SET completed_at = CURRENT_TIMESTAMP "
+			"UPDATE worldcup_game SET completed_at = GREATEST(clock_timestamp(), started_at) "
 				+ "WHERE id = :gameId AND completed_at IS NULL",
 			new MapSqlParameterSource("gameId", gameId)
 		);

@@ -1,5 +1,6 @@
 package com.geupjido.match.service;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -12,9 +13,14 @@ import com.geupjido.match.repository.WorldcupGameRepository;
 public class WorldcupGameStartPersistenceService {
 
 	private final WorldcupGameRepository gameRepository;
+	private final WorldcupDailyGameLimit dailyGameLimit;
 
-	public WorldcupGameStartPersistenceService(WorldcupGameRepository gameRepository) {
+	public WorldcupGameStartPersistenceService(
+		WorldcupGameRepository gameRepository,
+		WorldcupDailyGameLimit dailyGameLimit
+	) {
 		this.gameRepository = gameRepository;
+		this.dailyGameLimit = dailyGameLimit;
 	}
 
 	@Transactional
@@ -24,6 +30,7 @@ public class WorldcupGameStartPersistenceService {
 		if (latest.isPresent() && !latest.get().completed()) {
 			return new WorldcupGameStartResult(latest.get(), false);
 		}
-		return new WorldcupGameStartResult(gameRepository.save(anonymousId, game), true);
+		Instant startedAt = dailyGameLimit.ensureCanStart(anonymousId);
+		return new WorldcupGameStartResult(gameRepository.save(anonymousId, game, startedAt), true);
 	}
 }
