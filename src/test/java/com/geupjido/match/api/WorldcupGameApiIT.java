@@ -1,5 +1,6 @@
 package com.geupjido.match.api;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.geupjido.match.model.MatchZoneCandidate;
 import com.geupjido.match.repository.MatchCandidateRepository;
 import com.geupjido.match.repository.WorldcupGameRepository;
+import com.geupjido.match.service.MatchGenerationService;
 import com.geupjido.user.api.AnonymousVisitorCookie;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,6 +48,9 @@ class WorldcupGameApiIT {
 
 	@Autowired
 	private MatchCandidateRepository candidateRepository;
+
+	@Autowired
+	private MatchGenerationService generator;
 
 	@Autowired
 	private WorldcupGameRepository gameRepository;
@@ -203,6 +208,27 @@ class WorldcupGameApiIT {
 			.andReturn().getResponse();
 
 		assertThat(response.getHeader(HttpHeaders.SET_COOKIE)).isNull();
+	}
+
+	@Test
+	void 하루_여섯_게임을_시작했다면_두_시작_API가_일곱번째를_거부한다() throws Exception {
+		UUID anonymousId = UUID.randomUUID();
+		var game = generator.generateForZone(candidateRepository.findActiveZones().getFirst().zoneId());
+		for (int i = 0; i < 6; i++) {
+			gameRepository.complete(gameRepository.save(anonymousId, game, Instant.now()).id());
+		}
+		Cookie cookie = new Cookie(AnonymousVisitorCookie.NAME, anonymousId.toString());
+		mockMvc.perform(post("/api/v1/worldcup/games").cookie(cookie))
+			.andExpect(status().isTooManyRequests())
+			.andExpect(jsonPath("$.code").value("DAILY_GAME_LIMIT_REACHED"));
+		mockMvc.perform(post("/api/v1/worldcup/zones/{zoneId}/games", game.baseZoneId())
+				.cookie(cookie))
+			.andExpect(status().isTooManyRequests())
+			.andExpect(jsonPath("$.code").value("DAILY_GAME_LIMIT_REACHED"));
+		assertThat(jdbcTemplate.queryForObject(
+			"SELECT COUNT(*) FROM worldcup_game WHERE anonymous_id = ?",
+			Integer.class, anonymousId
+		)).isEqualTo(6);
 	}
 
 	@Test
