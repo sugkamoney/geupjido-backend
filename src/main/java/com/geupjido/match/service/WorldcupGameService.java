@@ -17,15 +17,18 @@ public class WorldcupGameService {
 	private final MatchGenerationService matchGenerationService;
 	private final WorldcupGameRepository gameRepository;
 	private final WorldcupGameStartPersistenceService startPersistenceService;
+	private final WorldcupDailyGameLimit dailyGameLimit;
 
 	public WorldcupGameService(
 		MatchGenerationService matchGenerationService,
 		WorldcupGameRepository gameRepository,
-		WorldcupGameStartPersistenceService startPersistenceService
+		WorldcupGameStartPersistenceService startPersistenceService,
+		WorldcupDailyGameLimit dailyGameLimit
 	) {
 		this.matchGenerationService = matchGenerationService;
 		this.gameRepository = gameRepository;
 		this.startPersistenceService = startPersistenceService;
+		this.dailyGameLimit = dailyGameLimit;
 	}
 
 	public WorldcupGameStartResult startFromBanner(UUID anonymousId) {
@@ -33,6 +36,7 @@ public class WorldcupGameService {
 		if (latest.isPresent() && !latest.get().completed()) {
 			return new WorldcupGameStartResult(latest.get(), false);
 		}
+		dailyGameLimit.ensureCanStart(anonymousId);
 		GeneratedMatchGame game = matchGenerationService.generateFromBanner();
 		return startPersistenceService.saveOrResume(anonymousId, game);
 	}
@@ -42,6 +46,7 @@ public class WorldcupGameService {
 		if (latest.isPresent() && !latest.get().completed()) {
 			return new WorldcupGameStartResult(latest.get(), false);
 		}
+		dailyGameLimit.ensureCanStart(anonymousId);
 		GeneratedMatchGame game = matchGenerationService.generateForZone(zoneId);
 		return startPersistenceService.saveOrResume(anonymousId, game);
 	}

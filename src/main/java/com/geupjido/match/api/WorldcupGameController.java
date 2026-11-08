@@ -50,6 +50,10 @@ public class WorldcupGameController {
 	@ApiResponse(responseCode = "201", description = "게임 생성")
 	@ApiResponse(responseCode = "200", description = "진행 중인 게임 이어하기")
 	@ApiResponse(
+		responseCode = "429", description = "한국 날짜 기준 하루 6게임 시작 한도 도달",
+		content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))
+	)
+	@ApiResponse(
 		responseCode = "409", description = "투표 가능한 대진 부족",
 		content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))
 	)
@@ -64,6 +68,10 @@ public class WorldcupGameController {
 	@Operation(summary = "선택한 권역에서 월드컵 게임 시작")
 	@ApiResponse(responseCode = "201", description = "게임 생성")
 	@ApiResponse(responseCode = "200", description = "진행 중인 게임 이어하기")
+	@ApiResponse(
+		responseCode = "429", description = "한국 날짜 기준 하루 6게임 시작 한도 도달",
+		content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))
+	)
 	@ApiResponse(
 		responseCode = "409", description = "투표 가능한 대진 부족",
 		content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))

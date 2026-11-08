@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.geupjido.match.service.MatchUnavailableException;
+import com.geupjido.match.service.WorldcupDailyLimitReachedException;
 import com.geupjido.match.service.WorldcupGameNotFoundException;
 import com.geupjido.match.service.WorldcupVoteRejectedException;
 
@@ -16,6 +17,12 @@ public class WorldcupGameExceptionHandler {
 	public ResponseEntity<ApiErrorResponse> handleUnavailable(MatchUnavailableException exception) {
 		return ResponseEntity.status(HttpStatus.CONFLICT)
 			.body(new ApiErrorResponse("GAME_UNAVAILABLE", exception.getMessage()));
+	}
+
+	@ExceptionHandler(WorldcupDailyLimitReachedException.class)
+	public ResponseEntity<ApiErrorResponse> handleDailyLimit(WorldcupDailyLimitReachedException exception) {
+		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+			.body(new ApiErrorResponse("DAILY_GAME_LIMIT_REACHED", exception.getMessage()));
 	}
 
 	@ExceptionHandler(WorldcupGameNotFoundException.class)

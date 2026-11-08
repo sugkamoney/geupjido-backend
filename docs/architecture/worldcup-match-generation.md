@@ -10,7 +10,7 @@
 
 후보 조회는 `MatchCandidateRepository`가 담당한다. 활성 단지의 식별자, 권역, 시·구, 사용승인일, 세대수와 대표 매매 거래의 가격·면적·계약일을 조회한다. 게임 생성은 읽기 전용 반복 읽기 트랜잭션 안에서 수행해, 후보 수와 카드 값이 같은 DB 스냅샷에 속하도록 한다. DB나 엔티티를 수정하지 않는다.
 
-게임의 각 판은 `CROSS_ZONE` 또는 `WITHIN_ZONE`이며, 두 단지 카드에는 [카드 계약](worldcup-card-api-contract.md)의 표시값이 들어간다. 대진 생성 후의 REST 엔드포인트와 투표 선택 저장은 [월드컵 게임 API](worldcup-game-api.md)에서 다룬다. 일일 한도는 후속 작업이다.
+게임의 각 판은 `CROSS_ZONE` 또는 `WITHIN_ZONE`이며, 두 단지 카드에는 [카드 계약](worldcup-card-api-contract.md)의 표시값이 들어간다. 대진 생성 후의 REST 엔드포인트, 투표 선택 저장과 일일 한도는 [월드컵 게임 API](worldcup-game-api.md)에서 다룬다.
 
 ## 대진 구성
 
