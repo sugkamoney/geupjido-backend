@@ -2,6 +2,8 @@ package com.geupjido.zone.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -57,6 +59,10 @@ public class Zone {
 
 	@Column(name = "tier", precision = 2, scale = 1)
 	private BigDecimal tier;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "ranking_basis", length = 10, nullable = false)
+	private RankingBasis rankingBasis;
 
 	@Column(name = "score", precision = 8, scale = 2)
 	private BigDecimal score;
@@ -118,6 +124,10 @@ public class Zone {
 
 	public BigDecimal getTier() {
 		return tier;
+	}
+
+	public boolean usesVoteRanking() {
+		return rankingBasis == RankingBasis.VOTE;
 	}
 
 	public BigDecimal getScore() {

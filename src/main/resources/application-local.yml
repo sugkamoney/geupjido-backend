@@ -103,6 +103,10 @@ app:
   complex-price-recalculation:
     enabled: ${COMPLEX_PRICE_RECALCULATION_ENABLED:false}
 
+  worldcup-rating:
+    schedule-enabled: ${WORLDCUP_RATING_SCHEDULE_ENABLED:false}
+    schedule-cron: ${WORLDCUP_RATING_SCHEDULE_CRON:0 0 */3 * * *}
+
   complex-sale-type-backfill:
     enabled: ${COMPLEX_SALE_TYPE_BACKFILL_ENABLED:false}
     after-id: ${COMPLEX_SALE_TYPE_BACKFILL_AFTER_ID:}

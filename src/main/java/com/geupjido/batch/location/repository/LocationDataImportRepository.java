@@ -93,7 +93,8 @@ public class LocationDataImportRepository {
 			dong_codes,
 			polygon,
 			center,
-			tier
+			tier,
+			initial_tier
 		)
 		SELECT
 			?,
@@ -102,6 +103,7 @@ public class LocationDataImportRepository {
 			CAST(? AS VARCHAR[]),
 			polygon,
 			ST_PointOnSurface(polygon),
+			?,
 			?
 		FROM merged_boundary
 		WHERE boundary_count = ?
@@ -114,7 +116,8 @@ public class LocationDataImportRepository {
 			dong_codes = EXCLUDED.dong_codes,
 			polygon = EXCLUDED.polygon,
 			center = EXCLUDED.center,
-			tier = COALESCE(zone.tier, EXCLUDED.tier)
+			tier = COALESCE(zone.tier, EXCLUDED.tier),
+			initial_tier = COALESCE(zone.initial_tier, EXCLUDED.initial_tier)
 		""";
 
 	private final JdbcTemplate jdbcTemplate;
@@ -176,8 +179,12 @@ public class LocationDataImportRepository {
 						6,
 						zone.initialTier()
 					);
-					preparedStatement.setInt(
+					preparedStatement.setBigDecimal(
 						7,
+						zone.initialTier()
+					);
+					preparedStatement.setInt(
+						8,
 						zone.dongCodes().size()
 					);
 				}

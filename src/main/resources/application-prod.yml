@@ -45,3 +45,7 @@ app:
   apartment-trade-match:
     reference-path: ${APARTMENT_TRADE_MATCH_REFERENCE_PATH:data/location/reference/legal-dongs-20260917.tsv}
     mapping-path: ${APARTMENT_TRADE_MATCH_MAPPING_PATH:data/location/mapping/location-mapping.json}
+
+  worldcup-rating:
+    schedule-enabled: ${WORLDCUP_RATING_SCHEDULE_ENABLED:true}
+    schedule-cron: ${WORLDCUP_RATING_SCHEDULE_CRON:0 0 */3 * * *}
