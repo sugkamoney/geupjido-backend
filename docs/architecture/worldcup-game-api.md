@@ -3,6 +3,7 @@
 - 관련 이슈: [#119](https://github.com/sugkamoney/geupjido-backend/issues/119), [#122](https://github.com/sugkamoney/geupjido-backend/issues/122), [#130](https://github.com/sugkamoney/geupjido-backend/issues/130), [#133](https://github.com/sugkamoney/geupjido-backend/issues/133)
 - 대진 선정 기준: [월드컵 10판 대진 생성](worldcup-match-generation.md)
 - 카드 필드 기준: [월드컵 카드 정보 계약](worldcup-card-api-contract.md)
+- 권역 선택 목록과 인접 대체 권역 조회: [월드컵 권역 선택 API](worldcup-zone-selection-api.md)
 
 ## 게임과 익명 방문자
 
