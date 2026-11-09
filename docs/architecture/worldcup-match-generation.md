@@ -2,7 +2,7 @@
 
 - 관련 이슈: [#116](https://github.com/sugkamoney/geupjido-backend/issues/116), [투표 정책 #109](https://github.com/sugkamoney/geupjido-backend/issues/109)
 - 카드 표시값: [월드컵 카드 정보 계약](worldcup-card-api-contract.md)
-- 게임 시작·투표 선택 API: [#119·#122](worldcup-game-api.md)
+- 게임 시작·투표 선택·건너뛰기·선택 비율 API: [#119·#122·#133](worldcup-game-api.md)
 
 ## 입력과 결과
 
@@ -10,7 +10,7 @@
 
 후보 조회는 `MatchCandidateRepository`가 담당한다. 활성 단지의 식별자, 권역, 시·구, 사용승인일, 세대수와 대표 매매 거래의 가격·면적·계약일을 조회한다. 게임 생성은 읽기 전용 반복 읽기 트랜잭션 안에서 수행해, 후보 수와 카드 값이 같은 DB 스냅샷에 속하도록 한다. DB나 엔티티를 수정하지 않는다.
 
-게임의 각 판은 `CROSS_ZONE` 또는 `WITHIN_ZONE`이며, 두 단지 카드에는 [카드 계약](worldcup-card-api-contract.md)의 표시값이 들어간다. 대진 생성 후의 REST 엔드포인트, 투표 선택 저장과 일일 한도는 [월드컵 게임 API](worldcup-game-api.md)에서 다룬다.
+게임의 각 판은 `CROSS_ZONE` 또는 `WITHIN_ZONE`이며, 두 단지 카드에는 [카드 계약](worldcup-card-api-contract.md)의 표시값이 들어간다. 대진 생성 후의 REST 엔드포인트, 판별 선택·건너뛰기, 선택 비율과 일일 한도는 [월드컵 게임 API](worldcup-game-api.md)에서 다룬다.
 
 ## 대진 구성
 
@@ -34,4 +34,4 @@
 
 2026-11-02 로컬 PostgreSQL·PostGIS에는 활성 권역 274개와 활성 단지 3,522개가 있었다. 모든 활성 권역이 급지 ±0.2 안에서 다른 권역 비교 6판을 만들 수 있었다. 활성 단지가 1~3개인 권역은 27개로, 이들에는 같은 권역 비교 부족분을 다른 권역 비교로 채우는 규칙이 적용된다. 이 수치는 로컬 데이터 스냅샷이며 운영 데이터의 보장은 아니다.
 
-대진 생성 결과는 게임 시작 API가 DB에 스냅샷으로 저장하고, 투표 선택은 각 판별로 별도 저장한다. 재진입과 선택 진행 방식은 [월드컵 게임 API](worldcup-game-api.md)를 따른다. 배너의 60:40 비율은 기준 권역 추첨 확률이며, 대진 10판 전체의 단지 지역 비율을 고정하지 않는다.
+대진 생성 결과는 게임 시작 API가 DB에 스냅샷으로 저장한다. 판별 선택은 투표로, 건너뛰기는 별도 기록으로 저장한다. 재진입, 판 진행과 선택 직후의 대결 비율은 [월드컵 게임 API](worldcup-game-api.md)를 따른다. 배너의 60:40 비율은 기준 권역 추첨 확률이며, 대진 10판 전체의 단지 지역 비율을 고정하지 않는다.

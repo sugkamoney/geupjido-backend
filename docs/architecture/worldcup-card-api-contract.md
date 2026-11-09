@@ -1,12 +1,12 @@
 # 아파트 월드컵 카드 정보·API 응답 계약
 
-- 상태: **카드 표시 항목 확정** — 게임 시작·재조회는 #119, 투표 선택 저장·이어하기는 #122에서 구현. 동작과 경로는 [월드컵 게임 API](worldcup-game-api.md)를 참고한다.
+- 상태: **카드 표시 항목 확정** — 게임 시작·재조회는 #119, 투표 선택 저장·이어하기는 #122, 판 건너뛰기·선택 비율은 #133에서 구현. 동작과 경로는 [월드컵 게임 API](worldcup-game-api.md)를 참고한다.
 - 작성일: 2026-11-02
 - 관련 이슈: [#113](https://github.com/sugkamoney/geupjido-backend/issues/113), [투표 정책 #109](https://github.com/sugkamoney/geupjido-backend/issues/109)
 
 ## 목적과 확정된 범위
 
-한 판에 두 아파트 단지 중 하나를 반드시 선택한다. 게임당 10판이며, 배너 진입과 권역 선택 진입 모두 같은 카드 정보를 사용한다. 이 문서는 카드 필드를 정의한다. 게임 생성·재조회·선택 저장·일일 한도는 [월드컵 게임 API](worldcup-game-api.md)에, 기존 후보 결정은 [후보 활성 기준](../history/2026-11-02-voting-candidate-activation.md)과 [투표 정책 #109](https://github.com/sugkamoney/geupjido-backend/issues/109)에 기록했다.
+한 판에 두 아파트 단지 중 하나를 선택하거나 그 판을 건너뛴다. 게임당 10판이며, 배너 진입과 권역 선택 진입 모두 같은 카드 정보를 사용한다. 이 문서는 카드 필드를 정의한다. 게임 생성·재조회·선택 저장·건너뛰기·선택 비율·일일 한도는 [월드컵 게임 API](worldcup-game-api.md)에, 기존 후보 결정은 [후보 활성 기준](../history/2026-11-02-voting-candidate-activation.md)과 [투표 정책 #109](https://github.com/sugkamoney/geupjido-backend/issues/109)에 기록했다.
 
 ## 현재 백엔드에서 확인한 데이터 의미
 
@@ -59,4 +59,4 @@
 
 ## 후속 구현 범위
 
-역 데이터와 한 줄 설명은 후속 작업에서 다룬다. 활성 후보가 없는 권역의 인접 권역 미리보기 API도 아직 구현되지 않았다. 게임 대진·투표 선택·이어하기·일일 한도의 현재 동작은 [월드컵 게임 API](worldcup-game-api.md)에 기록했다.
+역 데이터와 한 줄 설명은 후속 작업에서 다룬다. 활성 후보가 없는 권역의 인접 권역 미리보기 API도 아직 구현되지 않았다. 게임 대진·투표 선택·건너뛰기·선택 비율·이어하기·일일 한도의 현재 동작은 [월드컵 게임 API](worldcup-game-api.md)에 기록했다.
