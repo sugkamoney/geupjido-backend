@@ -1,0 +1,2 @@
+ALTER TABLE zone
+    ALTER COLUMN initial_tier DROP NOT NULL;

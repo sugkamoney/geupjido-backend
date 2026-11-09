@@ -16,6 +16,7 @@ import com.geupjido.batch.trade.model.ComplexRepresentativePriceResult;
 import com.geupjido.complex.domain.Complex;
 import com.geupjido.complex.domain.RepresentativePriceSource;
 import com.geupjido.complex.repository.ComplexRepository;
+import com.geupjido.match.repository.WorldcupVoteRatingPublicationRepository;
 import com.geupjido.trade.domain.ApartmentTrade;
 import com.geupjido.trade.repository.ApartmentTradeRepository;
 import com.geupjido.trade.repository.ApartmentPresaleTradeRepository;
@@ -35,19 +36,23 @@ public class ComplexRepresentativePriceService {
 	private final ComplexRepository complexRepository;
 	private final ApartmentTradeRepository tradeRepository;
 	private final ApartmentPresaleTradeRepository presaleTradeRepository;
+	private final WorldcupVoteRatingPublicationRepository ratingPublicationRepository;
 
 	public ComplexRepresentativePriceService(
 		ComplexRepository complexRepository,
 		ApartmentTradeRepository tradeRepository,
-		ApartmentPresaleTradeRepository presaleTradeRepository
+		ApartmentPresaleTradeRepository presaleTradeRepository,
+		WorldcupVoteRatingPublicationRepository ratingPublicationRepository
 	) {
 		this.complexRepository = complexRepository;
 		this.tradeRepository = tradeRepository;
 		this.presaleTradeRepository = presaleTradeRepository;
+		this.ratingPublicationRepository = ratingPublicationRepository;
 	}
 
 	@Transactional
 	public ComplexRepresentativePriceResult recalculateAll() {
+		ratingPublicationRepository.lockPublication();
 		List<Complex> complexes = complexRepository.findAll(Sort.by("id"));
 		Map<String, SelectedTrade> selectedByComplexId = new HashMap<>();
 
@@ -103,7 +108,9 @@ public class ComplexRepresentativePriceService {
 				);
 				priced++;
 			}
-			complex.updateProvisionalZoneRank(null);
+			if (complex.getZone() == null || !complex.getZone().usesVoteRanking()) {
+				complex.updateProvisionalZoneRank(null);
+			}
 		}
 		int ranked = assignProvisionalRanks(complexes);
 		return new ComplexRepresentativePriceResult(
@@ -277,7 +284,8 @@ public class ComplexRepresentativePriceService {
 	private static int assignProvisionalRanks(List<Complex> complexes) {
 		Map<String, List<Complex>> byZone = new HashMap<>();
 		for (Complex complex : complexes) {
-			if (complex.getZone() != null && complex.getPrice() != null) {
+			if (complex.getZone() != null && !complex.getZone().usesVoteRanking()
+				&& complex.getPrice() != null) {
 				byZone.computeIfAbsent(complex.getZone().getId(),
 					ignored -> new ArrayList<>()).add(complex);
 			}
