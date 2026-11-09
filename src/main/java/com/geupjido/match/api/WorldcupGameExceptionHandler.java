@@ -34,6 +34,7 @@ public class WorldcupGameExceptionHandler {
 	@ExceptionHandler(WorldcupVoteRejectedException.class)
 	public ResponseEntity<ApiErrorResponse> handleVoteRejected(WorldcupVoteRejectedException exception) {
 		HttpStatus status = "INVALID_VOTE".equals(exception.code())
+			|| "INVALID_ROUND".equals(exception.code())
 			? HttpStatus.BAD_REQUEST : HttpStatus.CONFLICT;
 		return ResponseEntity.status(status)
 			.body(new ApiErrorResponse(exception.code(), exception.getMessage()));

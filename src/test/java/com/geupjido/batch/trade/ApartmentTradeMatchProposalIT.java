@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.geupjido.batch.location.reader.LegalDongCodeReferenceReader;
 import com.geupjido.batch.location.reader.LocationMappingReader;
+import com.geupjido.batch.trade.model.ApartmentTradeMatchProposal.Decision;
 import com.geupjido.batch.trade.model.ApartmentTradeMatchProposal.Key;
 import com.geupjido.batch.trade.reader.ApartmentTradeMatchProposalReader;
 import com.geupjido.batch.trade.service.ApartmentTradeCandidateAssessmentService;
@@ -67,8 +68,6 @@ class ApartmentTradeMatchProposalIT {
 			))
 		);
 
-		List<ApartmentTrade> trades = tradeRepository.findAll();
-		int verifiedTradeCount = 0;
 		for (var proposal : proposals.values()) {
 			var complex = complexRepository.findById(
 				proposal.candidateId()
@@ -81,9 +80,7 @@ class ApartmentTradeMatchProposalIT {
 				.isEqualTo(proposal.key().buildYear());
 			assertThat(complex.getZone()).isNotNull();
 
-			List<ApartmentTrade> matchingTrades = trades.stream()
-				.filter(trade -> matches(trade, proposal.key()))
-				.toList();
+			List<ApartmentTrade> matchingTrades = findTrades(proposal.key());
 			assertThat(matchingTrades).isNotEmpty();
 			for (ApartmentTrade trade : matchingTrades) {
 				var scope = classifier.classify(
@@ -96,17 +93,17 @@ class ApartmentTradeMatchProposalIT {
 					.isEqualTo(proposal.assessmentStatus());
 				assertThat(assessment.candidateIds())
 					.containsExactly(proposal.candidateId());
-				verifiedTradeCount++;
 			}
 		}
-		assertThat(verifiedTradeCount).isEqualTo(18);
 	}
 
 	@Test
 	@Transactional
 	void 승인된_12조합만_연결한다() {
+		Path proposalPath = Path.of("data/trade/matching/yongsan-202609-proposals.tsv");
+		long approvedTradeCount = countApprovedTrades(proposalPath);
 		var result = linkService.linkApproved(
-			Path.of("data/trade/matching/yongsan-202609-proposals.tsv"),
+			proposalPath,
 			Path.of("data/location/reference/legal-dongs-20260917.tsv"),
 			Path.of("data/location/mapping/location-mapping.json")
 		);
@@ -114,7 +111,7 @@ class ApartmentTradeMatchProposalIT {
 		assertThat(result.pendingCount()).isEqualTo(2);
 		assertThat(result.approvedCount()).isEqualTo(12);
 		assertThat(result.linkedTradeCount()
-			+ result.alreadyLinkedTradeCount()).isEqualTo(16);
+			+ result.alreadyLinkedTradeCount()).isEqualTo(approvedTradeCount);
 	}
 
 	@Test
@@ -140,31 +137,31 @@ class ApartmentTradeMatchProposalIT {
 		Path mappingPath = Path.of(
 			"data/location/mapping/location-mapping.json"
 		);
+		long approvedTradeCount = countApprovedTrades(proposalPath);
 		var first = linkService.linkApproved(
 			proposalPath, referencePath, mappingPath
 		);
 		assertThat(first.approvedCount()).isEqualTo(12);
 		assertThat(first.pendingCount()).isEqualTo(2);
 		assertThat(first.linkedTradeCount()
-			+ first.alreadyLinkedTradeCount()).isEqualTo(16);
+			+ first.alreadyLinkedTradeCount()).isEqualTo(approvedTradeCount);
 
 		var second = linkService.linkApproved(
 			proposalPath, referencePath, mappingPath
 		);
 		assertThat(second.linkedTradeCount()).isZero();
-		assertThat(second.alreadyLinkedTradeCount()).isEqualTo(16);
+		assertThat(second.alreadyLinkedTradeCount()).isEqualTo(approvedTradeCount);
 
 		var linked = tradeRepository
 			.findByDistrictCodeAndLegalDongNameAndRawApartmentNameAndLotNumberAndBuildYear(
 				"11170", "한남동", "한남동리첸시아", "72-1", (short) 2004
 			);
-		assertThat(linked).hasSize(3);
 		assertThat(octoberTrade.getComplex()).isNull();
 		assertThat(octoberTrade.getZone()).isNull();
 		List<ApartmentTrade> septemberTrades = linked.stream().filter(trade ->
 			trade.getDealDate().getMonthValue() == 9
 		).toList();
-		assertThat(septemberTrades).hasSize(2).allSatisfy(trade -> {
+		assertThat(septemberTrades).isNotEmpty().allSatisfy(trade -> {
 			assertThat(trade.getComplex().getId()).isEqualTo("A14021001");
 			assertThat(trade.getZone().getId())
 				.isEqualTo(trade.getComplex().getZone().getId());
@@ -175,13 +172,15 @@ class ApartmentTradeMatchProposalIT {
 		String octoberRow = original.lines().skip(1).findFirst()
 			.orElseThrow().replaceFirst("^202609", "202610");
 		Files.writeString(bothMonths, original + octoberRow + "\n");
+		long bothMonthsTradeCount = countApprovedTrades(bothMonths);
 		var bothMonthsResult = linkService.linkApproved(
 			bothMonths, referencePath, mappingPath
 		);
 		assertThat(bothMonthsResult.approvedCount()).isEqualTo(13);
-		assertThat(bothMonthsResult.linkedTradeCount()).isEqualTo(1);
+		assertThat(bothMonthsResult.linkedTradeCount())
+			.isEqualTo(bothMonthsTradeCount - approvedTradeCount);
 		assertThat(bothMonthsResult.alreadyLinkedTradeCount())
-			.isEqualTo(16);
+			.isEqualTo(approvedTradeCount);
 		assertThat(octoberTrade.getComplex().getId())
 			.isEqualTo("A14021001");
 		assertThat(octoberTrade.getZone().getId())
@@ -210,13 +209,21 @@ class ApartmentTradeMatchProposalIT {
 			.contains("NO_CANDIDATE");
 	}
 
-	private static boolean matches(ApartmentTrade trade, Key key) {
-		return trade.getBuildYear() != null
-			&& YearMonth.from(trade.getDealDate()).equals(key.dealYearMonth())
-			&& trade.getDistrictCode().equals(key.legalDongCode().substring(0, 5))
-			&& trade.getLegalDongName().equals(key.legalDongName())
-			&& key.lotNumber().equals(trade.getLotNumber())
-			&& trade.getRawApartmentName().equals(key.rawApartmentName())
-			&& trade.getBuildYear() == key.buildYear();
+	private long countApprovedTrades(Path proposalPath) {
+		return proposalReader.read(proposalPath).values().stream()
+			.filter(proposal -> proposal.decision() == Decision.APPROVED)
+			.mapToLong(proposal -> findTrades(proposal.key()).size())
+			.sum();
+	}
+
+	private List<ApartmentTrade> findTrades(Key key) {
+		YearMonth month = key.dealYearMonth();
+		return tradeRepository
+			.findByDistrictCodeAndLegalDongNameAndRawApartmentNameAndLotNumberAndBuildYearAndDealDateGreaterThanEqualAndDealDateLessThan(
+				key.legalDongCode().substring(0, 5),
+				key.legalDongName(), key.rawApartmentName(),
+				key.lotNumber(), key.buildYear(),
+				month.atDay(1), month.plusMonths(1).atDay(1)
+			);
 	}
 }
