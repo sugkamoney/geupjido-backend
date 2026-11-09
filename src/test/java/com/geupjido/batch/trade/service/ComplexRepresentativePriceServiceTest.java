@@ -14,6 +14,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import com.geupjido.complex.domain.Complex;
 import com.geupjido.complex.domain.RepresentativePriceSource;
 import com.geupjido.complex.repository.ComplexRepository;
+import com.geupjido.match.repository.WorldcupVoteRatingPublicationRepository;
 import com.geupjido.trade.domain.ApartmentTrade;
 import com.geupjido.trade.repository.ApartmentTradeRepository;
 import com.geupjido.trade.repository.ApartmentPresaleTradeRepository;
@@ -33,10 +34,33 @@ class ComplexRepresentativePriceServiceTest {
 		mock(ApartmentTradeRepository.class);
 	private final ApartmentPresaleTradeRepository presaleTradeRepository =
 		mock(ApartmentPresaleTradeRepository.class);
+	private final WorldcupVoteRatingPublicationRepository ratingPublicationRepository =
+		mock(WorldcupVoteRatingPublicationRepository.class);
 	private final ComplexRepresentativePriceService service =
 		new ComplexRepresentativePriceService(
-			complexRepository, tradeRepository, presaleTradeRepository
+			complexRepository, tradeRepository, presaleTradeRepository,
+			ratingPublicationRepository
 		);
+
+	@Test
+	void 투표_기준_권역은_주간_가격_갱신에도_순위를_유지한다() {
+		Complex complex = complex("A0001", "vote-zone");
+		when(complex.getZone().usesVoteRanking()).thenReturn(true);
+		complex.updateRepresentativeTrade(100_000, new BigDecimal("59"),
+			LocalDate.of(2026, 10, 1));
+		ReflectionTestUtils.setField(complex, "zoneRank", 2);
+		when(complexRepository.findAll(Sort.by("id"))).thenReturn(List.of(complex));
+		when(tradeRepository.findRepresentativeCandidates(
+			List.of("A0001"), BigDecimal.valueOf(58), BigDecimal.valueOf(61)
+		)).thenReturn(List.of(trade(1, complex, LocalDate.of(2026, 11, 1),
+			200_000, "59.000000")));
+
+		service.recalculateAll();
+
+		assertThat(complex.getPrice()).isEqualTo(200_000);
+		assertThat(complex.getZoneRank()).isEqualTo(2);
+		verify(ratingPublicationRepository).lockPublication();
+	}
 
 	@Test
 	void 최신일_짝수_후보는_상위_중앙가격을_쓰고_동액이면_작은_ID의_실제_면적을_택한다() {

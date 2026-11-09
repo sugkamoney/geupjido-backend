@@ -55,9 +55,16 @@ public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 
 	private static final String INSERT_VOTE_SQL = """
 		INSERT INTO worldcup_vote
-		    (game_id, round_number, left_complex_id, right_complex_id, selected_complex_id, selected_at)
-		VALUES (:gameId, :roundNumber, :leftComplexId, :rightComplexId, :selectedComplexId,
-		    GREATEST(clock_timestamp(), (SELECT started_at FROM worldcup_game WHERE id = :gameId)))
+		    (game_id, round_number, left_complex_id, right_complex_id, selected_complex_id,
+		     selected_at, left_zone_id, right_zone_id)
+		SELECT :gameId, :roundNumber, :leftComplexId, :rightComplexId, :selectedComplexId,
+		       GREATEST(clock_timestamp(), game.started_at), left_complex.zone_id, right_complex.zone_id
+		FROM worldcup_game AS game
+		JOIN complex AS left_complex
+		    ON left_complex.id = :leftComplexId AND left_complex.zone_id IS NOT NULL
+		JOIN complex AS right_complex
+		    ON right_complex.id = :rightComplexId AND right_complex.zone_id IS NOT NULL
+		WHERE game.id = :gameId
 		ON CONFLICT (game_id, round_number) DO NOTHING
 		""";
 
