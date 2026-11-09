@@ -22,5 +22,7 @@ public interface WorldcupGameRepository {
 	void saveVote(long gameId, int roundNumber, String leftComplexId,
 		String rightComplexId, String selectedComplexId);
 
+	void saveSkip(long gameId, int roundNumber);
+
 	void complete(long gameId);
 }

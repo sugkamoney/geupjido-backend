@@ -8,10 +8,12 @@ public record WorldcupGameState(
 	long id,
 	GeneratedMatchGame game,
 	List<RecordedVote> votes,
+	List<RecordedSkip> skips,
 	Instant completedAt
 ) {
 	public WorldcupGameState {
 		votes = List.copyOf(votes);
+		skips = List.copyOf(skips);
 	}
 
 	public boolean completed() {
@@ -19,6 +21,6 @@ public record WorldcupGameState(
 	}
 
 	public Integer nextRoundNumber() {
-		return completed() ? null : votes.size() + 1;
+		return completed() ? null : votes.size() + skips.size() + 1;
 	}
 }

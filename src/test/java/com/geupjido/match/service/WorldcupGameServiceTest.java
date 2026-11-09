@@ -42,7 +42,7 @@ class WorldcupGameServiceTest {
 		UUID anonymousId = UUID.randomUUID();
 		GeneratedMatchGame game = new GeneratedMatchGame("zone", new BigDecimal("0.2"), List.of());
 		when(generator.generateForZone("zone")).thenReturn(game);
-		WorldcupGameState state = new WorldcupGameState(1L, game, List.of(), null);
+		WorldcupGameState state = new WorldcupGameState(1L, game, List.of(), List.of(), null);
 		when(repository.save(eq(anonymousId), eq(game), any())).thenReturn(state);
 
 		assertThat(service.startForZone(anonymousId, "zone"))
@@ -56,7 +56,7 @@ class WorldcupGameServiceTest {
 		UUID anonymousId = UUID.randomUUID();
 		WorldcupGameState state = new WorldcupGameState(1L,
 			new GeneratedMatchGame("previous-zone", new BigDecimal("0.2"), List.of()),
-			List.of(), null);
+			List.of(), List.of(), null);
 		when(repository.findLatestByAnonymousId(anonymousId))
 			.thenReturn(Optional.of(state));
 
@@ -92,7 +92,7 @@ class WorldcupGameServiceTest {
 	void 현재_게임은_요청한_익명_식별자로만_조회한다() {
 		UUID anonymousId = UUID.randomUUID();
 		WorldcupGameState state = new WorldcupGameState(1L,
-			new GeneratedMatchGame("zone", new BigDecimal("0.2"), List.of()), List.of(), null);
+			new GeneratedMatchGame("zone", new BigDecimal("0.2"), List.of()), List.of(), List.of(), null);
 		when(repository.findLatestByAnonymousId(anonymousId)).thenReturn(Optional.of(state));
 
 		assertThat(service.findCurrent(anonymousId)).isEqualTo(state);
@@ -105,7 +105,7 @@ class WorldcupGameServiceTest {
 		UUID anonymousId = UUID.randomUUID();
 		GeneratedMatchGame game = gameWithOneMatchup();
 		WorldcupGameState state = new WorldcupGameState(1L, game,
-			List.of(new RecordedVote(1, "left", Instant.now())), null);
+			List.of(new RecordedVote(1, "left", Instant.now())), List.of(), null);
 		when(repository.findLatestByAnonymousIdForUpdate(anonymousId))
 			.thenReturn(Optional.of(state));
 

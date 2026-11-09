@@ -191,6 +191,113 @@ class WorldcupGameApiIT {
 		)).isEqualTo(2);
 	}
 
+	@Test
+	void 건너뛰기도_순서대로_확정하며_표를_만들지_않고_마지막_판을_완료한다() throws Exception {
+		UUID anonymousId = UUID.randomUUID();
+		Cookie cookie = new Cookie(AnonymousVisitorCookie.NAME, anonymousId.toString());
+		JsonNode game = objectMapper.readTree(mockMvc.perform(post("/api/v1/worldcup/games")
+				.cookie(cookie)).andExpect(status().isCreated())
+			.andReturn().getResponse().getContentAsString());
+		String firstLeft = game.at("/matchups/0/left/complexId").asText();
+		String secondLeft = game.at("/matchups/1/left/complexId").asText();
+
+		mockMvc.perform(skip(cookie, 2))
+			.andExpect(status().isConflict())
+			.andExpect(jsonPath("$.code").value("VOTE_OUT_OF_ORDER"));
+		mockMvc.perform(skip(cookie, 11))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.code").value("INVALID_ROUND"));
+		mockMvc.perform(skip(cookie, 1))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.skips[0].roundNumber").value(1))
+			.andExpect(jsonPath("$.selections.length()").value(0))
+			.andExpect(jsonPath("$.nextRoundNumber").value(2))
+			.andExpect(jsonPath("$.roundResult.roundNumber").value(1));
+		mockMvc.perform(skip(cookie, 1))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.skips.length()").value(1));
+		mockMvc.perform(vote(cookie, 1, firstLeft))
+			.andExpect(status().isConflict())
+			.andExpect(jsonPath("$.code").value("ROUND_ALREADY_SKIPPED"));
+		mockMvc.perform(vote(cookie, 2, secondLeft))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.selections.length()").value(1));
+		mockMvc.perform(skip(cookie, 2))
+			.andExpect(status().isConflict())
+			.andExpect(jsonPath("$.code").value("VOTE_ALREADY_RECORDED"));
+		for (int round = 3; round <= 10; round++) {
+			mockMvc.perform(skip(cookie, round)).andExpect(status().isOk());
+		}
+		mockMvc.perform(get("/api/v1/worldcup/games/current").cookie(cookie))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.completed").value(true))
+			.andExpect(jsonPath("$.nextRoundNumber").doesNotExist())
+			.andExpect(jsonPath("$.selections.length()").value(1))
+			.andExpect(jsonPath("$.skips.length()").value(9));
+		mockMvc.perform(skip(cookie, 10))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.skips.length()").value(9));
+		assertThat(jdbcTemplate.queryForObject(
+			"SELECT COUNT(*) FROM worldcup_vote WHERE game_id = "
+				+ "(SELECT MAX(id) FROM worldcup_game WHERE anonymous_id = ?)",
+			Integer.class, anonymousId)).isEqualTo(1);
+		mockMvc.perform(post("/api/v1/worldcup/games").cookie(cookie))
+			.andExpect(status().isCreated());
+	}
+
+	@Test
+	void 선택_직후_실제_비율을_응답하고_같은_선택_재요청은_표를_늘리지_않는다() throws Exception {
+		UUID anonymousId = UUID.randomUUID();
+		Cookie cookie = new Cookie(AnonymousVisitorCookie.NAME, anonymousId.toString());
+		JsonNode game = objectMapper.readTree(mockMvc.perform(post("/api/v1/worldcup/games")
+				.cookie(cookie)).andExpect(status().isCreated())
+			.andReturn().getResponse().getContentAsString());
+		String left = game.at("/matchups/0/left/complexId").asText();
+		String right = game.at("/matchups/0/right/complexId").asText();
+		var savedGame = gameRepository.findLatestByAnonymousId(anonymousId).orElseThrow().game();
+
+		for (int i = 0; i < 9; i++) {
+			long id = gameRepository.save(UUID.randomUUID(), savedGame, Instant.now()).id();
+			gameRepository.saveVote(id, 1, left, right, left);
+		}
+		mockMvc.perform(vote(cookie, 1, right))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.roundResult.available").value(true))
+			.andExpect(jsonPath("$.roundResult.leftPercent").value(90))
+			.andExpect(jsonPath("$.roundResult.rightPercent").value(10));
+		mockMvc.perform(vote(cookie, 1, right))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.roundResult.leftPercent").value(90));
+		assertThat(jdbcTemplate.queryForObject(
+			"SELECT COUNT(*) FROM worldcup_vote WHERE game_id = "
+				+ "(SELECT MAX(id) FROM worldcup_game WHERE anonymous_id = ?)",
+			Integer.class, anonymousId)).isEqualTo(1);
+	}
+
+	@Test
+	void 건너뛰어도_이미_모인_비율은_보여주지만_표는_추가하지_않는다() throws Exception {
+		UUID anonymousId = UUID.randomUUID();
+		Cookie cookie = new Cookie(AnonymousVisitorCookie.NAME, anonymousId.toString());
+		mockMvc.perform(post("/api/v1/worldcup/games").cookie(cookie))
+			.andExpect(status().isCreated());
+		var state = gameRepository.findLatestByAnonymousId(anonymousId).orElseThrow();
+		String left = state.game().matchups().getFirst().left().complexId();
+		String right = state.game().matchups().getFirst().right().complexId();
+		for (int i = 0; i < 10; i++) {
+			long id = gameRepository.save(UUID.randomUUID(), state.game(), Instant.now()).id();
+			gameRepository.saveVote(id, 1, left, right, left);
+		}
+
+		mockMvc.perform(skip(cookie, 1))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.roundResult.available").value(true))
+			.andExpect(jsonPath("$.roundResult.leftPercent").value(100))
+			.andExpect(jsonPath("$.roundResult.rightPercent").value(0));
+		assertThat(jdbcTemplate.queryForObject(
+			"SELECT COUNT(*) FROM worldcup_vote WHERE game_id = ?",
+			Integer.class, state.id())).isZero();
+	}
+
 	private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder vote(
 		Cookie cookie, int roundNumber, String selectedComplexId
 	) throws Exception {
@@ -198,6 +305,13 @@ class WorldcupGameApiIT {
 			.cookie(cookie)
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(new WorldcupVoteRequest(selectedComplexId)));
+	}
+
+	private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder skip(
+		Cookie cookie, int roundNumber
+	) {
+		return put("/api/v1/worldcup/games/current/rounds/{roundNumber}/skip", roundNumber)
+			.cookie(cookie);
 	}
 
 	@Test
@@ -240,6 +354,8 @@ class WorldcupGameApiIT {
 			.andExpect(jsonPath("$.paths['/api/v1/worldcup/games/current'].get").exists());
 		mockMvc.perform(get("/v3/api-docs"))
 			.andExpect(jsonPath("$.paths['/api/v1/worldcup/games/current/rounds/{roundNumber}/vote'].put")
+				.exists())
+			.andExpect(jsonPath("$.paths['/api/v1/worldcup/games/current/rounds/{roundNumber}/skip'].put")
 				.exists());
 	}
 }
