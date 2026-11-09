@@ -1,0 +1,9 @@
+gradle.projectsEvaluated {
+    gradle.rootProject.allprojects { project ->
+        project.tasks.withType(org.gradle.api.tasks.testing.Test).configureEach {
+            maxHeapSize = '4g'
+            maxParallelForks = 1
+            forkEvery = 1
+        }
+    }
+}

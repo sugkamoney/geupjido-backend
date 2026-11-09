@@ -34,7 +34,7 @@ class ApartmentTradeMatchProposalReaderTest {
 			.hasSize(2);
 		assertThat(proposals.values().stream()
 			.filter(proposal -> proposal.assessmentStatus() == Status.NAME_EXACT))
-			.hasSize(3);
+			.hasSize(4);
 		assertThat(proposals.get(new Key(
 			YearMonth.of(2026, 9), "1117013100", "한남동", "29-4",
 			"한성1", (short) 1974

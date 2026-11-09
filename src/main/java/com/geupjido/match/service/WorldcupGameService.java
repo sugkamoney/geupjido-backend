@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.geupjido.match.model.GeneratedMatchGame;
 import com.geupjido.match.model.Matchup;
+import com.geupjido.match.model.RecordedSkip;
 import com.geupjido.match.model.RecordedVote;
 import com.geupjido.match.model.WorldcupGameState;
 import com.geupjido.match.repository.WorldcupGameRepository;
@@ -81,6 +82,12 @@ public class WorldcupGameService {
 					"VOTE_ALREADY_RECORDED", "이미 확정한 선택은 바꿀 수 없습니다.");
 			}
 		}
+		for (RecordedSkip skip : state.skips()) {
+			if (skip.roundNumber() == roundNumber) {
+				throw new WorldcupVoteRejectedException(
+					"ROUND_ALREADY_SKIPPED", "건너뛴 판은 다시 선택할 수 없습니다.");
+			}
+		}
 		if (state.completed()) {
 			throw new WorldcupVoteRejectedException("GAME_COMPLETED", "이미 완료한 게임입니다.");
 		}
@@ -88,6 +95,39 @@ public class WorldcupGameService {
 			throw new WorldcupVoteRejectedException("VOTE_OUT_OF_ORDER", "다음 판부터 순서대로 선택해 주세요.");
 		}
 		gameRepository.saveVote(state.id(), roundNumber, leftId, rightId, selectedComplexId);
+		if (roundNumber == 10) {
+			gameRepository.complete(state.id());
+		}
+		return gameRepository.findLatestByAnonymousId(anonymousId)
+			.orElseThrow(WorldcupGameNotFoundException::new);
+	}
+
+	@Transactional
+	public WorldcupGameState skip(UUID anonymousId, int roundNumber) {
+		if (roundNumber < 1 || roundNumber > 10) {
+			throw new WorldcupVoteRejectedException("INVALID_ROUND", "판 번호를 확인해 주세요.");
+		}
+		gameRepository.lockAnonymousId(anonymousId);
+		WorldcupGameState state = gameRepository.findLatestByAnonymousIdForUpdate(anonymousId)
+			.orElseThrow(WorldcupGameNotFoundException::new);
+		for (RecordedSkip skip : state.skips()) {
+			if (skip.roundNumber() == roundNumber) {
+				return state;
+			}
+		}
+		for (RecordedVote vote : state.votes()) {
+			if (vote.roundNumber() == roundNumber) {
+				throw new WorldcupVoteRejectedException(
+					"VOTE_ALREADY_RECORDED", "이미 선택한 판은 건너뛸 수 없습니다.");
+			}
+		}
+		if (state.completed()) {
+			throw new WorldcupVoteRejectedException("GAME_COMPLETED", "이미 완료한 게임입니다.");
+		}
+		if (roundNumber != state.nextRoundNumber()) {
+			throw new WorldcupVoteRejectedException("VOTE_OUT_OF_ORDER", "다음 판부터 순서대로 진행해 주세요.");
+		}
+		gameRepository.saveSkip(state.id(), roundNumber);
 		if (roundNumber == 10) {
 			gameRepository.complete(state.id());
 		}

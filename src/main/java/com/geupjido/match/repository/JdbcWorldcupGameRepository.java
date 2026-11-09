@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.geupjido.match.model.GeneratedMatchGame;
 import com.geupjido.match.model.Matchup;
 import com.geupjido.match.model.RecordedVote;
+import com.geupjido.match.model.RecordedSkip;
 import com.geupjido.match.model.WorldcupGameState;
 
 @Repository
@@ -51,6 +52,13 @@ public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 		WHERE anonymous_id = :anonymousId
 		  AND started_at >= :fromInclusive
 		  AND started_at < :toExclusive
+		""";
+
+	private static final String FIND_SKIPS_SQL = """
+		SELECT round_number, skipped_at
+		FROM worldcup_skip
+		WHERE game_id = :gameId
+		ORDER BY round_number
 		""";
 
 	private static final String INSERT_VOTE_SQL = """
@@ -111,7 +119,7 @@ public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 			if (id == null) {
 				throw new DataRetrievalFailureException("저장한 월드컵 게임 번호를 읽을 수 없습니다.");
 			}
-			return new WorldcupGameState(id, game, List.of(), null);
+			return new WorldcupGameState(id, game, List.of(), List.of(), null);
 		} catch (JsonProcessingException exception) {
 			throw new IllegalStateException("월드컵 대진을 저장할 수 없습니다.", exception);
 		}
@@ -158,6 +166,20 @@ public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 	}
 
 	@Override
+	public void saveSkip(long gameId, int roundNumber) {
+		int inserted = jdbcTemplate.update(
+			"INSERT INTO worldcup_skip (game_id, round_number, skipped_at) "
+				+ "SELECT id, :roundNumber, GREATEST(clock_timestamp(), started_at) "
+				+ "FROM worldcup_game WHERE id = :gameId",
+			new MapSqlParameterSource("gameId", gameId)
+				.addValue("roundNumber", roundNumber)
+		);
+		if (inserted != 1) {
+			throw new IllegalStateException("건너뛴 판을 저장할 수 없습니다.");
+		}
+	}
+
+	@Override
 	public void complete(long gameId) {
 		int updated = jdbcTemplate.update(
 			"UPDATE worldcup_game SET completed_at = GREATEST(clock_timestamp(), started_at) "
@@ -184,6 +206,7 @@ public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 						readMatchups(rs.getString("matchups"))
 					),
 					findVotes(id),
+					findSkips(id),
 					completedAt == null ? null : completedAt.toInstant()
 				);
 			}
@@ -198,6 +221,17 @@ public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 				rs.getInt("round_number"),
 				rs.getString("selected_complex_id"),
 				rs.getObject("selected_at", OffsetDateTime.class).toInstant()
+			)
+		);
+	}
+
+	private List<RecordedSkip> findSkips(long gameId) {
+		return jdbcTemplate.query(
+			FIND_SKIPS_SQL,
+			new MapSqlParameterSource("gameId", gameId),
+			(rs, rowNum) -> new RecordedSkip(
+				rs.getInt("round_number"),
+				rs.getObject("skipped_at", OffsetDateTime.class).toInstant()
 			)
 		);
 	}
