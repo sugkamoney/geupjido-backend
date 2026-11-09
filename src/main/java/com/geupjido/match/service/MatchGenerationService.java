@@ -28,7 +28,6 @@ import com.geupjido.match.repository.MatchCandidateRepository;
 @Service
 public class MatchGenerationService {
 
-	private static final BigDecimal DEFAULT_TIER_RANGE = new BigDecimal("0.2");
 	private static final BigDecimal EXTENDED_TIER_RANGE = new BigDecimal("0.3");
 	private static final int GAME_SIZE = 10;
 	private static final int WITHIN_ZONE_TARGET = 4;
@@ -39,15 +38,25 @@ public class MatchGenerationService {
 
 	private final MatchCandidateRepository repository;
 	private final Random random;
+	private final WorldcupMatchAvailability availability;
 
 	@Autowired
-	public MatchGenerationService(MatchCandidateRepository repository) {
-		this(repository, new Random());
+	public MatchGenerationService(
+		MatchCandidateRepository repository, WorldcupMatchAvailability availability
+	) {
+		this(repository, new Random(), availability);
 	}
 
 	MatchGenerationService(MatchCandidateRepository repository, Random random) {
+		this(repository, random, new WorldcupMatchAvailability());
+	}
+
+	private MatchGenerationService(
+		MatchCandidateRepository repository, Random random, WorldcupMatchAvailability availability
+	) {
 		this.repository = repository;
 		this.random = random;
+		this.availability = availability;
 	}
 
 	@Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
@@ -90,6 +99,9 @@ public class MatchGenerationService {
 		MatchZoneCandidate baseZone,
 		List<MatchZoneCandidate> zones
 	) {
+		BigDecimal tierRange = availability.tierRange(baseZone, zones)
+			.orElseThrow(() -> new MatchUnavailableException(
+				"급지가 비슷한 단지로 10판을 만들 수 없습니다."));
 		List<MatchZoneCandidate> possibleOpponents = zones.stream()
 			.filter(zone -> !zone.zoneId().equals(baseZone.zoneId()))
 			.filter(zone -> tierGap(baseZone, zone).compareTo(EXTENDED_TIER_RANGE) <= 0)
@@ -112,16 +124,9 @@ public class MatchGenerationService {
 			(long) baseComplexes.size() * (baseComplexes.size() - 1) / 2
 		);
 		int crossCount = GAME_SIZE - withinCount;
-		BigDecimal tierRange = DEFAULT_TIER_RANGE;
 		List<MatchZoneCandidate> opponents = eligibleOpponents(
 			baseZone, possibleOpponents, complexesByZone, tierRange
 		);
-		if (availableCrossPairs(baseComplexes, opponents, complexesByZone) < crossCount) {
-			tierRange = EXTENDED_TIER_RANGE;
-			opponents = eligibleOpponents(
-				baseZone, possibleOpponents, complexesByZone, tierRange
-			);
-		}
 		if (availableCrossPairs(baseComplexes, opponents, complexesByZone) < crossCount) {
 			throw new MatchUnavailableException("급지가 비슷한 단지로 10판을 만들 수 없습니다.");
 		}
