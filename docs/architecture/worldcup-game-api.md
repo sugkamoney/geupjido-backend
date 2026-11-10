@@ -74,3 +74,5 @@
 `local` 프로필은 기본적으로 `http://localhost:5173`과 `http://localhost:5175`를 월드컵 API의 허용 출처로 둔다. 다른 로컬 포트나 dev·prod 출처는 `WORLDCUP_CORS_ALLOWED_ORIGINS`에 정확한 출처를 쉼표로 구분해 설정한다. 설정하지 않은 dev·prod에는 교차 출처 월드컵 요청을 허용하지 않는다. 이 설정은 `/api/v1/worldcup/**`에만 적용되며, 쿠키 요청에 `*` 출처를 허용하지 않는다. 운영 프런트와 API가 서로 다른 **사이트**에 놓이면 현재 `SameSite=Lax` 쿠키는 교차 사이트 `fetch`에 전송되지 않으므로 도메인 배치 또는 쿠키 정책을 별도로 결정해야 한다.
 
 브라우저에서 확인할 주요 오류는 대진 부족 `409 GAME_UNAVAILABLE`, 하루 시작 한도 `429 DAILY_GAME_LIMIT_REACHED`, 잘못된 판·후보 `400 INVALID_ROUND`/`INVALID_VOTE`, 순서 또는 이미 확정된 판 `409 VOTE_OUT_OF_ORDER`/`VOTE_ALREADY_RECORDED`/`ROUND_ALREADY_SKIPPED`다. 실패 시 응답의 `code`를 사용하고, 화면의 현재 판을 임의로 진행시키지 않는다.
+
+실제 브라우저의 쿠키 유지와 허용·차단 출처 검증 절차 및 실행 결과는 [월드컵 브라우저 쿠키·CORS 확인](../../scripts/test/worldcup-browser-smoke.md)에 기록했다.
