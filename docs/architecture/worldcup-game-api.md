@@ -60,3 +60,17 @@
 `GET /api/v1/worldcup/zones/{zoneId}/ranking`은 권역 ID·이름·현재 급지·`rankingBasis`(`INITIAL` 또는 `VOTE`)·`lastCompletedAt`·활성 단지의 ID·이름·순위·점수·대표 가격·면적을 반환한다. 첫 집계 전 `lastCompletedAt`은 `null`이다. 한 SQL 조회로 급지와 순위를 함께 읽어 발행 중의 부분 결과를 반환하지 않는다. 없는 권역은 `404 ZONE_NOT_FOUND`다.
 
 대진 생성은 후보 데이터를 한 시점에서 읽고, 저장 직전에 방문자별 잠금을 잡아 미완료 게임을 다시 확인한다. 같은 익명 방문자의 게임 저장·선택·건너뛰기 요청은 트랜잭션 단위로 직렬화한다. 마지막 게임의 저장된 선택·건너뛰기 수로 다음 판을 계산하며, 미완료 게임의 재진입은 새 게임을 만들지 않는다. 별도 출처에서 호출할 프런트엔드의 허용 Origin과 쿠키 전송 정책은 실제 배포 주소가 정해질 때 설정해야 한다.
+
+## 프런트엔드 연동 순서와 출처 설정
+
+1. `GET /api/v1/worldcup/zones`에서 `canStart`를 확인한다. 시작할 수 없는 권역은 `GET /api/v1/worldcup/zones/{zoneId}/alternatives`로 대체 권역을 안내한다.
+2. 배너 진입은 `POST /api/v1/worldcup/games`, 권역 진입은 `POST /api/v1/worldcup/zones/{zoneId}/games`를 호출한다. `201`은 새 게임이고 `200`은 기존 미완료 게임이다. 응답의 `matchups`와 `nextRoundNumber`를 사용한다.
+3. 재진입 시 `GET /api/v1/worldcup/games/current`를 호출한다. `404 GAME_NOT_FOUND`면 이어갈 게임이 없는 상태다.
+4. 현재 판을 선택하거나 건너뛸 때 각각 `PUT /api/v1/worldcup/games/current/rounds/{roundNumber}/vote`, `PUT /api/v1/worldcup/games/current/rounds/{roundNumber}/skip`을 호출한다. 선택 요청은 `Content-Type: application/json`과 `selectedComplexId`가 필요하다. 응답의 `roundResult`는 방금 확정한 판의 선택 비율이며, 다음 판은 `nextRoundNumber`로 결정한다.
+5. 10판을 모두 확정하면 `completed=true`, `nextRoundNumber=null`이다. 결과를 다시 조회해도 저장된 선택과 건너뛰기가 유지된다. 권역의 발행된 급지·순위는 `GET /api/v1/worldcup/zones/{zoneId}/ranking`으로 별도 조회한다.
+
+별도 출처의 프런트엔드는 게임 시작·재조회·선택·건너뛰기 요청에 브라우저 `fetch`의 `credentials: "include"`를 설정해야 한다. 첫 시작 응답의 `gjd_uid`는 `HttpOnly` 쿠키라 JavaScript에서 읽지 않는다. 브라우저가 저장해 다음 요청에 자동으로 보내며, URL에 방문자 ID를 넣지 않는다. 로컬에서는 프런트와 백엔드에 모두 `localhost`를 사용한다. `localhost`와 `127.0.0.1`을 섞으면 쿠키 호스트가 달라진다.
+
+`local` 프로필은 기본적으로 `http://localhost:5173`과 `http://localhost:5175`를 월드컵 API의 허용 출처로 둔다. 다른 로컬 포트나 dev·prod 출처는 `WORLDCUP_CORS_ALLOWED_ORIGINS`에 정확한 출처를 쉼표로 구분해 설정한다. 설정하지 않은 dev·prod에는 교차 출처 월드컵 요청을 허용하지 않는다. 이 설정은 `/api/v1/worldcup/**`에만 적용되며, 쿠키 요청에 `*` 출처를 허용하지 않는다. 운영 프런트와 API가 서로 다른 **사이트**에 놓이면 현재 `SameSite=Lax` 쿠키는 교차 사이트 `fetch`에 전송되지 않으므로 도메인 배치 또는 쿠키 정책을 별도로 결정해야 한다.
+
+브라우저에서 확인할 주요 오류는 대진 부족 `409 GAME_UNAVAILABLE`, 하루 시작 한도 `429 DAILY_GAME_LIMIT_REACHED`, 잘못된 판·후보 `400 INVALID_ROUND`/`INVALID_VOTE`, 순서 또는 이미 확정된 판 `409 VOTE_OUT_OF_ORDER`/`VOTE_ALREADY_RECORDED`/`ROUND_ALREADY_SKIPPED`다. 실패 시 응답의 `code`를 사용하고, 화면의 현재 판을 임의로 진행시키지 않는다.

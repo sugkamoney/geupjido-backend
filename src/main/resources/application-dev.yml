@@ -23,3 +23,6 @@ springdoc:
 app:
   anonymous-cookie:
     secure: ${ANONYMOUS_COOKIE_SECURE:true}
+
+  worldcup-cors:
+    allowed-origins: ${WORLDCUP_CORS_ALLOWED_ORIGINS:}
