@@ -8,7 +8,7 @@
 - Spring Boot 3.5.16
 - Gradle 8.14.5
 - PostgreSQL 16 + PostGIS 3.4
-- Redis 7
+- Redis 7(로컬), Valkey(공유 개발 서버의 Redis 호환 저장소)
 
 로컬 PostgreSQL은 다른 프로젝트와의 충돌을 피하기 위해 `5433` 포트를 사용합니다.
 
@@ -31,6 +31,8 @@ docker compose up -d
 ```bash
 ./gradlew test
 ```
+
+공유 개발 서버의 구성·배포·복구는 [배포 문서](docs/architecture/dev-server-deployment.md), API 접속 규약은 [개발 API 연동 문서](docs/architecture/dev-api-frontend-handoff.md)를 참고하세요.
 
 ## 브랜치 전략
 
