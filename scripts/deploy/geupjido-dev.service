@@ -1,0 +1,26 @@
+[Unit]
+Description=Geupjido development API
+After=network-online.target valkey.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=geupjido
+Group=geupjido
+WorkingDirectory=/opt/geupjido
+Environment=SPRING_PROFILES_ACTIVE=dev
+Environment=SERVER_ADDRESS=127.0.0.1
+Environment=REDIS_HOST=127.0.0.1
+EnvironmentFile=/etc/geupjido/dev.env
+ExecStart=/usr/bin/java -Xms128m -Xmx448m -jar /opt/geupjido/geupjido-backend.jar
+Restart=on-failure
+RestartSec=5
+SuccessExitStatus=143
+TimeoutStopSec=30
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
