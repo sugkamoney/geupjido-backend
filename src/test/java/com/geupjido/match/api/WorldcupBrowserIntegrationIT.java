@@ -136,9 +136,9 @@ class WorldcupBrowserIntegrationIT {
 			.andExpect(jsonPath("$.nextRoundNumber").doesNotExist())
 			.andExpect(jsonPath("$.selections.length()").value(5))
 			.andExpect(jsonPath("$.skips.length()").value(5));
-		mockMvc.perform(get("/api/v1/worldcup/zones/{zoneId}/ranking", zoneId)
+		mockMvc.perform(get("/api/v1/map/zones/{zoneId}", zoneId)
 				.header(HttpHeaders.ORIGIN, FRONTEND_ORIGIN))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.zoneId").value(zoneId));
+			.andExpect(jsonPath("$.zone.id").value(zoneId));
 	}
 }

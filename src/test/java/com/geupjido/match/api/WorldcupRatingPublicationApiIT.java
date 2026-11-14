@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("local")
 @Transactional
-class WorldcupZoneRankingApiIT {
+class WorldcupRatingPublicationApiIT {
 
 	@Autowired private MockMvc mockMvc;
 	@Autowired private JdbcTemplate jdbcTemplate;
@@ -36,22 +36,6 @@ class WorldcupZoneRankingApiIT {
 	@Autowired private MatchGenerationService generator;
 	@Autowired private WorldcupGameRepository gameRepository;
 	@Autowired private WorldcupVoteRatingPublicationService publicationService;
-
-	@Test
-	void 초기_기준과_마지막_완료_시각을_조회한다() throws Exception {
-		String zoneId = candidateRepository.findActiveZones().getFirst().zoneId();
-		jdbcTemplate.update("UPDATE zone SET ranking_basis = 'INITIAL' WHERE id = ?", zoneId);
-
-		mockMvc.perform(get("/api/v1/worldcup/zones/{zoneId}/ranking", zoneId))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.zoneId").value(zoneId))
-			.andExpect(jsonPath("$.rankingBasis").value("INITIAL"))
-			.andExpect(jsonPath("$.tier").isNumber())
-			.andExpect(jsonPath("$.complexes.length()").isNumber());
-		mockMvc.perform(get("/api/v1/worldcup/zones/{zoneId}/ranking", "unknown-zone"))
-			.andExpect(status().isNotFound())
-			.andExpect(jsonPath("$.code").value("ZONE_NOT_FOUND"));
-	}
 
 	@Test
 	void 중단한_게임의_표도_누적해_급지와_순위를_함께_발행한다() throws Exception {
@@ -107,10 +91,12 @@ class WorldcupZoneRankingApiIT {
 			"SELECT tier FROM zone WHERE id = ?", java.math.BigDecimal.class,
 			zoneId)).isEqualByComparingTo(firstTier);
 
-		mockMvc.perform(get("/api/v1/worldcup/zones/{zoneId}/ranking", zoneId))
+		mockMvc.perform(get("/api/v1/map/status"))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.rankingBasis").value("VOTE"))
-			.andExpect(jsonPath("$.lastCompletedAt").value(secondCompletedAt.toString()))
+			.andExpect(jsonPath("$.lastCompletedAt").value(secondCompletedAt.toString()));
+		mockMvc.perform(get("/api/v1/map/zones/{zoneId}", zoneId))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.zone.rankingBasis").value("VOTE"))
 			.andExpect(jsonPath("$.complexes[0].zoneRank").isNumber())
 			.andExpect(jsonPath("$.complexes[0].score").isNumber());
 	}

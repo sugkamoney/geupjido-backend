@@ -41,8 +41,11 @@ Safari는 HTTP `localhost`에 대한 `Secure` 쿠키 예외를 지원하지 않�
 | 3 | `PUT /api/v1/worldcup/games/current/rounds/{roundNumber}/vote` | 현재 판의 단지 선택 저장 |
 | 3a | `PUT /api/v1/worldcup/games/current/rounds/{roundNumber}/skip` | 현재 판 건너뛰기 저장 |
 | 4 | `GET /api/v1/worldcup/games/current` | 같은 쿠키의 진행 중 게임 재조회 |
+| 5 | `GET /api/v1/worldcup/timeline?zoneId={zoneId}` | 최근 선택 20건 조회. `zoneId`를 생략하면 전체 대진 |
 
 선택 요청 본문은 `{"selectedComplexId":"<현재 판의 left 또는 right complexId>"}`다. 시작 응답은 새 게임이면 201, 기존 게임을 이어가면 200이다. 게임 응답의 `matchups`는 고정된 10판이며, `nextRoundNumber`, `selections`, `skips`, `completed`로 진행 상태를 표시한다. 선택·건너뛰기 응답의 `roundResult`에 공개 가능한 좌우 선택 비율이 포함된다. 응답 DTO의 전체 필드는 OpenAPI JSON을 기준으로 확인한다.
+
+타임라인은 공개 조회라 쿠키 없이도 호출할 수 있다. 같은 브라우저가 `gjd_uid` 쿠키를 보내면 본인 표에 `mine=true`, `displayName=나`를 돌려준다. 양쪽 단지·권역, 선택 단지 ID, 선택 시각을 사용해 시안의 대결 줄을 그린다. 상세 계약은 [월드컵 타임라인 API](worldcup-timeline-api.md)를 참조한다. 지도 권역의 전체 단지 순위는 `GET /api/v1/map/zones/{zoneId}`를 사용한다.
 
 오류 응답은 `code`, `message`를 사용한다. 주요 상태는 잘못된 선택 400, 이어갈 게임 없음 404, 이미 선택한 판 또는 순서 충돌 409, 하루 시작 한도 429다. UI는 409를 새 투표 성공으로 처리하지 않고 현재 게임을 다시 조회해야 한다.
 
