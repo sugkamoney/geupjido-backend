@@ -71,6 +71,15 @@ class WorldcupZoneRankingApiIT {
 
 		Instant completedAt = publicationService.publish();
 		assertThat(jdbcTemplate.queryForObject(
+			"SELECT valid_vote_count FROM worldcup_rating_publication WHERE id = 1",
+			Long.class)).isPositive();
+		assertThat(jdbcTemplate.queryForObject(
+			"SELECT participant_count FROM worldcup_rating_publication WHERE id = 1",
+			Long.class)).isGreaterThanOrEqualTo(10L);
+		assertThat(jdbcTemplate.queryForObject(
+			"SELECT COUNT(*) FROM worldcup_zone_vote_status WHERE valid_vote_count > 0",
+			Long.class)).isPositive();
+		assertThat(jdbcTemplate.queryForObject(
 			"SELECT ranking_basis FROM zone WHERE id = ?", String.class, zoneId))
 			.isEqualTo("VOTE");
 		assertThat(jdbcTemplate.queryForObject(
