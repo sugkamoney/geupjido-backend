@@ -32,12 +32,12 @@ docker compose up -d
 ./gradlew test
 ```
 
-공유 개발 서버의 구성·배포·복구는 [배포 문서](docs/architecture/dev-server-deployment.md), API 접속 규약은 [개발 API 연동 문서](docs/architecture/dev-api-frontend-handoff.md)를 참고하세요.
+공유 개발 서버의 구성·배포·복구는 [배포 문서](docs/architecture/dev-server-deployment.md)와 [자동 배포 문서](docs/architecture/dev-auto-deployment.md), API 접속 규약은 [개발 API 연동 문서](docs/architecture/dev-api-frontend-handoff.md)를 참고하세요.
 
 ## 브랜치 전략
 
-- `main`: 운영 배포
-- `develop`: 개발 서버 배포 및 기본 브랜치
+- `main`: 검증된 변경을 병합하면 공유 개발 서버에 자동 배포
+- `develop`: 기능 통합과 CI 검증을 위한 기본 브랜치
 - `feature/*`: 기능 개발
 - `fix/*`: 개발 중 버그 수정
 - `hotfix/*`: 운영 긴급 수정
