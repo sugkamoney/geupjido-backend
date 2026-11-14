@@ -16,14 +16,16 @@ public final class MapView {
 	}
 
 	public record City(String id, String regionCode, String regionName, String name,
-		Point center, Bounds bounds, long zoneCount, BigDecimal initialTier,
-		BigDecimal voteTier) {
+		Point center, Bounds bounds, long zoneCount, long initialTierZoneCount,
+		long voteTierZoneCount, BigDecimal initialTier, BigDecimal voteTier) {
 	}
 
 	/** initialTier는 편집한 초기값이고, voteTier는 민심 집계가 발행되기 전에는 null이다. */
 	public record Zone(String id, String cityId, String cityName, String regionCode,
+		String regionName,
 		String name, Point center, BigDecimal initialTier, BigDecimal voteTier,
-		RankingBasis rankingBasis, long complexCount, int validVoteCount) {
+		RankingBasis rankingBasis, Long initialRank, long initialRankTotal,
+		Long voteRank, long voteRankTotal, long complexCount, int validVoteCount) {
 	}
 
 	public record ComplexPin(String id, String zoneId, String cityName,
@@ -47,9 +49,17 @@ public final class MapView {
 	}
 
 	/** 표와 참여자 수는 마지막 집계 발행 시점의 값이며 즉시 갱신되는 값이 아니다. */
-	public record Status(long zoneCount, long voteBasedZoneCount,
+	public record GradeCount(int grade, long count) {
+	}
+
+	public record Status(long zoneCount, long initialTierZoneCount,
+		long missingInitialTierZoneCount, long voteBasedZoneCount,
+		long collectingZoneCount, List<GradeCount> initialGradeCounts,
 		long validVoteCount, long participantCount, Instant lastCompletedAt,
 		Instant nextScheduledAt) {
+		public Status {
+			initialGradeCounts = List.copyOf(initialGradeCounts);
+		}
 	}
 
 	public record Bounds(double west, double south, double east, double north) {

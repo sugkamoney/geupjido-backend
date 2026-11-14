@@ -71,11 +71,17 @@ public class MapQueryService {
 				|| normalize(city.name().replaceFirst("[구시]$", "")).contains(term))
 			.sorted(Comparator.comparing(MapView.City::name, order))
 			.limit(3).toList();
+		Comparator<MapView.Zone> zoneOrder = Comparator
+			.comparingInt((MapView.Zone zone) -> Math.min(
+				matchPosition(normalize(zone.name()), term),
+				matchPosition(normalize(zone.cityName() + zone.name()), term)))
+			.thenComparingInt(zone -> zone.name().length())
+			.thenComparing(MapView.Zone::name)
+			.thenComparing(MapView.Zone::id);
 		List<MapView.Zone> zones = repository.allZones().stream()
 			.filter(zone -> normalize(zone.name()).contains(term)
 				|| normalize(zone.cityName() + zone.name()).contains(term))
-			.sorted(Comparator.comparing(
-				(MapView.Zone zone) -> zone.cityName() + zone.name(), order))
+			.sorted(zoneOrder)
 			.limit(5).toList();
 		return new MapView.SearchResult(cities, zones,
 			repository.searchComplexes(term));
@@ -92,12 +98,19 @@ public class MapQueryService {
 				next = nextLocal.atZone(SEOUL).toInstant();
 			}
 		}
-		return new MapView.Status(current.zoneCount(), current.voteBasedZoneCount(),
-			current.validVoteCount(), current.participantCount(),
-			current.lastCompletedAt(), next);
+		return new MapView.Status(current.zoneCount(),
+			current.initialTierZoneCount(), current.missingInitialTierZoneCount(),
+			current.voteBasedZoneCount(), current.collectingZoneCount(),
+			current.initialGradeCounts(), current.validVoteCount(),
+			current.participantCount(), current.lastCompletedAt(), next);
 	}
 
 	private static String normalize(String value) {
 		return value.replaceAll("\\s+", "").toLowerCase(Locale.ROOT);
+	}
+
+	private static int matchPosition(String value, String term) {
+		int position = value.indexOf(term);
+		return position < 0 ? Integer.MAX_VALUE : position;
 	}
 }
