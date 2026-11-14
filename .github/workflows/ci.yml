@@ -16,7 +16,7 @@ permissions:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   build:
@@ -39,3 +39,65 @@ jobs:
 
       - name: Build and test
         run: ./gradlew build --no-daemon
+
+      - name: Save development release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-release
+          path: |
+            build/libs/geupjido-backend-0.0.1-SNAPSHOT.jar
+            scripts/deploy/release-dev-service.sh
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy-dev:
+    name: Deploy development
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Download verified release
+        uses: actions/download-artifact@v4
+        with:
+          name: dev-release
+
+      - name: Check deployment settings
+        env:
+          DEPLOY_ROLE_ARN: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          DEPLOY_BUCKET: ${{ vars.AWS_DEPLOY_BUCKET }}
+          DEV_INSTANCE_ID: ${{ vars.AWS_DEV_INSTANCE_ID }}
+        run: |
+          for name in DEPLOY_ROLE_ARN DEPLOY_BUCKET DEV_INSTANCE_ID; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::$name is not configured"
+              exit 1
+            fi
+          done
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-northeast-2
+
+      - name: Deploy to development EC2
+        env:
+          AWS_DEPLOY_BUCKET: ${{ vars.AWS_DEPLOY_BUCKET }}
+          AWS_DEV_INSTANCE_ID: ${{ vars.AWS_DEV_INSTANCE_ID }}
+        run: |
+          python3 scripts/deploy/deploy-dev-via-ssm.py \
+            --jar build/libs/geupjido-backend-0.0.1-SNAPSHOT.jar \
+            --release-script scripts/deploy/release-dev-service.sh \
+            --bucket "$AWS_DEPLOY_BUCKET" \
+            --instance-id "$AWS_DEV_INSTANCE_ID" \
+            --region ap-northeast-2 \
+            --commit "$GITHUB_SHA"
