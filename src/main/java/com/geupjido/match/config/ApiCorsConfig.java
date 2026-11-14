@@ -7,12 +7,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+/** 프런트와 API의 출처가 다를 때 허용할 경로와 HTTP 메서드를 지정한다. */
 @Configuration(proxyBeanMethods = false)
-public class WorldcupCorsConfig implements WebMvcConfigurer {
+public class ApiCorsConfig implements WebMvcConfigurer {
 
 	private final String[] allowedOrigins;
 
-	public WorldcupCorsConfig(@Value("${app.worldcup-cors.allowed-origins:}") String allowedOrigins) {
+	public ApiCorsConfig(@Value("${app.worldcup-cors.allowed-origins:}") String allowedOrigins) {
 		this.allowedOrigins = Arrays.stream(allowedOrigins.split(","))
 			.map(String::trim)
 			.filter(origin -> !origin.isEmpty())
@@ -30,6 +31,13 @@ public class WorldcupCorsConfig implements WebMvcConfigurer {
 		registry.addMapping("/api/v1/worldcup/**")
 			.allowedOrigins(allowedOrigins)
 			.allowedMethods("GET", "POST", "PUT")
+			.allowedHeaders("Content-Type")
+			.allowCredentials(true)
+			.maxAge(3600);
+		// 지도 API는 읽기 전용이라 GET만 허용한다. 기존 허용 출처를 재사용한다.
+		registry.addMapping("/api/v1/map/**")
+			.allowedOrigins(allowedOrigins)
+			.allowedMethods("GET")
 			.allowedHeaders("Content-Type")
 			.allowCredentials(true)
 			.maxAge(3600);
