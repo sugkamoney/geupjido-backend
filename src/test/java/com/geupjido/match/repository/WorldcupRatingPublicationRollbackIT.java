@@ -62,7 +62,7 @@ class WorldcupRatingPublicationRollbackIT {
 					Map.of(complexId, 1),
 					Map.of(otherZoneId, new ZoneScore(
 						new BigDecimal("80.00"), new BigDecimal("2.0")))),
-				Map.of(complexId, -2.0)));
+					Map.of(complexId, -2.0), 50, 10));
 		TransactionTemplate transaction = new TransactionTemplate(transactionManager);
 		transaction.setIsolationLevel(TransactionDefinition.ISOLATION_REPEATABLE_READ);
 

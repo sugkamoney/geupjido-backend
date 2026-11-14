@@ -23,6 +23,7 @@ public class JdbcWorldcupVoteRatingPublicationRepository
 
 	@Override
 	public void lockPublication() {
+		// 집계 발행과 주간 가격 갱신은 같은 행을 잠가 순위 쓰기 순서를 맞춘다.
 		Integer id = jdbcTemplate.queryForObject(
 			"SELECT id FROM worldcup_rating_publication WHERE id = 1 FOR UPDATE",
 			Integer.class
@@ -81,9 +82,28 @@ public class JdbcWorldcupVoteRatingPublicationRepository
 			), "단지 투표 결과 저장 실패: " + seed.id());
 		}
 
+		// 지도용 권역별 표 수는 이전 발행 결과를 지우고 이번 결과로 교체한다.
+		// 상위 Service의 트랜잭션 안에서 수행되어 중간 실패 시 모두 롤백된다.
+		jdbcTemplate.update("DELETE FROM worldcup_zone_vote_status");
+		for (var entry : input.zoneCounts().entrySet()) {
+			var count = entry.getValue();
+			jdbcTemplate.update("""
+				INSERT INTO worldcup_zone_vote_status
+				(zone_id, valid_vote_count, participant_count, cross_zone_vote_count)
+				VALUES (?, ?, ?, ?)
+				""", entry.getKey(), count.validVotes(), count.distinctVisitors(),
+				count.crossZoneVotes());
+		}
+
+		// 급지·단지 순위·표 수·완료 시각이 한 번에 공개되도록 마지막에 기록한다.
 		requireOne(jdbcTemplate.update(
-			"UPDATE worldcup_rating_publication SET last_completed_at = ? WHERE id = 1",
-			OffsetDateTime.ofInstant(completedAt, ZoneOffset.UTC)
+			"""
+			UPDATE worldcup_rating_publication
+			SET last_completed_at = ?, valid_vote_count = ?, participant_count = ?
+			WHERE id = 1
+			""",
+			OffsetDateTime.ofInstant(completedAt, ZoneOffset.UTC),
+			input.validVoteCount(), input.participantCount()
 		), "월드컵 집계 완료 시각 저장 실패");
 	}
 
