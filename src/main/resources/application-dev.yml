@@ -26,3 +26,7 @@ app:
 
   worldcup-cors:
     allowed-origins: ${WORLDCUP_CORS_ALLOWED_ORIGINS:}
+
+  worldcup-rating:
+    schedule-enabled: ${WORLDCUP_RATING_SCHEDULE_ENABLED:true}
+    schedule-cron: ${WORLDCUP_RATING_SCHEDULE_CRON:0 0 */3 * * *}
