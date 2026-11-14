@@ -32,6 +32,8 @@ docker compose up -d
 ./gradlew test
 ```
 
+월드컵 HTTP 투표부터 예약 집계와 지도 급지·단지 순위 반영까지 로컬 격리 DB에서 확인하려면 [가상 방문자 검증 절차](scripts/test/worldcup-virtual-voters-smoke.md)를 참고하세요. 검증용 선택은 공유 개발 DB에 기록하지 않습니다.
+
 공유 개발 서버의 구성·배포·복구는 [배포 문서](docs/architecture/dev-server-deployment.md)와 [자동 배포 문서](docs/architecture/dev-auto-deployment.md), API 접속 규약은 [개발 API 연동 문서](docs/architecture/dev-api-frontend-handoff.md)를 참고하세요.
 
 ## 브랜치 전략

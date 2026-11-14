@@ -3,9 +3,16 @@ set -euo pipefail
 
 container=geupjido-postgres
 source_db=geupjido
-smoke_db=geupjido_worldcup_browser_smoke
-dump_file=/tmp/geupjido_worldcup_browser_smoke.dump
-toc_file=/tmp/geupjido_worldcup_browser_smoke.list
+smoke_db=${2:-geupjido_worldcup_browser_smoke}
+case "$smoke_db" in
+  geupjido_worldcup_browser_smoke|geupjido_worldcup_virtual_voters) ;;
+  *)
+    echo "허용되지 않은 검증 DB 이름입니다: $smoke_db" >&2
+    exit 2
+    ;;
+esac
+dump_file="/tmp/$smoke_db.dump"
+toc_file="/tmp/$smoke_db.list"
 
 case "${1:-}" in
   create)
@@ -33,7 +40,7 @@ case "${1:-}" in
     echo "검증 DB 정리 완료: $smoke_db"
     ;;
   *)
-    echo "사용법: $0 create|drop" >&2
+    echo "사용법: $0 create|drop [geupjido_worldcup_browser_smoke|geupjido_worldcup_virtual_voters]" >&2
     exit 2
     ;;
 esac
