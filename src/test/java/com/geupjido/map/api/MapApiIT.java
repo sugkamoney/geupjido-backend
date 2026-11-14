@@ -40,12 +40,16 @@ class MapApiIT {
 		mockMvc.perform(get("/api/v1/map/cities"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$[0].center.longitude").isNumber())
-			.andExpect(jsonPath("$[0].bounds.west").isNumber());
+			.andExpect(jsonPath("$[0].bounds.west").isNumber())
+			.andExpect(jsonPath("$[0].initialTierZoneCount").isNumber())
+			.andExpect(jsonPath("$[0].voteTierZoneCount").isNumber());
 		mockMvc.perform(get("/api/v1/map/zones")
 				.param("west", "124").param("south", "33")
 				.param("east", "132").param("north", "39"))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$[0].initialTier").isNumber());
+			.andExpect(jsonPath("$[0].initialTier").isNumber())
+			.andExpect(jsonPath("$[0].initialRank").isNumber())
+			.andExpect(jsonPath("$[0].initialRankTotal").isNumber());
 		mockMvc.perform(get("/api/v1/map/complexes")
 				.param("west", "124").param("south", "33")
 				.param("east", "132").param("north", "39"))
@@ -54,6 +58,7 @@ class MapApiIT {
 		mockMvc.perform(get("/api/v1/map/zones/{zoneId}", zoneId))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.zone.name").value(zoneName))
+			.andExpect(jsonPath("$.zone.regionName").isString())
 			.andExpect(jsonPath("$.polygon.type").value("MultiPolygon"))
 			.andExpect(jsonPath("$.complexes").isArray());
 	}
@@ -112,6 +117,8 @@ class MapApiIT {
 			.andReturn().getResponse().getContentAsString();
 		assertThat(objectMapper.readTree(before).path("zone").path("voteTier").isNull())
 			.isTrue();
+		assertThat(objectMapper.readTree(before).path("zone").path("voteRank").isNull())
+			.isTrue();
 
 		jdbcTemplate.update("UPDATE zone SET ranking_basis = 'VOTE' WHERE id = ?", zoneId);
 		String after = mockMvc.perform(get("/api/v1/map/zones/{zoneId}", zoneId))
@@ -120,6 +127,70 @@ class MapApiIT {
 			.andReturn().getResponse().getContentAsString();
 		assertThat(objectMapper.readTree(after).path("zone").path("voteTier").isNumber())
 			.isTrue();
+		assertThat(objectMapper.readTree(after).path("zone").path("voteRank").isNumber())
+			.isTrue();
+		String statusBody = mockMvc.perform(get("/api/v1/map/status"))
+			.andExpect(status().isOk())
+			.andReturn().getResponse().getContentAsString();
+		var publicationStatus = objectMapper.readTree(statusBody);
+		assertThat(publicationStatus.path("voteBasedZoneCount").asLong()
+			+ publicationStatus.path("collectingZoneCount").asLong())
+			.isEqualTo(publicationStatus.path("zoneCount").asLong());
+	}
+
+	@Test
+	void 초기_급지가_없는_권역은_순위를_비우고_상태_집계에_반영한다() throws Exception {
+		String zoneId = jdbcTemplate.queryForObject(
+			"SELECT id FROM zone ORDER BY id LIMIT 1", String.class);
+		jdbcTemplate.update("UPDATE zone SET initial_tier = NULL WHERE id = ?", zoneId);
+
+		String detail = mockMvc.perform(get("/api/v1/map/zones/{zoneId}", zoneId))
+			.andExpect(status().isOk())
+			.andReturn().getResponse().getContentAsString();
+		assertThat(objectMapper.readTree(detail).path("zone").path("initialRank").isNull())
+			.isTrue();
+
+		String statusBody = mockMvc.perform(get("/api/v1/map/status"))
+			.andExpect(status().isOk())
+			.andReturn().getResponse().getContentAsString();
+		var status = objectMapper.readTree(statusBody);
+		assertThat(status.path("missingInitialTierZoneCount").asLong()).isEqualTo(1);
+		assertThat(status.path("initialTierZoneCount").asLong()
+			+ status.path("missingInitialTierZoneCount").asLong())
+			.isEqualTo(status.path("zoneCount").asLong());
+		long bandTotal = 0;
+		for (var band : status.path("initialGradeCounts")) {
+			bandTotal += band.path("count").asLong();
+		}
+		assertThat(bandTotal).isEqualTo(status.path("initialTierZoneCount").asLong());
+	}
+
+	@Test
+	void 지도_전체_권역의_초기_순위는_중복_없이_매겨지고_구_집계와_일치한다() throws Exception {
+		String zoneBody = mockMvc.perform(get("/api/v1/map/zones")
+				.param("west", "124").param("south", "33")
+				.param("east", "132").param("north", "39"))
+			.andExpect(status().isOk())
+			.andReturn().getResponse().getContentAsString();
+		var zones = objectMapper.readTree(zoneBody);
+		var initialRanks = new java.util.HashSet<Long>();
+		for (var zone : zones) {
+			if (!zone.path("initialRank").isNull()) {
+				assertThat(initialRanks.add(zone.path("initialRank").asLong())).isTrue();
+			}
+			assertThat(zone.path("initialRankTotal").asLong())
+				.isEqualTo(zones.get(0).path("initialRankTotal").asLong());
+		}
+		assertThat(initialRanks).hasSize(zones.get(0).path("initialRankTotal").asInt());
+
+		String cityBody = mockMvc.perform(get("/api/v1/map/cities"))
+			.andExpect(status().isOk())
+			.andReturn().getResponse().getContentAsString();
+		long cityInitialTotal = 0;
+		for (var city : objectMapper.readTree(cityBody)) {
+			cityInitialTotal += city.path("initialTierZoneCount").asLong();
+		}
+		assertThat(cityInitialTotal).isEqualTo(initialRanks.size());
 	}
 
 	@Test
