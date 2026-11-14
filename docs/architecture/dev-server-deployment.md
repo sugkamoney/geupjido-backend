@@ -60,7 +60,7 @@ curl -fsS https://dev-api.geupjido.site/actuator/health
 
 ## 새 버전 배포와 롤백
 
-개발 서버에서는 `develop`의 검증된 커밋을 로컬에서 `./gradlew clean build`로 빌드한다. EC2의 메모리가 1GiB이므로 서버에서 Gradle 빌드를 실행하지 않는다. 빌드된 실행 JAR와 [`release-dev-service.sh`](../../scripts/deploy/release-dev-service.sh)를 EC2 사용자 홈으로 전송한다. `SSH_KEY_PATH`에는 로컬 키 파일 경로를 입력하고, 처음 연결할 때는 서버 호스트 키를 확인한다.
+자동 배포를 위한 AWS·GitHub 설정과 `main` 병합 후 실행 흐름은 [개발 서버 자동 배포](dev-auto-deployment.md)에 기록한다. 다음은 초기 설정 전이나 자동 배포 실패 시 사용하는 **수동 배포** 절차다. `develop`의 검증된 커밋을 로컬에서 `./gradlew clean build`로 빌드한다. EC2의 메모리가 1GiB이므로 서버에서 Gradle 빌드를 실행하지 않는다. 빌드된 실행 JAR와 [`release-dev-service.sh`](../../scripts/deploy/release-dev-service.sh)를 EC2 사용자 홈으로 전송한다. `SSH_KEY_PATH`에는 로컬 키 파일 경로를 입력하고, 처음 연결할 때는 서버 호스트 키를 확인한다.
 
 ```bash
 SSH_KEY_PATH=/path/to/private-key.pem
