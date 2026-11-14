@@ -43,7 +43,7 @@
 
 ## 상태 카드의 시점
 
-상태 카드의 `validVoteCount`, `participantCount`와 권역의 `validVoteCount`는 마지막 3시간 집계에서 확정한 유효표 스냅샷이다. 선택 직후의 실시간 표 수가 아니다. 중복 표 제외와 권역 간 표의 양쪽 권역 반영에는 기존 집계 정책을 사용한다. 발행 전에는 0과 `lastCompletedAt=null`이다. `nextScheduledAt`은 이 프로필에서 예약 집계가 켜졌을 때만 반환한다. 운영 기본 예약은 한국 시간 0·3·6·9·12·15·18·21시다.
+상태 카드의 `validVoteCount`, `participantCount`와 권역의 `validVoteCount`는 마지막 3시간 집계에서 확정한 유효표 스냅샷이다. 선택 직후의 실시간 표 수가 아니다. 중복 표 제외와 권역 간 표의 양쪽 권역 반영에는 기존 집계 정책을 사용한다. 발행 전에는 0과 `lastCompletedAt=null`이다. `nextScheduledAt`은 이 프로필에서 예약 집계가 켜졌을 때만 반환한다. 개발·운영 서버의 기본 예약은 한국 시간 0·3·6·9·12·15·18·21시다. 로컬 프로필은 기본으로 예약을 실행하지 않는다.
 
 `zoneCount`는 현재 서비스 권역 전체, `initialTierZoneCount`는 초기 급지가 있는 권역, `missingInitialTierZoneCount`는 초기 급지가 없는 권역이다. `voteBasedZoneCount`와 `collectingZoneCount`는 투표 기반 전환 여부로 나눈 수다. `initialGradeCounts`는 초기 급지 1.0~1.9, 2.0~2.9, 3.0~3.9, 4.0~4.9, 5.0~5.9의 다섯 구간별 수다. 이 값들은 DB에서 계산하며 시안의 162·133·80 같은 예시 수치를 사용하지 않는다. 전환 조건은 유효표 50표, 서로 다른 방문자 10명, 권역 간 유효표 20표 모두 충족이다.
 
