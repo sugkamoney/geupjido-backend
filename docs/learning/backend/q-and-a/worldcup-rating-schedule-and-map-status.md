@@ -34,3 +34,11 @@
 4. `validVoteCount`와 타임라인 항목 수를 직접 비교해 성공 여부를 판단하지 않는다. 유효성 필터와 발행 시점이 다르기 때문이다.
 
 이번 수정은 로컬 PostgreSQL에 연결한 `dev` 프로필에서 앱이 시작되고 `nextScheduledAt`이 표시되는 것까지 검증했다. 2026-11-14 [자동 배포 실행](https://github.com/sugkamoney/geupjido-backend/actions/runs/43571745670)의 빌드·개발 배포도 성공했고, 배포 서버의 지도 상태는 다음 한국 시간 18시에 해당하는 `nextScheduledAt`을 반환했다. 당시 `lastCompletedAt`은 아직 `null`이었다. 따라서 **배포와 예약 활성화는 확인했지만 첫 예약 발행의 성공은 아직 확인하지 못했다.** 첫 실행 시각이 지난 뒤 위 3단계를 수행한다. 앞선 점검 근거는 [지도·월드컵 백엔드 QA 기록](../../../history/2026-11-14-map-worldcup-backend-qa.md)에 있다.
+
+## Q. 실제 사용자가 없는데 예약 발행을 어떻게 검증했나?
+
+이슈 [#175](https://github.com/sugkamoney/geupjido-backend/issues/175)에서는 로컬 PostgreSQL·PostGIS DB를 **별도 검증 DB로 복제**하고, 그 복제본의 기존 월드컵 선택만 비웠다. 가상 방문자마다 독립된 HTTP 쿠키 저장소를 사용해 게임 시작과 9판 선택을 요청했다. 서로 다른 방문자 10명의 선택 90표가 저장된 뒤, 검증 앱 프로세스의 예약 주기만 15초로 줄여 다음 발행을 기다렸다.
+
+발행 후 `GET /api/v1/map/status`가 유효표 90표·참여자 10명과 새 `lastCompletedAt`을 반환했고, 권역 상세는 `VOTE` 급지와 단지 점수·순위를 반환했다. 이는 **HTTP 저장 → 쿠키로 이어하기 → 예약 발행 → 지도 조회**의 연결을 확인한다. 테스트 종료 후 검증 DB를 삭제했으며 원본 로컬 DB와 공유 개발 RDS에는 가상 표를 쓰지 않았다.
+
+이 결과는 공유 개발 서버의 실제 3시간 예약 실행 성공이나 장시간 가동을 증명하지 않는다. 그 확인에는 위 배포 후 점검 순서대로 서버의 `lastCompletedAt`과 로그를 살펴봐야 한다. 실행 명령과 상세 합격 조건은 [가상 방문자 HTTP 검증 절차](../../../../scripts/test/worldcup-virtual-voters-smoke.md)에 있다.
