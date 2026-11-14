@@ -12,6 +12,12 @@ DB 비밀번호는 기존처럼 EC2의 `/etc/geupjido/dev.env`에만 둔다. Git
 
 S3는 CI 실행 장소가 아니라 **빌드된 JAR를 EC2로 전달하는 임시 보관소**다. GitHub Actions만으로도 SSH/SCP 배포는 가능하지만, 현재 EC2는 관리자 IP만 SSH로 허용한다. 표준 GitHub 호스팅 실행기의 IP는 작업마다 바뀌므로 직접 SSH를 쓰려면 SSH 키를 GitHub에 보관하고 인바운드 규칙을 조정해야 한다. EC2에 셀프 호스팅 실행기를 두는 방식은 1GiB 서버의 메모리를 더 사용한다. 현재의 제한된 SSH 설정과 작은 서버를 유지하기 위해 S3와 Systems Manager를 선택했다. [GitHub 호스팅 실행기 네트워크 안내](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
 
+## 첫 자동 배포 확인
+
+2026-11-14 [첫 `main` 푸시 실행](https://github.com/sugkamoney/geupjido-backend/actions/runs/43568007762)에서 `Build and Test`와 `Deploy development`가 모두 성공했다. Actions 로그에서 GitHub OIDC 역할 수임, S3 파일 전달, SSM 배포 명령 완료, 외부 health 및 OpenAPI 검증 완료를 확인했다. Fleet Manager에서 개발 EC2의 Ping 상태는 온라인이었다.
+
+배포 후 공개 `/v3/api-docs`가 HTTP 200을 반환했고, 새 `GET /api/v1/worldcup/timeline`이 포함됐다. 삭제한 `GET /api/v1/worldcup/zones/{zoneId}/ranking`은 더 이상 포함되지 않았다. 프런트엔드가 Swagger에서 이전 경로를 계속 보면 새로고침한 뒤 [Actions 실행 결과](https://github.com/sugkamoney/geupjido-backend/actions)와 OpenAPI JSON을 확인한다.
+
 ## 최초 AWS 설정
 
 이 설정이 끝나기 전에는 `main`에 병합해도 배포 작업이 실패한다. 따라서 첫 자동 배포 전에 다음을 준비하고 수동 배포로 검증한다.
