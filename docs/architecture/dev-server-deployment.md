@@ -9,6 +9,8 @@
 
 EC2는 1GiB 메모리이므로 서비스의 Java 힙 상한을 448MiB로 설정했다. Valkey는 루프백에서만 수신하고 메모리 상한을 64MiB로 설정했다. 개발 환경의 월드컵 급지·순위 집계는 한국 시간 3시간 간격으로 기본 실행한다. 나머지 데이터 수집·갱신 배치의 예약 실행은 별도로 활성화하기 전까지 꺼 둔다.
 
+개발 서버 배포 후 예약 활성화와 첫 집계 완료를 구분해 확인하는 방법은 [월드컵 예약 집계와 지도 상태 Q&A](../learning/backend/q-and-a/worldcup-rating-schedule-and-map-status.md)에 기록했다.
+
 새 EC2를 준비할 때는 Java 21, PostgreSQL 16 클라이언트(`psql`, `pg_restore`), Valkey를 설치하고 `java -version`, `psql --version`, `valkey-cli ping`으로 확인한다. Valkey 설정에서는 루프백 바인딩과 보호 모드를 유지하고 메모리 상한을 설정한 뒤 서비스를 시작한다. PostgreSQL 서버와 Valkey의 외부 포트는 열지 않는다. EC2 보안 그룹의 SSH 22번은 관리자의 현재 IP에서만 허용한다.
 
 ## 비밀값과 DB 연결
