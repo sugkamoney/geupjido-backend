@@ -19,15 +19,39 @@ public class MapQueryRepository {
 	// 권역 목록·검색·상세가 같은 급지 해석을 쓰도록 공통 SELECT를 재사용한다.
 	// vote_tier는 전환 전 INITIAL 권역에서 null이 되어 '모으는 중' 표시가 가능하다.
 	private static final String ZONES = """
+		WITH ranked_zones AS (
+		    SELECT z.id,
+		           count(z.initial_tier) OVER () AS initial_rank_total,
+		           count(*) FILTER (WHERE z.ranking_basis = 'VOTE' AND z.tier IS NOT NULL)
+		               OVER () AS vote_rank_total,
+		           CASE WHEN z.initial_tier IS NOT NULL THEN
+		               row_number() OVER (
+		                   PARTITION BY (z.initial_tier IS NOT NULL)
+		                   ORDER BY z.initial_tier, z.name, z.id
+		               ) END AS initial_rank,
+		           CASE WHEN z.ranking_basis = 'VOTE' AND z.tier IS NOT NULL THEN
+		               row_number() OVER (
+		                   PARTITION BY (z.ranking_basis = 'VOTE' AND z.tier IS NOT NULL)
+		                   ORDER BY z.tier, z.score DESC NULLS LAST,
+		                            COALESCE(s.valid_vote_count, 0) DESC, z.name, z.id
+		               ) END AS vote_rank
+		    FROM zone z
+		    JOIN city c ON c.id = z.city_id
+		    JOIN region r ON r.code = c.region_code AND r.is_active = TRUE
+		    LEFT JOIN worldcup_zone_vote_status s ON s.zone_id = z.id
+		)
 		SELECT z.id, z.city_id, c.name AS city_name, c.region_code,
+		       r.name AS region_name,
 		       z.name, ST_X(z.center) AS longitude, ST_Y(z.center) AS latitude,
 		       z.initial_tier, CASE WHEN z.ranking_basis = 'VOTE' THEN z.tier END AS vote_tier,
-		       z.ranking_basis,
+		       z.ranking_basis, ranks.initial_rank, ranks.initial_rank_total,
+		       ranks.vote_rank, ranks.vote_rank_total,
 		       (SELECT count(*) FROM complex x WHERE x.zone_id = z.id) AS complex_count,
 		       COALESCE(s.valid_vote_count, 0) AS valid_vote_count
 		FROM zone z
 		JOIN city c ON c.id = z.city_id
 		JOIN region r ON r.code = c.region_code AND r.is_active = TRUE
+		JOIN ranked_zones ranks ON ranks.id = z.id
 		LEFT JOIN worldcup_zone_vote_status s ON s.zone_id = z.id
 		""";
 
@@ -46,6 +70,9 @@ public class MapQueryRepository {
 			       ST_XMin(c.polygon) AS west, ST_YMin(c.polygon) AS south,
 			       ST_XMax(c.polygon) AS east, ST_YMax(c.polygon) AS north,
 			       count(z.id) AS zone_count,
+			       count(z.initial_tier) AS initial_tier_zone_count,
+			       count(z.id) FILTER (WHERE z.ranking_basis = 'VOTE' AND z.tier IS NOT NULL)
+			           AS vote_tier_zone_count,
 			       floor(avg(z.initial_tier) * 10) / 10 AS initial_tier,
 			       floor(avg(z.tier) FILTER (WHERE z.ranking_basis = 'VOTE') * 10) / 10
 			           AS vote_tier
@@ -59,7 +86,8 @@ public class MapQueryRepository {
 			rs.getString("region_name"), rs.getString("name"), point(rs),
 			new MapView.Bounds(rs.getDouble("west"), rs.getDouble("south"),
 				rs.getDouble("east"), rs.getDouble("north")),
-			rs.getLong("zone_count"), rs.getBigDecimal("initial_tier"),
+			rs.getLong("zone_count"), rs.getLong("initial_tier_zone_count"),
+			rs.getLong("vote_tier_zone_count"), rs.getBigDecimal("initial_tier"),
 			rs.getBigDecimal("vote_tier")
 		));
 	}
@@ -106,9 +134,9 @@ public class MapQueryRepository {
 			JOIN city c ON c.id = z.city_id
 			JOIN region r ON r.code = c.region_code AND r.is_active = TRUE
 			WHERE x.location IS NOT NULL
-			  AND POSITION(? IN replace(lower(x.name), ' ', '')) > 0
-			ORDER BY POSITION(? IN replace(lower(x.name), ' ', '')),
-			         length(x.name), x.name, x.id
+			  AND POSITION(? IN regexp_replace(lower(x.name), '[[:space:]]+', '', 'g')) > 0
+			ORDER BY POSITION(? IN regexp_replace(lower(x.name), '[[:space:]]+', '', 'g')),
+			         length(regexp_replace(x.name, '[[:space:]]+', '', 'g')), x.name, x.id
 			LIMIT 6
 			""", (rs, rowNum) -> pin(rs), normalizedQuery, normalizedQuery);
 	}
@@ -159,7 +187,23 @@ public class MapQueryRepository {
 		// 예약 시각 계산은 애플리케이션 설정을 아는 Service가 맡는다.
 		return jdbcTemplate.queryForObject("""
 			SELECT count(z.id) AS zone_count,
-			       count(z.id) FILTER (WHERE z.ranking_basis = 'VOTE') AS vote_zone_count,
+			       count(z.id) FILTER (WHERE z.ranking_basis = 'VOTE' AND z.tier IS NOT NULL)
+			           AS vote_zone_count,
+			       count(z.initial_tier) AS initial_tier_zone_count,
+			       count(z.id) FILTER (WHERE z.initial_tier IS NULL)
+			           AS missing_initial_tier_zone_count,
+			       count(z.id) FILTER (WHERE z.ranking_basis <> 'VOTE' OR z.tier IS NULL)
+			           AS collecting_zone_count,
+			       count(z.id) FILTER (WHERE z.initial_tier >= 1 AND z.initial_tier < 2)
+			           AS grade_1_count,
+			       count(z.id) FILTER (WHERE z.initial_tier >= 2 AND z.initial_tier < 3)
+			           AS grade_2_count,
+			       count(z.id) FILTER (WHERE z.initial_tier >= 3 AND z.initial_tier < 4)
+			           AS grade_3_count,
+			       count(z.id) FILTER (WHERE z.initial_tier >= 4 AND z.initial_tier < 5)
+			           AS grade_4_count,
+			       count(z.id) FILTER (WHERE z.initial_tier >= 5)
+			           AS grade_5_count,
 			       p.valid_vote_count, p.participant_count, p.last_completed_at
 			FROM worldcup_rating_publication p
 			CROSS JOIN zone z
@@ -171,7 +215,15 @@ public class MapQueryRepository {
 			OffsetDateTime completedAt = rs.getObject("last_completed_at",
 				OffsetDateTime.class);
 			return new MapView.Status(rs.getLong("zone_count"),
-				rs.getLong("vote_zone_count"), rs.getLong("valid_vote_count"),
+				rs.getLong("initial_tier_zone_count"),
+				rs.getLong("missing_initial_tier_zone_count"),
+				rs.getLong("vote_zone_count"), rs.getLong("collecting_zone_count"),
+				List.of(new MapView.GradeCount(1, rs.getLong("grade_1_count")),
+					new MapView.GradeCount(2, rs.getLong("grade_2_count")),
+					new MapView.GradeCount(3, rs.getLong("grade_3_count")),
+					new MapView.GradeCount(4, rs.getLong("grade_4_count")),
+					new MapView.GradeCount(5, rs.getLong("grade_5_count"))),
+				rs.getLong("valid_vote_count"),
 				rs.getLong("participant_count"),
 				completedAt == null ? null : completedAt.toInstant(), null);
 		});
@@ -180,9 +232,14 @@ public class MapQueryRepository {
 	private static MapView.Zone zone(ResultSet rs) throws SQLException {
 		return new MapView.Zone(rs.getString("id"), rs.getString("city_id"),
 			rs.getString("city_name"), rs.getString("region_code"),
+			rs.getString("region_name"),
 			rs.getString("name"), point(rs), rs.getBigDecimal("initial_tier"),
 			rs.getBigDecimal("vote_tier"),
 			RankingBasis.valueOf(rs.getString("ranking_basis")),
+			rs.getObject("initial_rank", Long.class),
+			rs.getLong("initial_rank_total"),
+			rs.getObject("vote_rank", Long.class),
+			rs.getLong("vote_rank_total"),
 			rs.getLong("complex_count"), rs.getInt("valid_vote_count"));
 	}
 
