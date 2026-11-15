@@ -48,7 +48,8 @@ class WorldcupRatingPublicationRollbackIT {
 			"SELECT vote_initial_rating FROM complex WHERE id = ?", Double.class,
 			complexId);
 		Map<String, Object> originalZone = jdbcTemplate.queryForMap(
-			"SELECT tier, score, ranking_basis, tier_updated_at FROM zone WHERE id = ?",
+			"SELECT tier, score, ranking_basis, tier_updated_at, "
+				+ "previous_published_tier FROM zone WHERE id = ?",
 			otherZoneId);
 		var calculation = new Calculation(
 			new WorldcupVoteRatingSeedRepository.Seeds(
@@ -78,7 +79,8 @@ class WorldcupRatingPublicationRollbackIT {
 			"SELECT vote_initial_rating FROM complex WHERE id = ?", Double.class,
 			complexId)).isEqualTo(originalSeed);
 		assertThat(jdbcTemplate.queryForMap(
-			"SELECT tier, score, ranking_basis, tier_updated_at FROM zone WHERE id = ?",
+			"SELECT tier, score, ranking_basis, tier_updated_at, "
+				+ "previous_published_tier FROM zone WHERE id = ?",
 			otherZoneId)).isEqualTo(originalZone);
 	}
 }

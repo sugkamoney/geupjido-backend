@@ -1,6 +1,7 @@
 package com.geupjido.match.api;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,12 @@ class WorldcupRatingPublicationApiIT {
 		String zoneId = candidateRepository.findActiveZones().stream()
 			.filter(zone -> zone.activeComplexCount() >= 4)
 			.findFirst().orElseThrow().zoneId();
+		var initialTier = jdbcTemplate.queryForObject(
+			"SELECT initial_tier FROM zone WHERE id = ?", java.math.BigDecimal.class,
+			zoneId);
+		var priorPublication = jdbcTemplate.queryForObject(
+			"SELECT last_completed_at FROM worldcup_rating_publication WHERE id = 1",
+			OffsetDateTime.class);
 		for (int visitorIndex = 0; visitorIndex < 10; visitorIndex++) {
 			var game = generator.generateForZone(zoneId);
 			long gameId = gameRepository.save(UUID.randomUUID(), game, Instant.now()).id();
@@ -67,6 +74,12 @@ class WorldcupRatingPublicationApiIT {
 			"SELECT ranking_basis FROM zone WHERE id = ?", String.class, zoneId))
 			.isEqualTo("VOTE");
 		assertThat(jdbcTemplate.queryForObject(
+			"SELECT previous_published_tier FROM zone WHERE id = ?",
+			java.math.BigDecimal.class, zoneId)).isEqualByComparingTo(initialTier);
+		assertThat(jdbcTemplate.queryForObject(
+			"SELECT previous_completed_at FROM worldcup_rating_publication WHERE id = 1",
+			OffsetDateTime.class)).isEqualTo(priorPublication);
+		assertThat(jdbcTemplate.queryForObject(
 			"SELECT COUNT(*) FROM complex WHERE zone_id = ? AND score IS NOT NULL "
 				+ "AND zone_rank IS NOT NULL", Integer.class, zoneId)).isPositive();
 		assertThat(jdbcTemplate.queryForObject(
@@ -90,6 +103,13 @@ class WorldcupRatingPublicationApiIT {
 		assertThat(jdbcTemplate.queryForObject(
 			"SELECT tier FROM zone WHERE id = ?", java.math.BigDecimal.class,
 			zoneId)).isEqualByComparingTo(firstTier);
+		assertThat(jdbcTemplate.queryForObject(
+			"SELECT previous_published_tier FROM zone WHERE id = ?",
+			java.math.BigDecimal.class, zoneId)).isEqualByComparingTo(firstTier);
+		assertThat(jdbcTemplate.queryForObject(
+			"SELECT previous_completed_at FROM worldcup_rating_publication WHERE id = 1",
+			OffsetDateTime.class)).isEqualTo(OffsetDateTime.ofInstant(completedAt,
+			java.time.ZoneOffset.UTC));
 
 		mockMvc.perform(get("/api/v1/map/status"))
 			.andExpect(status().isOk())

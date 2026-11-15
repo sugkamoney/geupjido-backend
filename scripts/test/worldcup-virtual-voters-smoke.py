@@ -153,6 +153,17 @@ def wait_for_publication(opener, zone_id, submitted_at):
     raise SmokeFailure("예약 집계 후 150초 안에 유효표·VOTE 급지·단지 순위를 확인하지 못했습니다.")
 
 
+def ranking_zone(opener, zone_id, tier):
+    grade = int(float(tier))
+    _, result = api(opener, "GET", f"/api/v1/rankings/zones?tab=GRADE_{grade}")
+    matches = [item for item in result["zones"] if item["zoneId"] == zone_id]
+    require(len(matches) == 1, f"랭킹 {grade}급지 탭에서 권역을 찾지 못했습니다.")
+    item = matches[0]
+    require(item["rank"] is not None and item["rankTotal"] == result["rankedZoneCount"],
+            "랭킹 권역 순위와 분모가 맞지 않습니다.")
+    return item
+
+
 def stop_app(process):
     if process is None or process.poll() is not None:
         return
@@ -211,10 +222,23 @@ def main():
                     "검증 DB에 기존 유효표가 남아 있습니다.")
 
             zone_id, cross_zone_votes = vote_as_virtual_visitors(opener)
+            _, initial_detail = api(opener, "GET", f"/api/v1/map/zones/{zone_id}")
+            initial_tier = initial_detail["zone"]["initialTier"]
+            initial_rank = ranking_zone(opener, zone_id, initial_tier)
+            require(initial_rank["rankingBasis"] == "INITIAL"
+                    and initial_rank["movement"] == "NONE",
+                    "첫 발행 전에 초기 급지 랭킹이 보이지 않습니다.")
             submitted_at = datetime.now(timezone.utc)
             print("예약 발행과 지도 응답을 기다리는 중", flush=True)
             status, zone, ranked = wait_for_publication(opener, zone_id, submitted_at)
+            published_rank = ranking_zone(opener, zone_id, zone["voteTier"])
+            require(published_rank["rankingBasis"] == "VOTE"
+                    and float(published_rank["previousTier"]) == float(initial_tier)
+                    and published_rank["validVoteCount"] == 90
+                    and published_rank["participantCount"] == VIRTUAL_VISITORS,
+                    "첫 민심 발행 후 랭킹 기준·직전 급지·투표 수가 맞지 않습니다.")
             print("PASS: HTTP 쿠키 투표 → 예약 발행 → 지도 급지·단지 순위")
+            print("PASS: 초기 권역 순위 → 첫 민심 급지 순위와 변동 기준")
             print(f"가상 방문자 {VIRTUAL_VISITORS}명, 선택 {VIRTUAL_VISITORS * VOTES_PER_VISITOR}표, "
                   f"권역 간 선택 {cross_zone_votes}표")
             print(f"발행 유효표 {status['validVoteCount']}표, 참여자 {status['participantCount']}명, "

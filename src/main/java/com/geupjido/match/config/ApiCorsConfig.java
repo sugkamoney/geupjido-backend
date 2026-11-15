@@ -41,5 +41,11 @@ public class ApiCorsConfig implements WebMvcConfigurer {
 			.allowedHeaders("Content-Type")
 			.allowCredentials(true)
 			.maxAge(3600);
+		registry.addMapping("/api/v1/rankings/**")
+			.allowedOrigins(allowedOrigins)
+			.allowedMethods("GET")
+			.allowedHeaders("Content-Type")
+			.allowCredentials(true)
+			.maxAge(3600);
 	}
 }
