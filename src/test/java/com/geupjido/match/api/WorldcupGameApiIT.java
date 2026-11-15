@@ -346,16 +346,35 @@ class WorldcupGameApiIT {
 	}
 
 	@Test
-	void Swagger_문서에_시작과_재조회_경로가_표시된다() throws Exception {
-		mockMvc.perform(get("/v3/api-docs"))
+	void Swagger_문서에_화면_탭_순서와_월드컵_경로가_표시된다() throws Exception {
+		String content = mockMvc.perform(get("/v3/api-docs"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.paths['/api/v1/worldcup/games'].post").exists())
 			.andExpect(jsonPath("$.paths['/api/v1/worldcup/zones/{zoneId}/games'].post").exists())
-			.andExpect(jsonPath("$.paths['/api/v1/worldcup/games/current'].get").exists());
-		mockMvc.perform(get("/v3/api-docs"))
+			.andExpect(jsonPath("$.paths['/api/v1/worldcup/games/current'].get").exists())
 			.andExpect(jsonPath("$.paths['/api/v1/worldcup/games/current/rounds/{roundNumber}/vote'].put")
 				.exists())
 			.andExpect(jsonPath("$.paths['/api/v1/worldcup/games/current/rounds/{roundNumber}/skip'].put")
-				.exists());
+				.exists())
+			.andReturn().getResponse().getContentAsString();
+		JsonNode document = objectMapper.readTree(content);
+		assertThat(document.path("tags").findValuesAsText("name"))
+			.containsExactly("지도", "월드컵", "랭킹");
+		assertThat(document.path("paths").path("/api/v1/map/zones")
+			.path("get").path("tags").get(0).asText()).isEqualTo("지도");
+		assertThat(document.path("paths").path("/api/v1/rankings/zones")
+			.path("get").path("tags").get(0).asText()).isEqualTo("랭킹");
+		var paths = document.path("paths").fields();
+		while (paths.hasNext()) {
+			var path = paths.next();
+			if (!path.getKey().startsWith("/api/v1/worldcup/")) {
+				continue;
+			}
+			var methods = path.getValue().fields();
+			while (methods.hasNext()) {
+				assertThat(methods.next().getValue().path("tags").get(0).asText())
+					.isEqualTo("월드컵");
+			}
+		}
 	}
 }

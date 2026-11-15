@@ -7,6 +7,8 @@
 - OpenAPI JSON: `https://dev-api.geupjido.site/v3/api-docs`
 - 헬스 체크: `https://dev-api.geupjido.site/actuator/health`
 
+Swagger UI의 최상위 그룹은 화면 탭 순서대로 **지도 → 월드컵 → 랭킹**이다. 월드컵 권역 선택·게임·타임라인은 한 그룹에 표시한다. 리포트 API가 구현되면 랭킹 뒤에 **리포트** 그룹을 추가한다. 그룹 이름은 문서 탐색용이며 기존 HTTP 경로는 그대로다.
+
 프런트엔드 저장소의 현재 `vite.config.ts`는 `/api`를 로컬 백엔드로 전달하고, 월드컵 화면은 아직 fixture 기반이다. 프런트엔드 담당자가 실제 API 연결을 맡는다. 백엔드 저장소에서는 프런트엔드 코드를 수정하지 않는다.
 
 ## 로컬 프런트엔드에서 호출

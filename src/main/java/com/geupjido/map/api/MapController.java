@@ -27,7 +27,7 @@ import com.geupjido.map.service.MapQueryService;
 @RestController
 @RequestMapping(path = "/api/v1/map", produces = MediaType.APPLICATION_JSON_VALUE)
 // Swagger에서 새 조회 API가 '지도' 탭 아래 보이도록 묶는다.
-@Tag(name = "지도", description = "지도·검색·권역 상세·상태 카드 조회")
+@Tag(name = "지도")
 public class MapController {
 
 	private final MapQueryService service;
