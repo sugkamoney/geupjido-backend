@@ -30,7 +30,7 @@ import com.geupjido.user.api.AnonymousVisitorCookie;
 
 @RestController
 @RequestMapping(path = "/api/v1/worldcup", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "월드컵 게임", description = "익명 쿠키로 게임을 시작하고 각 판의 선택 또는 건너뛰기를 저장합니다.")
+@Tag(name = "월드컵")
 public class WorldcupGameController {
 
 	private static final URI CURRENT_GAME_URI = URI.create("/api/v1/worldcup/games/current");

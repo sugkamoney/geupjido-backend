@@ -19,7 +19,7 @@ import com.geupjido.user.api.AnonymousVisitorCookie;
 
 @RestController
 @RequestMapping(path = "/api/v1/worldcup", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "월드컵 타임라인", description = "최근에 선택된 월드컵 대진을 조회합니다.")
+@Tag(name = "월드컵")
 public class WorldcupTimelineController {
 
 	private final WorldcupTimelineService service;
