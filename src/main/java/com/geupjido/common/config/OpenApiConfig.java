@@ -1,8 +1,14 @@
 package com.geupjido.common.config;
 
+import java.util.Set;
+
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.models.media.ComposedSchema;
+import io.swagger.v3.oas.models.media.Schema;
+import org.springdoc.core.customizers.OpenApiCustomizer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -19,4 +25,18 @@ import org.springframework.context.annotation.Configuration;
         }
 )
 public class OpenApiConfig {
+	@Bean
+	OpenApiCustomizer nullableMapComplexLocation() {
+		return openApi -> {
+			Schema<?> complex = openApi.getComponents().getSchemas().get("MapComplex");
+			if (complex != null) {
+				// OpenAPI 3.1에서 nullable 객체 참조는 참조와 null의 합집합으로 표현한다.
+				// nullable=true만 붙이면 springdoc이 type:null과 $ref를 함께 내보낸다.
+				complex.addProperty("location", new ComposedSchema()
+					.addOneOfItem(new Schema<>().$ref("#/components/schemas/Point"))
+					.addOneOfItem(new Schema<>().types(Set.of("null")))
+					.description("WGS84 단지 위치. 위치 미확인 시 null"));
+			}
+		};
+	}
 }
