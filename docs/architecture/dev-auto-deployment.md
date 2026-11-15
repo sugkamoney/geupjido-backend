@@ -18,6 +18,12 @@ S3는 CI 실행 장소가 아니라 **빌드된 JAR를 EC2로 전달하는 임�
 
 배포 후 공개 `/v3/api-docs`가 HTTP 200을 반환했고, 새 `GET /api/v1/worldcup/timeline`이 포함됐다. 삭제한 `GET /api/v1/worldcup/zones/{zoneId}/ranking`은 더 이상 포함되지 않았다. 프런트엔드가 Swagger에서 이전 경로를 계속 보면 새로고침한 뒤 [Actions 실행 결과](https://github.com/sugkamoney/geupjido-backend/actions)와 OpenAPI JSON을 확인한다.
 
+## 랭킹 API 자동 배포 확인
+
+2026-11-15 [랭킹 API `main` 푸시 실행](https://github.com/sugkamoney/geupjido-backend/actions/runs/43694982166)에서 `Build and Test`와 `Deploy development`가 모두 성공했다. 공개 OpenAPI JSON에 **랭킹** 태그와 `GET /api/v1/rankings/zones`가 노출되고, 제거한 월드컵 권역 순위 경로는 없는 것을 확인했다.
+
+개발 서버의 `GET /api/v1/rankings/zones?region=ALL&tab=GRADE_1&sort=CURRENT`는 HTTP 200으로 전체 권역 282곳과 순위 대상 282곳을 반환했다. 1급지 목록은 18곳이었고 각 행의 `rankTotal`은 282였다. 확인 시점에는 민심 발행 권역이 없어 `collectingCount=282`, 첫 행의 `rankingBasis=INITIAL`·`movement=NONE`이었다. 이 수치는 데이터와 발행 상태에 따라 바뀌므로 고정된 API 조건으로 사용하지 않는다.
+
 ## 최초 AWS 설정
 
 이 설정이 끝나기 전에는 `main`에 병합해도 배포 작업이 실패한다. 따라서 첫 자동 배포 전에 다음을 준비하고 수동 배포로 검증한다.

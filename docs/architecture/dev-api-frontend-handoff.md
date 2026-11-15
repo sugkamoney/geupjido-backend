@@ -56,3 +56,11 @@ Safari는 HTTP `localhost`에 대한 `Secure` 쿠키 예외를 지원하지 않�
 2026-11-13 개발 서버에서 허용된 로컬 출처의 CORS 사전 요청은 200과 `Access-Control-Allow-Credentials: true`를 반환했고, 허용하지 않은 출처는 403이었다. 익명 쿠키로 게임 시작 201, 첫 판 선택 200, 같은 쿠키로 이어하기 200을 확인했다. 선택은 한 건 저장되고 다음 판 번호는 2였다. 실제 프런트엔드 화면의 브라우저 쿠키 동작은 프런트엔드 API 연결 후 별도로 확인해야 한다.
 
 같은 날 Chrome 브라우저 엔진에서도 로컬 테스트 화면을 임시 `/api` 프록시로 개발 API에 연결해 확인했다. 새 브라우저 프로필에서 게임 생성·첫 판 투표·재조회가 PASS였고, 같은 프로필로 페이지를 다시 열어도 선택 1건과 다음 판 번호 2가 유지됐다. `HttpOnly` 방문자 쿠키는 JavaScript에서 보이지 않았다. 프록시 없이 허용하지 않은 로컬 출처에서 개발 API를 직접 호출한 검사는 브라우저의 `Failed to fetch`로 차단되어 PASS였다. 이는 백엔드 연결 규약 검증이며, 프런트엔드 담당자의 실제 화면 연결 후에는 그 화면에서 다시 확인한다.
+
+## 랭킹 탭 요청과 표시 기준
+
+`GET /api/v1/rankings/zones?region=ALL&tab=GRADE_1&sort=CURRENT`는 공개 조회라 쿠키 없이 호출할 수 있다. `region`은 `ALL`·`SEOUL`·`GYEONGGI_INCHEON`, `tab`은 `GRADE_1`~`GRADE_5`·`COLLECTING`, `sort`는 `CURRENT`·`RISEN`·`FALLEN`이다. 생략하면 차례대로 `ALL`, `GRADE_1`, `CURRENT`가 적용된다. `COLLECTING`에는 `CURRENT` 정렬만 사용할 수 있다.
+
+`gradeCounts`는 선택 지역의 1~5급지별 권역 수이고 `collectingCount`는 민심 급지를 모으는 `INITIAL` 권역 수다. 초기 권역은 현재 급지 탭과 `COLLECTING`에 모두 나타날 수 있으므로 이 수를 합산해 전체 권역 수로 표시하지 않는다. 각 행의 `rankingBasis`가 `INITIAL`이면 초기 급지 기준, `VOTE`이면 발행된 민심 급지 기준이다. `rank`·`rankTotal`은 **선택 지역 전체**에서 매긴 순위와 분모이며, 급지 탭을 바꿔도 해당 지역 내 순위를 다시 매기지 않는다.
+
+`RISEN`·`FALLEN`은 선택 급지 탭 안에서 직전 성공 발행 대비 급지 숫자가 각각 낮아진·높아진 권역만 보여준다. `movement`, `previousTier`, `tierDelta`로 변동을 표시한다. 첫 민심 반영은 초기 급지와 비교하고, 첫 발행 전에는 `movement=NONE`이다. `validVoteCount`·`participantCount`·`crossZoneVoteCount`는 마지막 발행에서 확정된 값으로, 각각 50표·10명·20표 전환 조건의 진행 상황에 사용한다. 권역 행 선택 후 단지 목록과 경계는 `GET /api/v1/map/zones/{zoneId}`에서 조회한다. 전체 필드와 예외 기준은 [랭킹 API 계약](ranking-tab-api.md)을 참조한다.
