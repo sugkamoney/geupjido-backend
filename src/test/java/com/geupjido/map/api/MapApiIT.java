@@ -64,6 +64,185 @@ class MapApiIT {
 	}
 
 	@Test
+	void 권역_면적은_목록_검색_상세에서_같고_실제_경계를_반영한다() throws Exception {
+		String zoneId = jdbcTemplate.queryForObject(
+			"SELECT id FROM zone ORDER BY id LIMIT 1", String.class);
+		String zoneName = jdbcTemplate.queryForObject(
+			"SELECT name FROM zone WHERE id = ?", String.class, zoneId);
+		String polygon = "MULTIPOLYGON(((127 37,127.04 37,127.04 37.04,127 37.04,127 37),"
+			+ "(127.01 37.01,127.01 37.02,127.02 37.02,127.02 37.01,127.01 37.01)),"
+			+ "((127.05 37,127.06 37,127.06 37.01,127.05 37.01,127.05 37)))";
+		jdbcTemplate.update("UPDATE zone SET polygon = ST_GeomFromText(?, 4326) WHERE id = ?",
+			polygon, zoneId);
+		Double expected = jdbcTemplate.queryForObject("""
+			SELECT ST_Area(ST_GeomFromText(
+			         'POLYGON((127 37,127.04 37,127.04 37.04,127 37.04,127 37))',
+			         4326)::geography)
+			     - ST_Area(ST_GeomFromText(
+			         'POLYGON((127.01 37.01,127.01 37.02,127.02 37.02,127.02 37.01,127.01 37.01))',
+			         4326)::geography)
+			     + ST_Area(ST_GeomFromText(
+			         'POLYGON((127.05 37,127.06 37,127.06 37.01,127.05 37.01,127.05 37))',
+			         4326)::geography)
+			""", Double.class);
+
+		var list = objectMapper.readTree(mockMvc.perform(get("/api/v1/map/zones")
+				.param("west", "126").param("south", "36")
+				.param("east", "128").param("north", "38"))
+			.andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+		var listZone = java.util.stream.StreamSupport.stream(list.spliterator(), false)
+			.filter(zone -> zoneId.equals(zone.path("id").asText())).findFirst().orElseThrow();
+		var search = objectMapper.readTree(mockMvc.perform(get("/api/v1/map/search")
+				.param("q", zoneName)).andExpect(status().isOk())
+			.andReturn().getResponse().getContentAsString());
+		var searchZone = java.util.stream.StreamSupport
+			.stream(search.path("zones").spliterator(), false)
+			.filter(zone -> zoneId.equals(zone.path("id").asText())).findFirst().orElseThrow();
+		var detail = objectMapper.readTree(mockMvc.perform(get("/api/v1/map/zones/{zoneId}", zoneId))
+			.andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+		assertThat(listZone.path("areaSquareMeters").asDouble()).isPositive()
+			.isCloseTo(expected, org.assertj.core.data.Offset.offset(0.01));
+		assertThat(searchZone.path("areaSquareMeters").asDouble())
+			.isEqualTo(listZone.path("areaSquareMeters").asDouble());
+		assertThat(detail.path("zone").path("areaSquareMeters").asDouble())
+			.isEqualTo(listZone.path("areaSquareMeters").asDouble());
+		assertThat(detail.path("polygon").path("type").asText()).isEqualTo("MultiPolygon");
+		assertThat(detail.path("polygon").path("coordinates").size()).isEqualTo(2);
+		assertThat(detail.path("polygon").path("coordinates").get(0).size()).isEqualTo(2);
+		Long nonPositiveAreaCount = jdbcTemplate.queryForObject("""
+			SELECT count(*) FROM zone z
+			JOIN city c ON c.id = z.city_id
+			JOIN region r ON r.code = c.region_code AND r.is_active = TRUE
+			WHERE ST_Area(z.polygon::geography) <= 0
+			""", Long.class);
+		assertThat(nonPositiveAreaCount).isZero();
+	}
+
+	@Test
+	void 상세_단지_좌표는_핀과_검색에서_일치하고_위치_누락은_null이다() throws Exception {
+		var sample = jdbcTemplate.queryForMap("""
+			SELECT x.id, x.zone_id, x.name, ST_X(x.location) AS longitude,
+			       ST_Y(x.location) AS latitude
+			FROM complex x
+			WHERE x.zone_id IS NOT NULL AND x.location IS NOT NULL
+			  AND (SELECT count(*) FROM complex same_name WHERE same_name.name = x.name) = 1
+			ORDER BY x.id LIMIT 1
+			""");
+		String complexId = (String) sample.get("id");
+		String zoneId = (String) sample.get("zone_id");
+		String name = (String) sample.get("name");
+		double longitude = ((Number) sample.get("longitude")).doubleValue();
+		double latitude = ((Number) sample.get("latitude")).doubleValue();
+
+		var detail = objectMapper.readTree(mockMvc.perform(get("/api/v1/map/zones/{zoneId}", zoneId))
+			.andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+		var complex = java.util.stream.StreamSupport
+			.stream(detail.path("complexes").spliterator(), false)
+			.filter(item -> complexId.equals(item.path("id").asText())).findFirst().orElseThrow();
+		var originalOrder = java.util.stream.StreamSupport
+			.stream(detail.path("complexes").spliterator(), false)
+			.map(item -> item.path("id").asText()).toList();
+		assertThat(complex.path("location").path("longitude").asDouble()).isEqualTo(longitude);
+		assertThat(complex.path("location").path("latitude").asDouble()).isEqualTo(latitude);
+
+		var pins = objectMapper.readTree(mockMvc.perform(get("/api/v1/map/complexes")
+				.param("west", Double.toString(longitude - 0.001))
+				.param("south", Double.toString(latitude - 0.001))
+				.param("east", Double.toString(longitude + 0.001))
+				.param("north", Double.toString(latitude + 0.001)))
+			.andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+		var pin = java.util.stream.StreamSupport.stream(pins.spliterator(), false)
+			.filter(item -> complexId.equals(item.path("id").asText())).findFirst().orElseThrow();
+		var search = objectMapper.readTree(mockMvc.perform(get("/api/v1/map/search")
+				.param("q", name)).andExpect(status().isOk())
+			.andReturn().getResponse().getContentAsString());
+		var searchPin = java.util.stream.StreamSupport
+			.stream(search.path("complexes").spliterator(), false)
+			.filter(item -> complexId.equals(item.path("id").asText())).findFirst().orElseThrow();
+		assertThat(pin.path("location")).isEqualTo(complex.path("location"));
+		assertThat(searchPin.path("location")).isEqualTo(complex.path("location"));
+
+		jdbcTemplate.update("UPDATE complex SET location = NULL WHERE id = ?", complexId);
+		var withoutLocation = objectMapper.readTree(mockMvc.perform(
+			get("/api/v1/map/zones/{zoneId}", zoneId))
+			.andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+		var sameComplex = java.util.stream.StreamSupport
+			.stream(withoutLocation.path("complexes").spliterator(), false)
+			.filter(item -> complexId.equals(item.path("id").asText())).findFirst().orElseThrow();
+		var orderWithoutLocation = java.util.stream.StreamSupport
+			.stream(withoutLocation.path("complexes").spliterator(), false)
+			.map(item -> item.path("id").asText()).toList();
+		assertThat(sameComplex.path("location").isNull()).isTrue();
+		assertThat(sameComplex.path("zoneRank")).isEqualTo(complex.path("zoneRank"));
+		assertThat(orderWithoutLocation).containsExactlyElementsOf(originalOrder);
+	}
+
+	@Test
+	void 현재_서비스_단지는_모두_좌표가_있다() {
+		Long missingLocationCount = jdbcTemplate.queryForObject("""
+			SELECT count(*) FROM complex x
+			JOIN zone z ON z.id = x.zone_id
+			JOIN city c ON c.id = z.city_id
+			JOIN region r ON r.code = c.region_code AND r.is_active = TRUE
+			WHERE x.location IS NULL
+			""", Long.class);
+		assertThat(missingLocationCount).isZero();
+	}
+
+	@Test
+	void 지도_OpenAPI는_실제_응답과_오류_계약을_설명한다() throws Exception {
+		var docs = objectMapper.readTree(mockMvc.perform(get("/v3/api-docs"))
+			.andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+		var schemas = docs.path("components").path("schemas");
+		assertThat(schemas.path("MapZone").path("properties").path("areaSquareMeters").isObject())
+			.isTrue();
+		assertThat(schemas.path("RankingZone").path("properties").path("rank").isObject())
+			.isTrue();
+		assertThat(docs.path("paths").path("/api/v1/map/zones").path("get")
+			.path("responses").path("200").path("content").path("application/json")
+			.path("schema").path("items").path("$ref").asText())
+			.isEqualTo("#/components/schemas/MapZone");
+		assertThat(docs.path("paths").path("/api/v1/rankings/zones").path("get")
+			.path("responses").path("200").path("content").path("application/json")
+			.path("schema").path("$ref").asText())
+			.isEqualTo("#/components/schemas/Response");
+		assertThat(schemas.path("Response").path("properties").path("zones")
+			.path("items").path("$ref").asText())
+			.isEqualTo("#/components/schemas/RankingZone");
+		assertThat(schemas.path("MapZone").path("properties").path("center").isObject())
+			.isTrue();
+		var areaMinimum = schemas.path("MapZone").path("properties")
+			.path("areaSquareMeters").path("minimum");
+		assertThat(areaMinimum.isNumber() && areaMinimum.asDouble() == 0.0).isTrue();
+		assertThat(schemas.path("MapZone").path("required").toString())
+			.contains("areaSquareMeters", "voteTier", "initialRank");
+		assertThat(schemas.path("MapZone").path("properties").path("voteTier")
+			.path("type").toString()).contains("null");
+		assertThat(schemas.path("MapComplex").path("properties").path("price")
+			.path("type").toString()).contains("null");
+		assertThat(schemas.path("MapComplex").path("properties").path("location").isObject())
+			.isTrue();
+		var location = schemas.path("MapComplex").path("properties").path("location");
+		assertThat(location.path("oneOf").get(0).path("$ref").asText())
+			.isEqualTo("#/components/schemas/Point");
+		assertThat(location.path("oneOf").get(1).path("type").toString())
+			.contains("null");
+		assertThat(schemas.path("ZoneDetailResponse").path("properties").path("polygon")
+			.path("$ref").asText()).isEqualTo("#/components/schemas/GeoJsonMultiPolygon");
+		assertThat(schemas.path("GeoJsonMultiPolygon").path("properties")
+			.path("coordinates").path("items").path("items").path("items")
+			.path("items").path("type").asText()).isEqualTo("number");
+		assertThat(docs.path("paths").path("/api/v1/map/search").path("get")
+			.path("responses").path("400").isObject()).isTrue();
+		assertThat(docs.path("paths").path("/api/v1/map/zones/{zoneId}").path("get")
+			.path("responses").path("404").isObject()).isTrue();
+		assertThat(docs.path("paths").path("/api/v1/map/search").path("get")
+			.path("parameters").get(0).path("schema").path("maxLength").asInt()).isEqualTo(80);
+		assertThat(docs.path("paths").path("/api/v1/map/search").path("get")
+			.path("parameters").get(0).path("schema").path("minLength").asInt()).isEqualTo(1);
+	}
+
+	@Test
 	void 투표_비활성_단지도_지도_상세에는_포함한다() throws Exception {
 		String zoneId = jdbcTemplate.queryForObject("""
 			SELECT zone_id FROM complex
@@ -202,6 +381,9 @@ class MapApiIT {
 		mockMvc.perform(get("/api/v1/map/search").param("q", "없는권역가나다"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.zones").isEmpty());
+		mockMvc.perform(get("/api/v1/map/search").param("q", "가".repeat(81)))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
 		mockMvc.perform(get("/api/v1/map/status"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.zoneCount").isNumber())

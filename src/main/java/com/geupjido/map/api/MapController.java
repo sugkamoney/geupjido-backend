@@ -12,13 +12,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import com.geupjido.map.model.MapView;
 import com.geupjido.map.service.MapQueryService;
+import com.geupjido.match.api.ApiErrorResponse;
 
 /**
  * 지도 탭의 HTTP 진입점이다. 이 클래스는 요청 값을 받거나 JSON 응답으로 바꾸고,
@@ -46,6 +51,10 @@ public class MapController {
 
 	@GetMapping("/zones")
 	@Operation(summary = "화면 범위의 권역 라벨 조회")
+	@ApiResponse(responseCode = "200", description = "권역 목록",
+		content = @Content(array = @ArraySchema(schema = @Schema(implementation = MapView.Zone.class))))
+	@ApiResponse(responseCode = "400", description = "잘못된 지도 범위",
+		content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
 	public ResponseEntity<List<MapView.Zone>> zones(@RequestParam double west,
 		@RequestParam double south, @RequestParam double east,
 		@RequestParam double north) {
@@ -55,6 +64,10 @@ public class MapController {
 
 	@GetMapping("/complexes")
 	@Operation(summary = "화면 범위의 단지 핀 조회")
+	@ApiResponse(responseCode = "200", description = "단지 핀 목록",
+		content = @Content(array = @ArraySchema(schema = @Schema(implementation = MapView.ComplexPin.class))))
+	@ApiResponse(responseCode = "400", description = "잘못된 지도 범위",
+		content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
 	public ResponseEntity<List<MapView.ComplexPin>> complexes(@RequestParam double west,
 		@RequestParam double south, @RequestParam double east,
 		@RequestParam double north) {
@@ -63,13 +76,17 @@ public class MapController {
 
 	@GetMapping("/zones/{zoneId}")
 	@Operation(summary = "권역 경계와 전체 단지 상세 조회")
+	@ApiResponse(responseCode = "200", description = "권역 상세",
+		content = @Content(schema = @Schema(implementation = ZoneDetailResponse.class)))
+	@ApiResponse(responseCode = "404", description = "권역 없음: ZONE_NOT_FOUND",
+		content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
 	public ResponseEntity<ZoneDetailResponse> zone(@PathVariable String zoneId) {
 		MapView.ZoneDetail detail = service.zone(zoneId);
 		try {
-			// DB의 ST_AsGeoJSON 결과는 문자열이다. JsonNode로 바꾸면 응답에
-			// 따옴표로 감싼 문자열이 아닌 GeoJSON 객체가 들어간다.
+			// DB의 ST_AsGeoJSON 문자열을 실제 MultiPolygon 응답 구조로 읽는다.
 			return noStore(new ZoneDetailResponse(detail.zone(),
-				objectMapper.readTree(detail.polygonGeoJson()), detail.complexes()));
+				objectMapper.readValue(detail.polygonGeoJson(), GeoJsonMultiPolygon.class),
+				detail.complexes()));
 		} catch (JsonProcessingException exception) {
 			throw new IllegalStateException("권역 경계 GeoJSON을 읽을 수 없습니다.", exception);
 		}
@@ -77,7 +94,14 @@ public class MapController {
 
 	@GetMapping("/search")
 	@Operation(summary = "구·권역·단지 검색")
-	public ResponseEntity<MapView.SearchResult> search(@RequestParam String q) {
+	@ApiResponse(responseCode = "200", description = "검색 결과",
+		content = @Content(schema = @Schema(implementation = MapView.SearchResult.class)))
+	@ApiResponse(responseCode = "400", description = "잘못된 검색어: INVALID_REQUEST",
+		content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+	public ResponseEntity<MapView.SearchResult> search(
+		@Parameter(description = "공백을 포함해 1~80자. 공백만 입력할 수 없음",
+			schema = @Schema(minLength = 1, maxLength = 80))
+		@RequestParam String q) {
 		return noStore(service.search(q));
 	}
 
@@ -92,7 +116,17 @@ public class MapController {
 		return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(body);
 	}
 
-	public record ZoneDetailResponse(MapView.Zone zone, JsonNode polygon,
-		List<MapView.Complex> complexes) {
+	public record ZoneDetailResponse(
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) MapView.Zone zone,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) GeoJsonMultiPolygon polygon,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<MapView.Complex> complexes) {
+	}
+
+	@Schema(name = "GeoJsonMultiPolygon", description = "WGS84 GeoJSON MultiPolygon. 내부 링은 hole이다.")
+	public record GeoJsonMultiPolygon(
+		@Schema(allowableValues = "MultiPolygon", requiredMode = Schema.RequiredMode.REQUIRED)
+		String type,
+		@Schema(description = "다각형 → 링 → 경도·위도 좌표", requiredMode = Schema.RequiredMode.REQUIRED)
+		List<List<List<List<Double>>>> coordinates) {
 	}
 }
