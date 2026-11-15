@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import com.geupjido.zone.domain.RankingBasis;
 
 public final class RankingView {
@@ -26,9 +28,11 @@ public final class RankingView {
 		UP, DOWN, SAME, NONE
 	}
 
+	@Schema(name = "RankingGradeCount")
 	public record GradeCount(int grade, long count) {
 	}
 
+	@Schema(name = "RankingZone", description = "랭킹 탭의 권역별 순위와 변동")
 	public record Zone(String zoneId, String name, String cityName, String regionName,
 		RankingBasis rankingBasis, BigDecimal tier, Long rank, long rankTotal,
 		BigDecimal previousTier, BigDecimal tierDelta, Movement movement,

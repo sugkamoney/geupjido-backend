@@ -43,6 +43,7 @@ public class MapQueryRepository {
 		SELECT z.id, z.city_id, c.name AS city_name, c.region_code,
 		       r.name AS region_name,
 		       z.name, ST_X(z.center) AS longitude, ST_Y(z.center) AS latitude,
+		       ST_Area(z.polygon::geography) AS area_square_meters,
 		       z.initial_tier, CASE WHEN z.ranking_basis = 'VOTE' THEN z.tier END AS vote_tier,
 		       z.ranking_basis, ranks.initial_rank, ranks.initial_rank_total,
 		       ranks.vote_rank, ranks.vote_rank_total,
@@ -166,7 +167,8 @@ public class MapQueryRepository {
 			       CASE WHEN z.ranking_basis = 'VOTE' AND x.is_active = FALSE
 			            THEN NULL ELSE x.score END AS display_score,
 			       x.price, x.representative_area, x.last_deal_date,
-			       x.approval_date, x.households, x.is_active
+		       x.approval_date, x.households, x.is_active,
+		       ST_X(x.location) AS longitude, ST_Y(x.location) AS latitude
 			FROM complex x JOIN zone z ON z.id = x.zone_id
 			WHERE x.zone_id = ?
 			ORDER BY display_rank NULLS LAST, x.price DESC NULLS LAST, x.id
@@ -178,7 +180,8 @@ public class MapQueryRepository {
 			rs.getBigDecimal("representative_area"),
 			rs.getObject("last_deal_date", java.time.LocalDate.class),
 			rs.getObject("approval_date", java.time.LocalDate.class),
-			rs.getInt("households"), rs.getBoolean("is_active")
+			rs.getInt("households"), rs.getBoolean("is_active"),
+			pointOrNull(rs)
 		), zoneId);
 	}
 
@@ -233,7 +236,8 @@ public class MapQueryRepository {
 		return new MapView.Zone(rs.getString("id"), rs.getString("city_id"),
 			rs.getString("city_name"), rs.getString("region_code"),
 			rs.getString("region_name"),
-			rs.getString("name"), point(rs), rs.getBigDecimal("initial_tier"),
+			rs.getString("name"), point(rs), rs.getDouble("area_square_meters"),
+			rs.getBigDecimal("initial_tier"),
 			rs.getBigDecimal("vote_tier"),
 			RankingBasis.valueOf(rs.getString("ranking_basis")),
 			rs.getObject("initial_rank", Long.class),
@@ -252,5 +256,12 @@ public class MapQueryRepository {
 
 	private static MapView.Point point(ResultSet rs) throws SQLException {
 		return new MapView.Point(rs.getDouble("longitude"), rs.getDouble("latitude"));
+	}
+
+	private static MapView.Point pointOrNull(ResultSet rs) throws SQLException {
+		Double longitude = rs.getObject("longitude", Double.class);
+		Double latitude = rs.getObject("latitude", Double.class);
+		return longitude == null || latitude == null ? null
+			: new MapView.Point(longitude, latitude);
 	}
 }

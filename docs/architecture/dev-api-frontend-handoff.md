@@ -11,6 +11,8 @@ Swagger UI의 최상위 그룹은 화면 탭 순서대로 **지도 → 월드컵
 
 프런트엔드 저장소의 현재 `vite.config.ts`는 `/api`를 로컬 백엔드로 전달하고, 월드컵 화면은 아직 fixture 기반이다. 프런트엔드 담당자가 실제 API 연결을 맡는다. 백엔드 저장소에서는 프런트엔드 코드를 수정하지 않는다.
 
+지도 연동에서는 권역 목록·검색·상세의 `areaSquareMeters`(㎡)와 권역 상세 단지의 `location`(WGS84 점 또는 `null`)을 사용한다. 위치 없는 단지는 상세 목록에 남지만 핀·단지 검색에서는 제외된다. 생성 OpenAPI의 `MapZone`·`MapComplex`는 지도 응답, `RankingZone`은 랭킹 응답이다. 병합된 `main`의 개발 서버 배포가 성공한 뒤 해당 배포 커밋의 `/v3/api-docs`로 타입을 생성한다. 필드 의미·검색 순서·null 정책은 [지도 탭 조회 API](map-tab-api.md)에 기록했다.
+
 ## 로컬 프런트엔드에서 호출
 
 Vite의 `/api` 프록시 대상만 개발 API의 HTTPS 주소로 바꾸고 경로는 그대로 전달한다. 화면에서는 절대 URL 대신 상대 경로를 호출한다. 쿠키가 필요한 요청에는 `credentials: 'include'`를 사용한다.
