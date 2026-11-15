@@ -37,6 +37,13 @@ public class JdbcWorldcupVoteRatingPublicationRepository
 	public void publish(Calculation calculation, Instant completedAt) {
 		var input = calculation.input();
 		var ratings = input.ratings();
+		jdbcTemplate.update("""
+			UPDATE zone
+			SET previous_published_tier = CASE
+			    WHEN ranking_basis = 'VOTE' THEN tier
+			    ELSE initial_tier
+			END
+			""");
 		for (ComplexSeed seed : calculation.seeds().complexes()) {
 			if (seed.initialRating() == null) {
 				requireOne(jdbcTemplate.update(
@@ -99,7 +106,8 @@ public class JdbcWorldcupVoteRatingPublicationRepository
 		requireOne(jdbcTemplate.update(
 			"""
 			UPDATE worldcup_rating_publication
-			SET last_completed_at = ?, valid_vote_count = ?, participant_count = ?
+			SET previous_completed_at = last_completed_at,
+			    last_completed_at = ?, valid_vote_count = ?, participant_count = ?
 			WHERE id = 1
 			""",
 			OffsetDateTime.ofInstant(completedAt, ZoneOffset.UTC),
