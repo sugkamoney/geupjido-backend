@@ -17,7 +17,7 @@ import com.geupjido.match.service.WorldcupZoneSelectionService;
 
 @RestController
 @RequestMapping(path = "/api/v1/worldcup/zones", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "월드컵 권역 선택", description = "권역 목록과 대체 인접 권역을 조회합니다.")
+@Tag(name = "월드컵")
 public class WorldcupZoneSelectionController {
 
 	private final WorldcupZoneSelectionService service;

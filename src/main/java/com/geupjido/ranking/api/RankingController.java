@@ -18,7 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping(path = "/api/v1/rankings", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "랭킹", description = "현재 급지 기준의 권역·지역별 순위와 변동 조회")
+@Tag(name = "랭킹")
 public class RankingController {
 	private final RankingQueryService service;
 
