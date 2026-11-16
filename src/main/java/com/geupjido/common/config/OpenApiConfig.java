@@ -21,7 +21,8 @@ import org.springframework.context.annotation.Configuration;
         tags = {
                 @Tag(name = "지도", description = "지도·검색·권역 상세·상태 카드 조회"),
                 @Tag(name = "월드컵", description = "권역 선택·게임·최근 선택 조회"),
-                @Tag(name = "랭킹", description = "현재 급지 기준의 권역·지역별 순위와 변동 조회")
+                @Tag(name = "랭킹", description = "현재 급지 기준의 권역·지역별 순위와 변동 조회"),
+                @Tag(name = "리포트", description = "공개된 주간 민심 급지 리포트 조회")
         }
 )
 public class OpenApiConfig {

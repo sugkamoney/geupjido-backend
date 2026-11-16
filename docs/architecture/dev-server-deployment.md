@@ -15,7 +15,7 @@ EC2는 1GiB 메모리이므로 서비스의 Java 힙 상한을 448MiB로 설정�
 
 ## 비밀값과 DB 연결
 
-`/etc/geupjido/dev.env`는 EC2에만 둔다. 소유자는 `root`, 그룹은 `geupjido`, 권한은 `0640`이다. 파일에는 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`를 입력한다. `DB_URL`은 RDS CA 인증서를 이용한 `sslmode=verify-full` 연결을 사용한다. 브라우저의 교차 출처 요청이 필요하면 `WORLDCUP_CORS_ALLOWED_ORIGINS`에 허용할 출처를 정확히 지정한다. 형식은 [`dev.env.example`](../../scripts/deploy/dev.env.example)을 참고하고, 실제 호스트·비밀번호·환경 변수 값은 저장소에 기록하지 않는다.
+`/etc/geupjido/dev.env`는 EC2에만 둔다. 소유자는 `root`, 그룹은 `geupjido`, 권한은 `0640`이다. 파일에는 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`를 입력한다. `DB_URL`은 RDS CA 인증서를 이용한 `sslmode=verify-full` 연결을 사용한다. 브라우저의 교차 출처 요청이 필요하면 `WORLDCUP_CORS_ALLOWED_ORIGINS`에 허용할 출처를 정확히 지정한다. 주간 리포트 예약 발행은 개발 서버에서 기본으로 켜지며, 필요 시 `WEEKLY_REPORT_SCHEDULE_ENABLED=false`로 끌 수 있다. 형식은 [`dev.env.example`](../../scripts/deploy/dev.env.example)을 참고하고, 실제 호스트·비밀번호·환경 변수 값은 저장소에 기록하지 않는다.
 
 서비스 파일과 설치 스크립트는 [`scripts/deploy/`](../../scripts/deploy/)에 있다. 서비스 설치는 JAR와 RDS CA 인증서를 EC2에 전송한 뒤 다음처럼 수행한다.
 
