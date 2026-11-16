@@ -13,6 +13,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+  task:
+    scheduling:
+      pool:
+        size: 2
 
 springdoc:
   api-docs:
@@ -30,3 +34,7 @@ app:
   worldcup-rating:
     schedule-enabled: ${WORLDCUP_RATING_SCHEDULE_ENABLED:true}
     schedule-cron: ${WORLDCUP_RATING_SCHEDULE_CRON:0 0 */3 * * *}
+
+  weekly-report:
+    schedule-enabled: ${WEEKLY_REPORT_SCHEDULE_ENABLED:true}
+    schedule-cron: ${WEEKLY_REPORT_SCHEDULE_CRON:0 */10 * * * *}

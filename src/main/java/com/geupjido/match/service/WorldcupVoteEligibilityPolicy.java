@@ -21,9 +21,9 @@ import com.geupjido.match.model.WorldcupVoteForAggregation;
 public class WorldcupVoteEligibilityPolicy {
 
 	private static final ZoneId SEOUL = ZoneId.of("Asia/Seoul");
-	private static final int MIN_VOTES = 50;
-	private static final int MIN_VISITORS = 10;
-	private static final int MIN_CROSS_ZONE_VOTES = 20;
+	public static final int MIN_VOTES = 50;
+	public static final int MIN_VISITORS = 10;
+	public static final int MIN_CROSS_ZONE_VOTES = 20;
 
 	public Result evaluate(List<WorldcupVoteForAggregation> recordedVotes) {
 		List<WorldcupVoteForAggregation> chronological = recordedVotes.stream()
