@@ -15,6 +15,7 @@ import com.geupjido.match.model.MatchType;
 import com.geupjido.match.model.Matchup;
 import com.geupjido.match.model.RecordedVote;
 import com.geupjido.match.model.WorldcupGameState;
+import com.geupjido.match.model.WorldcupGameMode;
 import com.geupjido.match.repository.WorldcupGameRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,6 +26,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 
 class WorldcupGameServiceTest {
 
@@ -41,14 +43,16 @@ class WorldcupGameServiceTest {
 	void 생성된_게임을_익명_식별자와_함께_저장한다() {
 		UUID anonymousId = UUID.randomUUID();
 		GeneratedMatchGame game = new GeneratedMatchGame("zone", new BigDecimal("0.2"), List.of());
-		when(generator.generateForZone("zone")).thenReturn(game);
+		when(generator.generateWithinZone("zone")).thenReturn(game);
 		WorldcupGameState state = new WorldcupGameState(1L, game, List.of(), List.of(), null);
-		when(repository.save(eq(anonymousId), eq(game), any())).thenReturn(state);
+		when(repository.save(eq(anonymousId), eq(game), any(),
+			eq(WorldcupGameMode.ZONE_COMPLEX))).thenReturn(state);
 
 		assertThat(service.startForZone(anonymousId, "zone"))
 			.isEqualTo(new WorldcupGameStartResult(state, true));
 
-		verify(repository).save(eq(anonymousId), eq(game), any());
+		verify(repository).save(eq(anonymousId), eq(game), any(),
+			eq(WorldcupGameMode.ZONE_COMPLEX));
 	}
 
 	@Test
@@ -57,10 +61,11 @@ class WorldcupGameServiceTest {
 		WorldcupGameState state = new WorldcupGameState(1L,
 			new GeneratedMatchGame("previous-zone", new BigDecimal("0.2"), List.of()),
 			List.of(), List.of(), null);
-		when(repository.findLatestByAnonymousId(anonymousId))
+		when(repository.findLatest(anonymousId, WorldcupGameMode.ZONE_COMPLEX,
+			"previous-zone", null, null, false))
 			.thenReturn(Optional.of(state));
 
-		assertThat(service.startForZone(anonymousId, "another-zone"))
+		assertThat(service.startForZone(anonymousId, "previous-zone"))
 			.isEqualTo(new WorldcupGameStartResult(state, false));
 		verifyNoInteractions(generator);
 	}
@@ -73,7 +78,8 @@ class WorldcupGameServiceTest {
 
 		assertThatThrownBy(() -> service.startFromBanner(anonymousId))
 			.isInstanceOf(MatchUnavailableException.class);
-		verify(repository).findLatestByAnonymousId(anonymousId);
+		verify(repository).findLatest(eq(anonymousId), eq(WorldcupGameMode.GENERAL),
+			isNull(), any(Instant.class), any(Instant.class), eq(false));
 	}
 
 	@Test
@@ -93,7 +99,8 @@ class WorldcupGameServiceTest {
 		UUID anonymousId = UUID.randomUUID();
 		WorldcupGameState state = new WorldcupGameState(1L,
 			new GeneratedMatchGame("zone", new BigDecimal("0.2"), List.of()), List.of(), List.of(), null);
-		when(repository.findLatestByAnonymousId(anonymousId)).thenReturn(Optional.of(state));
+		when(repository.findLatest(eq(anonymousId), eq(WorldcupGameMode.GENERAL),
+			isNull(), any(Instant.class), any(Instant.class), eq(false))).thenReturn(Optional.of(state));
 
 		assertThat(service.findCurrent(anonymousId)).isEqualTo(state);
 		assertThatThrownBy(() -> service.findCurrent(UUID.randomUUID()))
@@ -106,7 +113,8 @@ class WorldcupGameServiceTest {
 		GeneratedMatchGame game = gameWithOneMatchup();
 		WorldcupGameState state = new WorldcupGameState(1L, game,
 			List.of(new RecordedVote(1, "left", Instant.now())), List.of(), null);
-		when(repository.findLatestByAnonymousIdForUpdate(anonymousId))
+		when(repository.findLatest(eq(anonymousId), eq(WorldcupGameMode.GENERAL),
+			isNull(), any(Instant.class), any(Instant.class), eq(true)))
 			.thenReturn(Optional.of(state));
 
 		assertThat(service.select(anonymousId, 1, "left")).isEqualTo(state);

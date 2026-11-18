@@ -1,6 +1,6 @@
 # 월드컵 게임 시작·선택·건너뛰기·이어하기 API
 
-- 관련 이슈: [#119](https://github.com/sugkamoney/geupjido-backend/issues/119), [#122](https://github.com/sugkamoney/geupjido-backend/issues/122), [#130](https://github.com/sugkamoney/geupjido-backend/issues/130), [#133](https://github.com/sugkamoney/geupjido-backend/issues/133)
+- 관련 이슈: [#119](https://github.com/sugkamoney/geupjido-backend/issues/119), [#122](https://github.com/sugkamoney/geupjido-backend/issues/122), [#130](https://github.com/sugkamoney/geupjido-backend/issues/130), [#133](https://github.com/sugkamoney/geupjido-backend/issues/133), [#193](https://github.com/sugkamoney/geupjido-backend/issues/193)
 - 대진 선정 기준: [월드컵 10판 대진 생성](worldcup-match-generation.md)
 - 카드 필드 기준: [월드컵 카드 정보 계약](worldcup-card-api-contract.md)
 - 권역 선택 목록과 인접 대체 권역 조회: [월드컵 권역 선택 API](worldcup-zone-selection-api.md)
@@ -10,27 +10,31 @@
 
 회원가입이나 로그인 없이 서버가 UUID v4 형식의 익명 식별자를 발급한다. 브라우저에는 `gjd_uid` 쿠키로 저장하며, 응답 본문에는 방문자 식별자를 넣지 않는다. 쿠키는 `HttpOnly`, `SameSite=Lax`, `Path=/`, 수명 365일이다. `Secure`는 로컬에서 끄고 dev·prod에서 켠다. dev 환경만 `ANONYMOUS_COOKIE_SECURE`로 조정할 수 있다.
 
-게임별 내부 번호는 `worldcup_game.id`로만 관리한다. 외부 API에는 게임 번호를 노출하지 않는다. 같은 익명 식별자에게 미완료 게임이 있으면 새 시작 요청에서도 그 게임을 반환한다. 10판을 모두 선택하거나 건너뛰어 완료한 뒤에는 새 스냅샷을 만들 수 있다. 재조회와 판 확정은 가장 최근 게임을 대상으로 한다.
+게임별 내부 번호는 `worldcup_game.id`로만 관리한다. 외부 API에는 게임 번호를 노출하지 않는다. `GENERAL`(일반 월드컵)과 `ZONE_COMPLEX`(권역 안 단지 비교)의 진행 상태는 분리한다. 일반 월드컵은 한국 날짜의 가장 최근 게임을 이어가며, 날짜가 바뀌면 전날 미완료 게임을 다시 선택하지 않고 새 날짜의 게임을 시작할 수 있다. 권역 단지 비교는 권역별 가장 최근 게임을 이어가며 날짜가 바뀌어도 유지된다. 10판을 완료한 뒤에는 해당 흐름의 새 게임을 만들 수 있다.
 
 ## 요청 흐름
 
 1. `POST /api/v1/worldcup/games`는 배너 기준 권역을 추첨해 게임을 시작한다.
-2. `POST /api/v1/worldcup/zones/{zoneId}/games`는 선택한 권역에서 게임을 시작한다.
+2. `POST /api/v1/worldcup/zones/{zoneId}/games`는 선택한 권역의 단지끼리만 비교하는 10판을 시작한다.
 3. 첫 시작 요청에 유효한 `gjd_uid`가 없으면 서버가 발급하고 `Set-Cookie`로 돌려준다. 기존 쿠키가 있으면 같은 익명 식별자를 사용한다.
-4. 두 시작 API는 미완료 게임이 없을 때만 #116의 대진 생성 결과를 JSONB 스냅샷으로 DB에 저장하고 `201 Created`와 10판을 반환한다. 미완료 게임이 있으면 새 대진을 만들지 않고 `200 OK`로 저장된 진행 상태를 반환한다. 선택한 권역 진입에서도 기존 미완료 게임이 우선한다.
-5. `GET /api/v1/worldcup/games/current`는 쿠키 소유자의 최신 대진·선택·건너뛰기·진행 상태를 반환한다. 없거나 쿠키가 유효하지 않으면 `404 GAME_NOT_FOUND`다.
+4. 각 시작 API는 해당 흐름의 미완료 게임이 없을 때만 대진을 JSONB 스냅샷으로 저장하고 `201 Created`와 10판을 반환한다. 해당 흐름의 미완료 게임이 있으면 `200 OK`로 이어간다. 일반 월드컵과 권역 단지 비교는 서로를 가로채지 않는다.
+5. 일반 월드컵은 `GET /api/v1/worldcup/games/current`, 권역 비교는 `GET /api/v1/worldcup/zones/{zoneId}/games/current`에서 재조회한다. 해당 쿠키·흐름·권역의 게임이 없으면 `404 GAME_NOT_FOUND`다.
 6. `PUT /api/v1/worldcup/games/current/rounds/{roundNumber}/vote`의 JSON 본문 `{"selectedComplexId":"단지ID"}`로 다음 판을 선택한다. 서버는 저장된 대진의 두 단지 중 하나인지 검증하고 1번부터 순서대로 저장한다. 같은 선택 재요청은 기존 결과를 반환하고 표를 추가하지 않는다. 이미 고른 판을 다른 단지로 바꿀 수 없다.
 7. `PUT /api/v1/worldcup/games/current/rounds/{roundNumber}/skip`은 본문 없이 다음 판을 건너뛴다. 건너뛰기는 표를 만들지 않으며, 같은 판 재요청은 기존 상태를 반환한다. 건너뛴 판은 다시 선택할 수 없고 선택한 판도 건너뛸 수 없다.
 8. 선택 또는 건너뛰기 직후 응답의 `roundResult`로 그 대결의 비율 표시 가능 여부를 전달한다. 화면은 비율을 잠깐 보여준 뒤 다음 판으로 진행할 수 있다.
 9. 10번 판까지 확정하면 게임을 완료한다. 다시 조회해도 선택·건너뛰기·완료 상태가 유지된다.
 
-## 하루 게임 시작 한도
+권역 단지 비교의 투표·건너뛰기는 `PUT /api/v1/worldcup/zones/{zoneId}/games/current/rounds/{roundNumber}/vote`와 `/skip`을 사용한다. 일반 월드컵의 `/games/current` 판 확정 경로에 보내면 권역 비교 표로 기록되지 않는다.
 
-익명 방문자별로 한국 시간(`Asia/Seoul`) 날짜에 새로 생성한 게임을 최대 6개까지 허용한다. `worldcup_game.started_at`이 해당 날짜의 00:00 이상, 다음 날짜 00:00 미만인 행을 센다. 완료 여부와 관계없이 시작한 게임은 1개로 계산하며, 진행 중인 게임을 이어가기 위해 시작 요청을 반복해도 추가로 세지 않는다. 한도에 도달하면 새 대진을 생성하지 않고 `429 DAILY_GAME_LIMIT_REACHED`를 반환한다. 한국 시간 자정부터 새 날짜의 한도를 적용한다.
+## 일반 월드컵의 하루 게임 시작 한도와 진행 현황
+
+익명 방문자별로 한국 시간(`Asia/Seoul`) 날짜에 새로 생성한 일반 월드컵 게임을 최대 6개까지 허용한다. `worldcup_game.started_at`이 해당 날짜의 00:00 이상, 다음 날짜 00:00 미만이고 `mode=GENERAL`인 행을 센다. 완료 여부와 관계없이 시작한 게임은 1개로 계산하며, 진행 중인 게임을 이어가기 위해 시작 요청을 반복해도 추가로 세지 않는다. 한도에 도달하면 새 대진을 생성하지 않고 `429 DAILY_GAME_LIMIT_REACHED`를 반환한다. 권역 안 단지 비교는 이 한도에 포함하지 않는다. 한국 시간 자정부터 새 날짜의 한도를 적용한다.
 
 실제 저장 직전에 익명 방문자별 DB 잠금을 잡고 한도를 다시 확인하므로 동시 요청으로 6개를 초과해 저장하지 않는다. 잠금 뒤에 확인한 시각을 게임 시작 시각으로 함께 저장해 자정 경계에서도 같은 날짜에 집계한다. 브라우저 쿠키를 지우거나 바꾸는 행위까지 막는 사용자 계정 기반 제한은 아니다.
 
-새 게임 생성 응답(`201`)의 `Location`은 `/api/v1/worldcup/games/current`다. 시작과 재조회 응답 모두 `Cache-Control: no-store`를 사용한다. 시작 가능한 대진이 부족하면 `409 GAME_UNAVAILABLE`이며 게임과 새 쿠키를 저장하지 않는다.
+`GET /api/v1/worldcup/progress`는 오늘의 일반 월드컵에서 확정한 판 수를 반환한다. 투표와 건너뛰기를 모두 1판으로 센다. 응답은 `date`(한국 날짜), `dailyLimit`(60), `completedRounds`, `remainingRounds`, `nextMilestone`(30·60 또는 완료 뒤 `null`), `roundsUntilNextMilestone`을 담는다. 쿠키가 없으면 진행 수 0을 반환하며 새 쿠키를 발급하지 않는다. 권역 안 단지 비교의 판은 포함하지 않는다. 날짜가 바뀌면 새 날짜의 확정 판만 센다. 응답은 `Cache-Control: no-store`다. 30판·60판은 진행 표시 기준이며, 이번 API는 개인 선택 리포트를 생성하지 않는다.
+
+일반 게임의 새 게임 생성 응답(`201`)의 `Location`은 `/api/v1/worldcup/games/current`, 권역 단지 비교는 `/api/v1/worldcup/zones/{zoneId}/games/current`다. 시작과 재조회 응답 모두 `Cache-Control: no-store`를 사용한다. 시작 가능한 대진이 부족하면 `409 GAME_UNAVAILABLE`이며 게임과 새 쿠키를 저장하지 않는다.
 
 ## 응답 구조
 
@@ -48,6 +52,8 @@
 
 `V27__create_worldcup_skip.sql`은 건너뛴 판을 별도 테이블에 저장하고 단지 쌍 조회 인덱스를 추가한다. 기존 `worldcup_vote`는 실제 선택만 계속 담는다. 같은 방문자의 판 확정 요청은 DB 잠금 아래 직렬화하고 서비스가 선택과 건너뛰기의 상호 변경을 거부한다. 따라서 건너뛴 판은 급지·순위 집계에도 들어가지 않는다.
 
+`V32__separate_worldcup_game_modes.sql`은 게임에 `GENERAL`/`ZONE_COMPLEX` 모드를 추가한다. 기존 게임은 `GENERAL`로 분류한다. 권역 단지 비교에는 권역 간 급지 범위를 적용하지 않으므로 `tier_range_used`가 `null`일 수 있다. 모드와 권역별 최근 게임 조회를 위한 인덱스도 추가한다.
+
 집계 입력은 저장된 선택을 선택 시각순으로 한 행씩 읽는다. 완료하지 않은 게임에서 확정한 판도 포함한다. 같은 익명 방문자가 한국 날짜에 같은 단지 쌍을 여러 번 고르면 좌우 순서와 관계없이 첫 표만 유효하다. 권역 간 한 표는 양쪽 권역에서 각각 한 표로 센다. 권역별 유효표 50표, 서로 다른 방문자 10명, 권역 간 유효표 20표를 모두 채워야 투표 기반 급지·순위 전환 대상이 된다. 유효표는 두 단지의 승패에 각각 반영하고, 권역 간 대결은 두 권역의 승패에도 각각 반영한다. 권역 내 대결은 권역 승패에 반영하지 않는다. 점수·급지·순위의 계산식과 표시 단위는 [투표 점수 결정](../history/2026-11-09-worldcup-vote-rating.md)에 기록했다. 초기 급지는 `zone.initial_tier`, 단지의 첫 평가값은 `complex.vote_initial_rating`으로 보존한다. 처음 계산한 단지 평가값을 저장한 뒤에는 주간 대표 가격이 바뀌어도 과거 표를 다시 계산한 결과가 흔들리지 않는다.
 
 대결 비율은 해당 두 단지의 누적 **유효표**만 조회한다. 급지 집계와 동일하게 한국 날짜·익명 방문자·순서 없는 단지 쌍당 첫 표만 세며, 좌우 위치가 뒤집혀도 같은 대결로 본다. 서로 다른 방문자가 10명 미만이면 퍼센트를 공개하지 않는다. 10명 이상이면 선택 직후 저장된 표를 포함해 비율을 계산하며, 건너뛰기에서는 기존 표만 조회한다. 이 비율은 3시간마다 발행하는 권역 급지·순위와 별도로 즉시 계산된다. 같은 방문자의 다른 날짜 표는 각각 유효할 수 있으므로 화면 문구는 `선택 비율`을 사용한다.
@@ -64,10 +70,10 @@
 
 ## 프런트엔드 연동 순서와 출처 설정
 
-1. `GET /api/v1/worldcup/zones`에서 `canStart`를 확인한다. 시작할 수 없는 권역은 `GET /api/v1/worldcup/zones/{zoneId}/alternatives`로 대체 권역을 안내한다.
-2. 배너 진입은 `POST /api/v1/worldcup/games`, 권역 진입은 `POST /api/v1/worldcup/zones/{zoneId}/games`를 호출한다. `201`은 새 게임이고 `200`은 기존 미완료 게임이다. 응답의 `matchups`와 `nextRoundNumber`를 사용한다.
-3. 재진입 시 `GET /api/v1/worldcup/games/current`를 호출한다. `404 GAME_NOT_FOUND`면 이어갈 게임이 없는 상태다.
-4. 현재 판을 선택하거나 건너뛸 때 각각 `PUT /api/v1/worldcup/games/current/rounds/{roundNumber}/vote`, `PUT /api/v1/worldcup/games/current/rounds/{roundNumber}/skip`을 호출한다. 선택 요청은 `Content-Type: application/json`과 `selectedComplexId`가 필요하다. 응답의 `roundResult`는 방금 확정한 판의 선택 비율이며, 다음 판은 `nextRoundNumber`로 결정한다.
+1. 일반 월드컵의 상단 진행 표시는 `GET /api/v1/worldcup/progress`를 조회한다. 권역에서 시작할 때는 `GET /api/v1/worldcup/zones`의 `canStart`를 확인하고, 시작할 수 없다면 `GET /api/v1/worldcup/zones/{zoneId}/alternatives`로 대체 권역을 안내한다.
+2. 배너 진입은 `POST /api/v1/worldcup/games`, 권역 진입은 `POST /api/v1/worldcup/zones/{zoneId}/games`를 호출한다. `201`은 새 게임이고 `200`은 같은 흐름의 기존 미완료 게임이다. 응답의 `matchups`와 `nextRoundNumber`를 사용한다.
+3. 재진입 시 일반 월드컵은 `GET /api/v1/worldcup/games/current`, 권역 단지 비교는 `GET /api/v1/worldcup/zones/{zoneId}/games/current`를 호출한다. `404 GAME_NOT_FOUND`면 그 흐름에 이어갈 게임이 없는 상태다.
+4. 현재 판을 선택하거나 건너뛸 때 일반 월드컵은 `/api/v1/worldcup/games/current/rounds/{roundNumber}/vote` 또는 `/skip`, 권역 단지 비교는 `/api/v1/worldcup/zones/{zoneId}/games/current/rounds/{roundNumber}/vote` 또는 `/skip`에 `PUT`한다. 선택 요청은 `Content-Type: application/json`과 `selectedComplexId`가 필요하다. 응답의 `roundResult`는 방금 확정한 판의 선택 비율이며, 다음 판은 `nextRoundNumber`로 결정한다.
 5. 10판을 모두 확정하면 `completed=true`, `nextRoundNumber=null`이다. 결과를 다시 조회해도 저장된 선택과 건너뛰기가 유지된다. 권역의 발행된 급지·단지 순위는 지도 권역 상세 API로 별도 조회한다.
 
 별도 출처의 프런트엔드는 게임 시작·재조회·선택·건너뛰기 요청에 브라우저 `fetch`의 `credentials: "include"`를 설정해야 한다. 첫 시작 응답의 `gjd_uid`는 `HttpOnly` 쿠키라 JavaScript에서 읽지 않는다. 브라우저가 저장해 다음 요청에 자동으로 보내며, URL에 방문자 ID를 넣지 않는다. 로컬에서는 프런트와 백엔드에 모두 `localhost`를 사용한다. `localhost`와 `127.0.0.1`을 섞으면 쿠키 호스트가 달라진다.

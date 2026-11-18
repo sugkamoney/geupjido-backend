@@ -10,7 +10,9 @@ import com.geupjido.match.service.WorldcupDailyLimitReachedException;
 import com.geupjido.match.service.WorldcupGameNotFoundException;
 import com.geupjido.match.service.WorldcupVoteRejectedException;
 
-@RestControllerAdvice(assignableTypes = WorldcupGameController.class)
+@RestControllerAdvice(assignableTypes = {
+	WorldcupGameController.class, WorldcupZoneComparisonController.class
+})
 public class WorldcupGameExceptionHandler {
 
 	@ExceptionHandler(MatchUnavailableException.class)

@@ -76,6 +76,28 @@ public class MatchGenerationService {
 		return generate(baseZone, zones);
 	}
 
+	@Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+	public GeneratedMatchGame generateWithinZone(String zoneId) {
+		MatchZoneCandidate baseZone = repository.findActiveZones().stream()
+			.filter(zone -> zone.zoneId().equals(zoneId))
+			.findFirst()
+			.orElseThrow(() -> new MatchUnavailableException("투표할 활성 단지가 없는 권역입니다."));
+		if (baseZone.activeComplexCount() < 5) {
+			throw new MatchUnavailableException("권역 안에서 서로 다른 단지 대진 10판을 만들 수 없습니다.");
+		}
+		List<MatchComplexCandidate> complexes = repository
+			.findActiveComplexesByZoneIds(List.of(zoneId));
+		if (complexes.size() < 5) {
+			throw new MatchUnavailableException("권역 안에서 서로 다른 단지 대진 10판을 만들 수 없습니다.");
+		}
+		Set<PairKey> usedPairs = new HashSet<>();
+		Map<String, Integer> appearances = new HashMap<>();
+		List<Matchup> matchups = new ArrayList<>(GAME_SIZE);
+		addWithinZoneMatches(complexes, GAME_SIZE, usedPairs, appearances, matchups);
+		Collections.shuffle(matchups, random);
+		return new GeneratedMatchGame(zoneId, null, matchups);
+	}
+
 	private MatchZoneCandidate chooseBannerZone(List<MatchZoneCandidate> zones) {
 		List<MatchZoneCandidate> seoul = zones.stream()
 			.filter(zone -> zone.activeComplexCount() >= 4 && zone.cityId().startsWith("11"))
