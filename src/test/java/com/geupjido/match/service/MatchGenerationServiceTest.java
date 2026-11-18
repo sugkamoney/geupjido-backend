@@ -28,6 +28,35 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class MatchGenerationServiceTest {
 
 	@Test
+	void 권역_안_단지_비교는_그_권역의_서로_다른_단지쌍_10판만_만든다() {
+		MatchGenerationService service = service(12,
+			zone("base", "11170", "1.5", 5),
+			zone("other", "11170", "1.5", 5));
+
+		GeneratedMatchGame game = service.generateWithinZone("base");
+
+		assertThat(game.baseZoneId()).isEqualTo("base");
+		assertThat(game.tierRangeUsed()).isNull();
+		assertThat(game.matchups()).hasSize(10)
+			.allSatisfy(match -> {
+				assertThat(match.type()).isEqualTo(MatchType.WITHIN_ZONE);
+				assertThat(match.left().complexId()).startsWith("base-");
+				assertThat(match.right().complexId()).startsWith("base-");
+			});
+		assertThat(game.matchups().stream().map(this::pairKey).distinct()).hasSize(10);
+	}
+
+	@Test
+	void 권역에_단지가_네_곳이면_중복_없이_10판을_만들_수_없다() {
+		MatchGenerationService service = service(13,
+			zone("base", "11170", "1.5", 4),
+			zone("other", "11170", "1.5", 10));
+
+		assertThatThrownBy(() -> service.generateWithinZone("base"))
+			.isInstanceOf(MatchUnavailableException.class);
+	}
+
+	@Test
 	void 일반_권역은_다른_권역_6판과_같은_권역_4판을_중복_없이_만든다() {
 		MatchGenerationService service = service(7,
 			zone("base", "11170", "1.5", 4),

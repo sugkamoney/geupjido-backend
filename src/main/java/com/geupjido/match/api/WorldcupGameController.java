@@ -65,17 +65,13 @@ public class WorldcupGameController {
 		@CookieValue(name = AnonymousVisitorCookie.NAME, required = false) String cookieValue
 	) {
 		AnonymousVisitorCookie.Visitor visitor = visitorCookie.identifyForStart(cookieValue);
-		return started(gameService.startFromBanner(visitor.anonymousId()), visitor);
+		return started(gameService.startFromBanner(visitor.anonymousId()), visitor, CURRENT_GAME_URI);
 	}
 
 	@PostMapping("/zones/{zoneId}/games")
-	@Operation(summary = "선택한 권역에서 월드컵 게임 시작")
+	@Operation(summary = "선택한 권역 안 단지 비교 10판 시작")
 	@ApiResponse(responseCode = "201", description = "게임 생성")
 	@ApiResponse(responseCode = "200", description = "진행 중인 게임 이어하기")
-	@ApiResponse(
-		responseCode = "429", description = "한국 날짜 기준 하루 6게임 시작 한도 도달",
-		content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))
-	)
 	@ApiResponse(
 		responseCode = "409", description = "투표 가능한 대진 부족",
 		content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))
@@ -85,7 +81,8 @@ public class WorldcupGameController {
 		@CookieValue(name = AnonymousVisitorCookie.NAME, required = false) String cookieValue
 	) {
 		AnonymousVisitorCookie.Visitor visitor = visitorCookie.identifyForStart(cookieValue);
-		return started(gameService.startForZone(visitor.anonymousId(), zoneId), visitor);
+		return started(gameService.startForZone(visitor.anonymousId(), zoneId), visitor,
+			URI.create("/api/v1/worldcup/zones/" + zoneId + "/games/current"));
 	}
 
 	@GetMapping("/games/current")
@@ -160,10 +157,11 @@ public class WorldcupGameController {
 
 	private ResponseEntity<WorldcupGameResponse> started(
 		WorldcupGameStartResult result,
-		AnonymousVisitorCookie.Visitor visitor
+		AnonymousVisitorCookie.Visitor visitor,
+		URI currentUri
 	) {
 		ResponseEntity.BodyBuilder response = (result.created()
-			? ResponseEntity.created(CURRENT_GAME_URI) : ResponseEntity.ok())
+			? ResponseEntity.created(currentUri) : ResponseEntity.ok())
 			.cacheControl(CacheControl.noStore());
 		if (visitor.setCookie() != null) {
 			response.header(HttpHeaders.SET_COOKIE, visitor.setCookie());

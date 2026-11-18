@@ -1,5 +1,6 @@
 package com.geupjido.match.service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import com.geupjido.match.model.Matchup;
 import com.geupjido.match.model.RecordedSkip;
 import com.geupjido.match.model.RecordedVote;
 import com.geupjido.match.model.WorldcupGameState;
+import com.geupjido.match.model.WorldcupGameMode;
 import com.geupjido.match.repository.WorldcupGameRepository;
 
 @Service
@@ -33,7 +35,7 @@ public class WorldcupGameService {
 	}
 
 	public WorldcupGameStartResult startFromBanner(UUID anonymousId) {
-		var latest = gameRepository.findLatestByAnonymousId(anonymousId);
+		var latest = latest(anonymousId, WorldcupGameMode.GENERAL, null, false);
 		if (latest.isPresent() && !latest.get().completed()) {
 			return new WorldcupGameStartResult(latest.get(), false);
 		}
@@ -43,29 +45,46 @@ public class WorldcupGameService {
 	}
 
 	public WorldcupGameStartResult startForZone(UUID anonymousId, String zoneId) {
-		var latest = gameRepository.findLatestByAnonymousId(anonymousId);
+		var latest = latest(anonymousId, WorldcupGameMode.ZONE_COMPLEX, zoneId, false);
 		if (latest.isPresent() && !latest.get().completed()) {
 			return new WorldcupGameStartResult(latest.get(), false);
 		}
-		dailyGameLimit.ensureCanStart(anonymousId);
-		GeneratedMatchGame game = matchGenerationService.generateForZone(zoneId);
-		return startPersistenceService.saveOrResume(anonymousId, game);
+		GeneratedMatchGame game = matchGenerationService.generateWithinZone(zoneId);
+		return startPersistenceService.saveOrResume(anonymousId, game, WorldcupGameMode.ZONE_COMPLEX);
 	}
 
 	@Transactional(readOnly = true)
 	public WorldcupGameState findCurrent(UUID anonymousId) {
-		return gameRepository.findLatestByAnonymousId(anonymousId)
+		return latest(anonymousId, WorldcupGameMode.GENERAL, null, false)
+			.orElseThrow(WorldcupGameNotFoundException::new);
+	}
+
+	@Transactional(readOnly = true)
+	public WorldcupGameState findZoneCurrent(UUID anonymousId, String zoneId) {
+		return latest(anonymousId, WorldcupGameMode.ZONE_COMPLEX, zoneId, false)
 			.orElseThrow(WorldcupGameNotFoundException::new);
 	}
 
 	@Transactional
 	public WorldcupGameState select(UUID anonymousId, int roundNumber, String selectedComplexId) {
+		return select(anonymousId, WorldcupGameMode.GENERAL, null, roundNumber, selectedComplexId);
+	}
+
+	@Transactional
+	public WorldcupGameState selectZone(UUID anonymousId, String zoneId,
+		int roundNumber, String selectedComplexId) {
+		return select(anonymousId, WorldcupGameMode.ZONE_COMPLEX, zoneId,
+			roundNumber, selectedComplexId);
+	}
+
+	private WorldcupGameState select(UUID anonymousId, WorldcupGameMode mode, String zoneId,
+		int roundNumber, String selectedComplexId) {
 		if (roundNumber < 1 || roundNumber > 10 || selectedComplexId == null
 			|| selectedComplexId.isBlank()) {
 			throw new WorldcupVoteRejectedException("INVALID_VOTE", "판 번호와 선택한 단지를 확인해 주세요.");
 		}
 		gameRepository.lockAnonymousId(anonymousId);
-		WorldcupGameState state = gameRepository.findLatestByAnonymousIdForUpdate(anonymousId)
+		WorldcupGameState state = latest(anonymousId, mode, zoneId, true)
 			.orElseThrow(WorldcupGameNotFoundException::new);
 		Matchup matchup = state.game().matchups().get(roundNumber - 1);
 		String leftId = matchup.left().complexId();
@@ -98,17 +117,27 @@ public class WorldcupGameService {
 		if (roundNumber == 10) {
 			gameRepository.complete(state.id());
 		}
-		return gameRepository.findLatestByAnonymousId(anonymousId)
+		return latest(anonymousId, mode, zoneId, false)
 			.orElseThrow(WorldcupGameNotFoundException::new);
 	}
 
 	@Transactional
 	public WorldcupGameState skip(UUID anonymousId, int roundNumber) {
+		return skip(anonymousId, WorldcupGameMode.GENERAL, null, roundNumber);
+	}
+
+	@Transactional
+	public WorldcupGameState skipZone(UUID anonymousId, String zoneId, int roundNumber) {
+		return skip(anonymousId, WorldcupGameMode.ZONE_COMPLEX, zoneId, roundNumber);
+	}
+
+	private WorldcupGameState skip(UUID anonymousId, WorldcupGameMode mode,
+		String zoneId, int roundNumber) {
 		if (roundNumber < 1 || roundNumber > 10) {
 			throw new WorldcupVoteRejectedException("INVALID_ROUND", "판 번호를 확인해 주세요.");
 		}
 		gameRepository.lockAnonymousId(anonymousId);
-		WorldcupGameState state = gameRepository.findLatestByAnonymousIdForUpdate(anonymousId)
+		WorldcupGameState state = latest(anonymousId, mode, zoneId, true)
 			.orElseThrow(WorldcupGameNotFoundException::new);
 		for (RecordedSkip skip : state.skips()) {
 			if (skip.roundNumber() == roundNumber) {
@@ -131,7 +160,16 @@ public class WorldcupGameService {
 		if (roundNumber == 10) {
 			gameRepository.complete(state.id());
 		}
-		return gameRepository.findLatestByAnonymousId(anonymousId)
+		return latest(anonymousId, mode, zoneId, false)
 			.orElseThrow(WorldcupGameNotFoundException::new);
+	}
+
+	private Optional<WorldcupGameState> latest(UUID anonymousId,
+		WorldcupGameMode mode, String zoneId, boolean forUpdate) {
+		WorldcupDailyGameLimit.Day day = mode == WorldcupGameMode.GENERAL
+			? dailyGameLimit.currentDay() : null;
+		return gameRepository.findLatest(anonymousId, mode, zoneId,
+			day == null ? null : day.fromInclusive(),
+			day == null ? null : day.toExclusive(), forUpdate);
 	}
 }

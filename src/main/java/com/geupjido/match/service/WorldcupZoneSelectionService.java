@@ -21,16 +21,13 @@ public class WorldcupZoneSelectionService {
 
 	private final WorldcupZoneSelectionRepository repository;
 	private final MatchCandidateRepository candidateRepository;
-	private final WorldcupMatchAvailability availability;
 
 	public WorldcupZoneSelectionService(
 		WorldcupZoneSelectionRepository repository,
-		MatchCandidateRepository candidateRepository,
-		WorldcupMatchAvailability availability
+		MatchCandidateRepository candidateRepository
 	) {
 		this.repository = repository;
 		this.candidateRepository = candidateRepository;
-		this.availability = availability;
 	}
 
 	@Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
@@ -39,7 +36,7 @@ public class WorldcupZoneSelectionService {
 		Map<String, MatchZoneCandidate> byId = candidates.stream()
 			.collect(Collectors.toMap(MatchZoneCandidate::zoneId, Function.identity()));
 		return repository.findAll().stream()
-			.map(row -> selection(row, byId, candidates))
+			.map(row -> selection(row, byId))
 			.toList();
 	}
 
@@ -49,7 +46,7 @@ public class WorldcupZoneSelectionService {
 		Map<String, MatchZoneCandidate> byId = candidates.stream()
 			.collect(Collectors.toMap(MatchZoneCandidate::zoneId, Function.identity()));
 		Map<String, WorldcupZoneSelection> selections = repository.findAll().stream()
-			.map(row -> selection(row, byId, candidates))
+			.map(row -> selection(row, byId))
 			.collect(Collectors.toMap(WorldcupZoneSelection::zoneId, Function.identity()));
 		WorldcupZoneSelection selected = selections.get(zoneId);
 		if (selected == null) {
@@ -67,13 +64,10 @@ public class WorldcupZoneSelectionService {
 			.toList();
 	}
 
-	private WorldcupZoneSelection selection(
-		ZoneRow row, Map<String, MatchZoneCandidate> byId,
-		List<MatchZoneCandidate> candidates
-	) {
+	private WorldcupZoneSelection selection(ZoneRow row,
+		Map<String, MatchZoneCandidate> byId) {
 		MatchZoneCandidate candidate = byId.get(row.zoneId());
-		boolean canStart = candidate != null
-			&& availability.tierRange(candidate, candidates).isPresent();
+		boolean canStart = candidate != null && candidate.activeComplexCount() >= 5;
 		return new WorldcupZoneSelection(
 			row.zoneId(), row.cityName(), row.zoneName(), row.tier(),
 			row.activeComplexCount(), canStart

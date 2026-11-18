@@ -39,21 +39,25 @@ Safari는 HTTP `localhost`에 대한 `Secure` 쿠키 예외를 지원하지 않�
 
 | 순서 | 메서드와 경로 | 용도 |
 |---|---|---|
-| 1 | `GET /api/v1/worldcup/zones` | 시작 가능한 권역과 `zoneId`, `canStart` 조회 |
-| 2 | `POST /api/v1/worldcup/games` | 배너에서 임의 권역 게임 시작 |
-| 2a | `POST /api/v1/worldcup/zones/{zoneId}/games` | 선택한 권역의 게임 시작 |
-| 3 | `PUT /api/v1/worldcup/games/current/rounds/{roundNumber}/vote` | 현재 판의 단지 선택 저장 |
-| 3a | `PUT /api/v1/worldcup/games/current/rounds/{roundNumber}/skip` | 현재 판 건너뛰기 저장 |
-| 4 | `GET /api/v1/worldcup/games/current` | 같은 쿠키의 진행 중 게임 재조회 |
-| 5 | `GET /api/v1/worldcup/timeline?zoneId={zoneId}` | 최근 선택 20건 조회. `zoneId`를 생략하면 전체 대진 |
+| 1 | `GET /api/v1/worldcup/progress` | 오늘 일반 월드컵 확정 판 수와 30·60판 진행 표시 |
+| 2 | `GET /api/v1/worldcup/zones` | 권역 단지 비교를 시작할 수 있는 `zoneId`, `canStart` 조회 |
+| 3 | `POST /api/v1/worldcup/games` | 일반 월드컵 10판 시작. 한 게임은 같은 권역 4판과 다른 권역 6판 |
+| 4 | `GET /api/v1/worldcup/games/current` | 오늘 일반 월드컵의 최근 게임 재조회 |
+| 5 | `PUT /api/v1/worldcup/games/current/rounds/{roundNumber}/vote` 또는 `/skip` | 일반 월드컵 판 확정 |
+| 6 | `POST /api/v1/worldcup/zones/{zoneId}/games` | 선택 권역의 단지만으로 비교 10판 시작 |
+| 7 | `GET /api/v1/worldcup/zones/{zoneId}/games/current` | 해당 권역 단지 비교의 최근 게임 재조회 |
+| 8 | `PUT /api/v1/worldcup/zones/{zoneId}/games/current/rounds/{roundNumber}/vote` 또는 `/skip` | 해당 권역 단지 비교 판 확정 |
+| 9 | `GET /api/v1/worldcup/timeline?zoneId={zoneId}` | 최근 선택 20건 조회. `zoneId`를 생략하면 전체 대진 |
 
-선택 요청 본문은 `{"selectedComplexId":"<현재 판의 left 또는 right complexId>"}`다. 시작 응답은 새 게임이면 201, 기존 게임을 이어가면 200이다. 게임 응답의 `matchups`는 고정된 10판이며, `nextRoundNumber`, `selections`, `skips`, `completed`로 진행 상태를 표시한다. 선택·건너뛰기 응답의 `roundResult`에 공개 가능한 좌우 선택 비율이 포함된다. 응답 DTO의 전체 필드는 OpenAPI JSON을 기준으로 확인한다.
+선택 요청 본문은 `{"selectedComplexId":"<현재 판의 left 또는 right complexId>"}`다. 시작 응답은 새 게임이면 201, **같은 흐름의** 기존 게임을 이어가면 200이다. 일반 월드컵과 권역 단지 비교는 각각의 시작·조회·판 확정 경로를 사용한다. 게임 응답의 `matchups`는 고정된 10판이며, `nextRoundNumber`, `selections`, `skips`, `completed`로 진행 상태를 표시한다. 선택·건너뛰기 응답의 `roundResult`에 공개 가능한 좌우 선택 비율이 포함된다. 응답 DTO의 전체 필드는 OpenAPI JSON을 기준으로 확인한다.
+
+`progress`는 한국 시간 오늘의 일반 월드컵에서 투표하거나 건너뛴 판만 센다. `completedRounds`, `remainingRounds`, `nextMilestone`, `roundsUntilNextMilestone`을 사용한다. 쿠키가 없어도 0으로 응답하며, 권역 안 단지 비교는 이 수와 일반 월드컵 하루 6게임 한도에 영향을 주지 않는다. 개인 30판·60판 리포트는 아직 제공하지 않는다.
 
 타임라인은 공개 조회라 쿠키 없이도 호출할 수 있다. 같은 브라우저가 `gjd_uid` 쿠키를 보내면 본인 표에 `mine=true`, `displayName=나`를 돌려준다. 양쪽 단지·권역, 선택 단지 ID, 선택 시각을 사용해 시안의 대결 줄을 그린다. 상세 계약은 [월드컵 타임라인 API](worldcup-timeline-api.md)를 참조한다. 지도 권역의 전체 단지 순위는 `GET /api/v1/map/zones/{zoneId}`를 사용한다.
 
 2026-11-14 첫 `main` 자동 배포 후 개발 서버의 OpenAPI JSON에 타임라인 경로가 노출되고, 제거한 월드컵 권역 순위 경로는 사라진 것을 확인했다. [배포 검증 기록](dev-auto-deployment.md#첫-자동-배포-확인)
 
-오류 응답은 `code`, `message`를 사용한다. 주요 상태는 잘못된 선택 400, 이어갈 게임 없음 404, 이미 선택한 판 또는 순서 충돌 409, 하루 시작 한도 429다. UI는 409를 새 투표 성공으로 처리하지 않고 현재 게임을 다시 조회해야 한다.
+오류 응답은 `code`, `message`를 사용한다. 주요 상태는 잘못된 선택 400, 이어갈 게임 없음 404, 이미 선택한 판 또는 순서 충돌 409, 일반 월드컵 하루 시작 한도 429다. UI는 409를 새 투표 성공으로 처리하지 않고 해당 흐름의 현재 게임을 다시 조회해야 한다.
 
 ## 확인한 범위
 
