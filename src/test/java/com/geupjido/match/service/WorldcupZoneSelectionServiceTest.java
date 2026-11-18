@@ -19,13 +19,13 @@ class WorldcupZoneSelectionServiceTest {
 
 	private final List<ZoneRow> rows = List.of(
 		new ZoneRow("empty", "서울", "비어 있는 권역", new BigDecimal("1.5"), 0),
-		new ZoneRow("ready", "서울", "시작 가능", new BigDecimal("1.5"), 4),
+		new ZoneRow("ready", "서울", "시작 가능", new BigDecimal("1.5"), 5),
 		new ZoneRow("opponent", "서울", "상대 권역", new BigDecimal("1.6"), 4),
 		new ZoneRow("sparse", "서울", "대진 부족", new BigDecimal("3.0"), 1)
 	);
 
 	private final List<MatchZoneCandidate> candidates = List.of(
-		candidate("ready", "1.5", 4),
+		candidate("ready", "1.5", 5),
 		candidate("opponent", "1.6", 4),
 		candidate("sparse", "3.0", 1)
 	);
@@ -46,8 +46,7 @@ class WorldcupZoneSelectionServiceTest {
 			@Override public List<MatchComplexCandidate> findActiveComplexesByZoneIds(
 				Collection<String> zoneIds
 			) { return List.of(); }
-		},
-		new WorldcupMatchAvailability()
+		}
 	);
 
 	@Test
@@ -56,7 +55,7 @@ class WorldcupZoneSelectionServiceTest {
 		assertThat(service.list()).extracting("zoneId", "activeComplexCount", "canStart")
 			.contains(
 				org.assertj.core.groups.Tuple.tuple("empty", 0L, false),
-				org.assertj.core.groups.Tuple.tuple("ready", 4L, true),
+				org.assertj.core.groups.Tuple.tuple("ready", 5L, true),
 				org.assertj.core.groups.Tuple.tuple("sparse", 1L, false)
 			);
 	}

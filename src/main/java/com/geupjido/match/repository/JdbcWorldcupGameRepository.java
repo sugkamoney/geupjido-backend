@@ -21,13 +21,14 @@ import com.geupjido.match.model.Matchup;
 import com.geupjido.match.model.RecordedVote;
 import com.geupjido.match.model.RecordedSkip;
 import com.geupjido.match.model.WorldcupGameState;
+import com.geupjido.match.model.WorldcupGameMode;
 
 @Repository
 public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 
 	private static final String INSERT_SQL = """
-		INSERT INTO worldcup_game (anonymous_id, base_zone_id, tier_range_used, matchups, started_at)
-		VALUES (:anonymousId, :baseZoneId, :tierRangeUsed, CAST(:matchups AS jsonb), :startedAt)
+		INSERT INTO worldcup_game (anonymous_id, base_zone_id, tier_range_used, matchups, started_at, mode)
+		VALUES (:anonymousId, :baseZoneId, :tierRangeUsed, CAST(:matchups AS jsonb), :startedAt, :mode)
 		RETURNING id
 		""";
 
@@ -52,6 +53,18 @@ public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 		WHERE anonymous_id = :anonymousId
 		  AND started_at >= :fromInclusive
 		  AND started_at < :toExclusive
+		  AND mode = 'GENERAL'
+		""";
+
+	private static final String COUNT_COMPLETED_ROUNDS_SQL = """
+		SELECT (SELECT COUNT(*) FROM worldcup_vote AS vote
+		        JOIN worldcup_game AS game ON game.id = vote.game_id
+		        WHERE game.anonymous_id = :anonymousId AND game.mode = 'GENERAL'
+		          AND game.started_at >= :fromInclusive AND game.started_at < :toExclusive)
+		     + (SELECT COUNT(*) FROM worldcup_skip AS skip
+		        JOIN worldcup_game AS game ON game.id = skip.game_id
+		        WHERE game.anonymous_id = :anonymousId AND game.mode = 'GENERAL'
+		          AND game.started_at >= :fromInclusive AND game.started_at < :toExclusive)
 		""";
 
 	private static final String FIND_SKIPS_SQL = """
@@ -103,7 +116,8 @@ public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 	}
 
 	@Override
-	public WorldcupGameState save(UUID anonymousId, GeneratedMatchGame game, Instant startedAt) {
+	public WorldcupGameState save(UUID anonymousId, GeneratedMatchGame game, Instant startedAt,
+		WorldcupGameMode mode) {
 		try {
 			String matchupsJson = objectMapper.writeValueAsString(game.matchups());
 			Long id = jdbcTemplate.queryForObject(
@@ -113,6 +127,7 @@ public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 					.addValue("baseZoneId", game.baseZoneId())
 					.addValue("tierRangeUsed", game.tierRangeUsed())
 					.addValue("matchups", matchupsJson)
+					.addValue("mode", mode.name())
 					.addValue("startedAt", OffsetDateTime.ofInstant(startedAt, ZoneOffset.UTC)),
 				Long.class
 			);
@@ -136,9 +151,52 @@ public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 	}
 
 	@Override
+	public Optional<WorldcupGameState> findLatest(UUID anonymousId, WorldcupGameMode mode,
+		String zoneId, Instant startedSince, Instant startedBefore, boolean forUpdate) {
+		StringBuilder sql = new StringBuilder("""
+			SELECT id, base_zone_id, tier_range_used, matchups, completed_at
+			FROM worldcup_game
+			WHERE anonymous_id = :anonymousId AND mode = :mode
+			""");
+		MapSqlParameterSource parameters = new MapSqlParameterSource()
+			.addValue("anonymousId", anonymousId)
+			.addValue("mode", mode.name());
+		if (zoneId != null) {
+			sql.append(" AND base_zone_id = :zoneId");
+			parameters.addValue("zoneId", zoneId);
+		}
+		if (startedSince != null) {
+			sql.append(" AND started_at >= :startedSince");
+			parameters.addValue("startedSince", OffsetDateTime.ofInstant(startedSince, ZoneOffset.UTC));
+		}
+		if (startedBefore != null) {
+			sql.append(" AND started_at < :startedBefore");
+			parameters.addValue("startedBefore", OffsetDateTime.ofInstant(startedBefore, ZoneOffset.UTC));
+		}
+		sql.append(" ORDER BY id DESC LIMIT 1");
+		if (forUpdate) {
+			sql.append(" FOR UPDATE");
+		}
+		return findLatest(parameters, sql.toString());
+	}
+
+	@Override
 	public long countStartedByAnonymousId(UUID anonymousId, Instant fromInclusive, Instant toExclusive) {
 		Long count = jdbcTemplate.queryForObject(
 			COUNT_STARTED_SQL,
+			new MapSqlParameterSource()
+				.addValue("anonymousId", anonymousId)
+				.addValue("fromInclusive", OffsetDateTime.ofInstant(fromInclusive, ZoneOffset.UTC))
+				.addValue("toExclusive", OffsetDateTime.ofInstant(toExclusive, ZoneOffset.UTC)),
+			Long.class
+		);
+		return count == null ? 0 : count;
+	}
+
+	@Override
+	public long countCompletedRounds(UUID anonymousId, Instant fromInclusive, Instant toExclusive) {
+		Long count = jdbcTemplate.queryForObject(
+			COUNT_COMPLETED_ROUNDS_SQL,
 			new MapSqlParameterSource()
 				.addValue("anonymousId", anonymousId)
 				.addValue("fromInclusive", OffsetDateTime.ofInstant(fromInclusive, ZoneOffset.UTC))
@@ -192,9 +250,13 @@ public class JdbcWorldcupGameRepository implements WorldcupGameRepository {
 	}
 
 	private Optional<WorldcupGameState> findLatest(UUID anonymousId, String sql) {
+		return findLatest(new MapSqlParameterSource("anonymousId", anonymousId), sql);
+	}
+
+	private Optional<WorldcupGameState> findLatest(MapSqlParameterSource parameters, String sql) {
 		return jdbcTemplate.query(
 			sql,
-			new MapSqlParameterSource("anonymousId", anonymousId),
+			parameters,
 			(rs, rowNum) -> {
 				long id = rs.getLong("id");
 				OffsetDateTime completedAt = rs.getObject("completed_at", OffsetDateTime.class);

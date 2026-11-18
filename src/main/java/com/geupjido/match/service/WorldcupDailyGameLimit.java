@@ -26,13 +26,28 @@ public class WorldcupDailyGameLimit {
 
 	public Instant ensureCanStart(UUID anonymousId) {
 		Instant startedAt = clock.instant();
-		LocalDate today = LocalDate.ofInstant(startedAt, KOREA_TIME);
-		Instant fromInclusive = today.atStartOfDay(KOREA_TIME).toInstant();
-		Instant toExclusive = today.plusDays(1).atStartOfDay(KOREA_TIME).toInstant();
-		if (gameRepository.countStartedByAnonymousId(anonymousId, fromInclusive, toExclusive)
+		Day day = dayAt(startedAt);
+		if (gameRepository.countStartedByAnonymousId(anonymousId, day.fromInclusive(), day.toExclusive())
 			>= MAX_GAMES_PER_DAY) {
 			throw new WorldcupDailyLimitReachedException();
 		}
 		return startedAt;
+	}
+
+	public Day currentDay() {
+		return dayAt(clock.instant());
+	}
+
+	public Instant now() {
+		return clock.instant();
+	}
+
+	public Day dayAt(Instant instant) {
+		LocalDate date = LocalDate.ofInstant(instant, KOREA_TIME);
+		return new Day(date, date.atStartOfDay(KOREA_TIME).toInstant(),
+			date.plusDays(1).atStartOfDay(KOREA_TIME).toInstant());
+	}
+
+	public record Day(LocalDate date, Instant fromInclusive, Instant toExclusive) {
 	}
 }

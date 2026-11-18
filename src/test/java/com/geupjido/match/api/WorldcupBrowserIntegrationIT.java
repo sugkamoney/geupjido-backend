@@ -98,7 +98,7 @@ class WorldcupBrowserIntegrationIT {
 		JsonNode game = objectMapper.readTree(started.getContentAsString());
 
 		String firstComplexId = game.at("/matchups/0/left/complexId").asText();
-		mockMvc.perform(put("/api/v1/worldcup/games/current/rounds/1/vote")
+		mockMvc.perform(put("/api/v1/worldcup/zones/{zoneId}/games/current/rounds/1/vote", zoneId)
 				.header(HttpHeaders.ORIGIN, FRONTEND_ORIGIN)
 				.cookie(cookie)
 				.contentType(MediaType.APPLICATION_JSON)
@@ -106,12 +106,12 @@ class WorldcupBrowserIntegrationIT {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.nextRoundNumber").value(2))
 			.andExpect(jsonPath("$.roundResult.roundNumber").value(1));
-		mockMvc.perform(put("/api/v1/worldcup/games/current/rounds/2/skip")
+		mockMvc.perform(put("/api/v1/worldcup/zones/{zoneId}/games/current/rounds/2/skip", zoneId)
 				.header(HttpHeaders.ORIGIN, FRONTEND_ORIGIN).cookie(cookie))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.nextRoundNumber").value(3));
 
-		mockMvc.perform(get("/api/v1/worldcup/games/current")
+		mockMvc.perform(get("/api/v1/worldcup/zones/{zoneId}/games/current", zoneId)
 				.header(HttpHeaders.ORIGIN, FRONTEND_ORIGIN).cookie(cookie))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.selections.length()").value(1))
@@ -119,8 +119,8 @@ class WorldcupBrowserIntegrationIT {
 			.andExpect(jsonPath("$.nextRoundNumber").value(3));
 
 		for (int round = 3; round <= 10; round++) {
-			var request = put("/api/v1/worldcup/games/current/rounds/{roundNumber}/"
-				+ (round % 2 == 0 ? "skip" : "vote"), round)
+			var request = put("/api/v1/worldcup/zones/{zoneId}/games/current/rounds/{roundNumber}/"
+				+ (round % 2 == 0 ? "skip" : "vote"), zoneId, round)
 				.header(HttpHeaders.ORIGIN, FRONTEND_ORIGIN).cookie(cookie);
 			if (round % 2 == 1) {
 				String complexId = game.at("/matchups/" + (round - 1) + "/left/complexId").asText();
@@ -129,7 +129,7 @@ class WorldcupBrowserIntegrationIT {
 			}
 			mockMvc.perform(request).andExpect(status().isOk());
 		}
-		mockMvc.perform(get("/api/v1/worldcup/games/current")
+		mockMvc.perform(get("/api/v1/worldcup/zones/{zoneId}/games/current", zoneId)
 				.header(HttpHeaders.ORIGIN, FRONTEND_ORIGIN).cookie(cookie))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.completed").value(true))

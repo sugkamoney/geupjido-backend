@@ -16,9 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.geupjido.match.model.GeneratedMatchGame;
 import com.geupjido.match.model.MatchZoneCandidate;
+import com.geupjido.match.model.WorldcupGameMode;
 import com.geupjido.match.repository.MatchCandidateRepository;
 import com.geupjido.match.repository.WorldcupGameRepository;
 
@@ -44,6 +46,32 @@ class WorldcupGameStartPersistenceIT {
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
+
+	@Test
+	@Transactional
+	void 오늘_완료_판은_날짜_경계와_게임_종류를_구분한다() {
+		String zoneId = candidateRepository.findActiveZones().stream()
+			.filter(zone -> zone.activeComplexCount() >= 5)
+			.findFirst().orElseThrow().zoneId();
+		GeneratedMatchGame general = generator.generateForZone(zoneId);
+		GeneratedMatchGame zone = generator.generateWithinZone(zoneId);
+		UUID anonymousId = UUID.randomUUID();
+		ZoneId korea = ZoneId.of("Asia/Seoul");
+		LocalDate date = LocalDate.now(korea);
+		Instant from = date.atStartOfDay(korea).toInstant();
+		Instant to = date.plusDays(1).atStartOfDay(korea).toInstant();
+		long yesterday = gameRepository.save(anonymousId, general, from.minusSeconds(1)).id();
+		long today = gameRepository.save(anonymousId, general, from).id();
+		long tomorrow = gameRepository.save(anonymousId, general, to).id();
+		long zoneGame = gameRepository.save(anonymousId, zone, from,
+			WorldcupGameMode.ZONE_COMPLEX).id();
+		for (long id : List.of(yesterday, today, tomorrow, zoneGame)) {
+			gameRepository.saveSkip(id, 1);
+		}
+
+		assertThat(gameRepository.countCompletedRounds(anonymousId, from, to)).isEqualTo(1);
+		assertThat(gameRepository.countStartedByAnonymousId(anonymousId, from, to)).isEqualTo(1);
+	}
 
 	@Test
 	void 같은_방문자가_동시에_시작해도_미완료_게임은_하나만_저장한다() throws Exception {
