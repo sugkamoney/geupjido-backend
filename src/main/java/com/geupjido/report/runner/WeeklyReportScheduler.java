@@ -3,6 +3,7 @@ package com.geupjido.report.runner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +30,7 @@ public class WeeklyReportScheduler {
 			if (service.publishLatestReady()) {
 				log.info("주간 리포트 공개 완료");
 			}
-			if (service.prepareLatestClosed()) {
+			if (prepareWithOneRetry()) {
 				log.info("주간 리포트 초안 준비 완료");
 			}
 			if (service.publishLatestReady()) {
@@ -42,6 +43,16 @@ public class WeeklyReportScheduler {
 			} catch (RuntimeException recordException) {
 				log.error("주간 리포트 실패 상태 저장 실패", recordException);
 			}
+		}
+	}
+
+	private boolean prepareWithOneRetry() {
+		try {
+			return service.prepareLatestClosed();
+		} catch (CannotAcquireLockException exception) {
+			// 3시간 급지 발행과 겹친 REPEATABLE READ 직렬화 충돌은 새 트랜잭션에서 재시도한다.
+			log.warn("주간 리포트 집계 잠금 충돌. 즉시 한 번 재시도합니다.");
+			return service.prepareLatestClosed();
 		}
 	}
 }
