@@ -78,6 +78,8 @@ public class WeeklyReportPublicationService {
 				identity.initialTier(), tier, count.validVotes(), count.distinctVisitors(), count.crossZoneVotes()));
 		}
 		if (!hasVoteTier) {
+			// 마감 집계가 정상 완료됐으므로 이전 시도의 일시적 실패 상태를 해제한다.
+			repository.clearFailedAttempt(period.endAt());
 			return false;
 		}
 

@@ -54,6 +54,26 @@ class WeeklyReportPublicationIT {
 	}
 
 	@Test
+	void 일시적_실패_뒤_정상_집계에서_표가_부족하면_수집중으로_복구한다() throws Exception {
+		clock.set(Instant.parse("2026-11-15T12:01:00Z"));
+		jdbcTemplate.update("""
+			INSERT INTO weekly_report_attempt_failure (period_end_at, failed_at)
+			VALUES (?, ?)
+			""", utc(CUTOFF), utc(CUTOFF.plusSeconds(60)));
+		mockMvc.perform(get("/api/v1/reports"))
+			.andExpect(jsonPath("$.state").value("DELAYED"));
+
+		assertThat(service.prepareLatestClosed()).isFalse();
+
+		mockMvc.perform(get("/api/v1/reports"))
+			.andExpect(jsonPath("$.state").value("COLLECTING"))
+			.andExpect(jsonPath("$.reports.length()").value(0));
+		assertThat(jdbcTemplate.queryForObject("""
+			SELECT count(*) FROM weekly_report_attempt_failure WHERE period_end_at = ?
+			""", Integer.class, utc(CUTOFF))).isZero();
+	}
+
+	@Test
 	void 유효표_기준으로_초안을_만들고_21시부터_한번만_공개한다() throws Exception {
 		clock.set(CUTOFF.plusSeconds(60));
 		seedZonesAndVotes();
