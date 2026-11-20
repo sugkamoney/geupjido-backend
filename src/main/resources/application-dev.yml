@@ -31,6 +31,28 @@ app:
   worldcup-cors:
     allowed-origins: ${WORLDCUP_CORS_ALLOWED_ORIGINS:}
 
+  external:
+    apartment-trade:
+      enabled: ${DATA_GO_KR_APT_TRADE_ENABLED:false}
+      base-url: ${DATA_GO_KR_APT_TRADE_BASE_URL:https://apis.data.go.kr/1613000/RTMSDataSvcAptTrade}
+      service-key: ${DATA_GO_KR_SERVICE_KEY:}
+
+  weekly-trade-refresh:
+    run-on-startup: ${WEEKLY_TRADE_REFRESH_RUN_ON_STARTUP:false}
+    schedule-enabled: ${WEEKLY_TRADE_REFRESH_SCHEDULE_ENABLED:false}
+    smoke-run-on-startup: ${WEEKLY_TRADE_REFRESH_SMOKE_RUN_ON_STARTUP:false}
+    smoke-district-code: ${WEEKLY_TRADE_REFRESH_SMOKE_DISTRICT_CODE:}
+    smoke-deal-year-month: ${WEEKLY_TRADE_REFRESH_SMOKE_DEAL_YEAR_MONTH:}
+    schedule-cron: ${WEEKLY_TRADE_REFRESH_SCHEDULE_CRON:0 0 3 * * MON}
+    mapping-path: ${WEEKLY_TRADE_REFRESH_MAPPING_PATH:/opt/geupjido/data/location/mapping/location-mapping.json}
+    reference-path: ${WEEKLY_TRADE_REFRESH_REFERENCE_PATH:/opt/geupjido/data/location/reference/legal-dongs-20260917.tsv}
+    months-to-collect: ${WEEKLY_TRADE_REFRESH_MONTHS_TO_COLLECT:3}
+    report-path: ${WEEKLY_TRADE_REFRESH_REPORT_PATH:/var/lib/geupjido/trade/weekly-dev.tsv}
+
+  apartment-trade-match:
+    reference-path: ${APARTMENT_TRADE_MATCH_REFERENCE_PATH:/opt/geupjido/data/location/reference/legal-dongs-20260917.tsv}
+    mapping-path: ${APARTMENT_TRADE_MATCH_MAPPING_PATH:/opt/geupjido/data/location/mapping/location-mapping.json}
+
   worldcup-rating:
     schedule-enabled: ${WORLDCUP_RATING_SCHEDULE_ENABLED:true}
     schedule-cron: ${WORLDCUP_RATING_SCHEDULE_CRON:0 0 */3 * * *}

@@ -164,6 +164,93 @@ V18부터 검토 행은 `source_seen_id`로 해당 원본 내용에 연결한다
 python3 -B scripts/trade/run_weekly_smoke.py --district-code 11170 --deal-year-month 202609
 ```
 
+### 원본 로컬 DB를 보존하는 한 조합 검증
+
+기존 명령은 로컬 `geupjido` DB를 직접 갱신한다. 원본을 보존하려면 로컬
+PostGIS 컨테이너를 실행한 뒤 아래 격리 명령을 사용한다. `.env` 또는 현재
+환경에 공공데이터포털 인증키가 필요하며, 키 값은 출력·커밋하지 않는다.
+
+```sh
+docker compose up -d postgres
+python3 -B scripts/trade/run_weekly_isolated_smoke.py \
+  --district-code 11140 --deal-year-month 202610
+```
+
+이 스크립트는 기존 로컬 DB를 `geupjido_weekly_trade_smoke`로 복제하고,
+실행 환경의 DB 연결을 복제본으로 고정한다. 같은 이름의 DB가 이미 있으면
+덮어쓰지 않고 중단한다. 대상 조합의 거래·연결 거래 수와 전체 단지의
+가격 보유 수·가격 합계를 실행 전후에 출력한다. 원본 DB의 전후 집계가
+같은지 확인하고, 정상 완료 또는 시험 실행 실패 후 복제 DB를 삭제한다.
+중간에 프로세스를 강제 종료해 복제 DB가 남았다면 자동 재실행은 중단되며,
+해당 DB를 확인한 뒤 별도로 정리해야 한다. API 수집은 한 조합이지만
+정확 연결과 대표 가격 재계산은 복제 DB 전체에 적용된다.
+
+2026-11-20에 중구 `11140`·`202610`을 복제 DB에서 실행한 결과, API
+수집은 `SUCCESS`(신규 20건·기존 4건 갱신·충돌 0건), 전체 흐름은
+`COMPLETE`였다. 대상 거래는 26→46건, 그중 연결 거래는 22→41건이었다.
+가격 있는 단지는 5,609곳으로 유지됐고, 가격 합계는 569,117,448→
+569,130,248만원으로 바뀌었다. 이번 조합의 법정동 미확인·권역 불일치는
+모두 0건이다. 전체 법정동 미확인 8건은 이전 수집 데이터의 진단 수치다.
+원본 로컬 DB의 거래·가격 집계는 변하지 않았으며 복제 DB도 삭제됐다.
+이는 한 조합의 실 API·DB 검증 결과이며 전체 주간 대상이나 실제 예약
+실행의 성공을 뜻하지 않는다.
+
+### 개발 서버에서 한 조합 검증
+
+같은 이슈에서 서버 검증까지 진행한다. 로컬 브랜치를 빌드하고, 생성된 JAR와
+버전 관리 중인 입력 파일·설치 및 검증 스크립트를 EC2에 전송한다. 아래
+`SSH_KEY_PATH`와 `DEV_HOST`는 작업자 환경에서 지정한다. 비밀번호와
+공공데이터포털 인증키는 명령 인자·저장소 파일에 적지 않는다.
+
+```sh
+./gradlew clean build
+scp -i "$SSH_KEY_PATH" \
+  build/libs/geupjido-backend-0.0.1-SNAPSHOT.jar \
+  scripts/deploy/install-dev-trade-inputs.sh \
+  scripts/deploy/run-dev-weekly-trade-smoke.sh \
+  data/location/mapping/location-mapping.json \
+  data/location/reference/legal-dongs-20260917.tsv \
+  ec2-user@"$DEV_HOST":/home/ec2-user/
+```
+
+EC2에서 `/etc/geupjido/dev.env`에 `DATA_GO_KR_SERVICE_KEY`를 안전하게
+설정하고, 키 값 대신 설정 여부만 확인한다. 파일은 기존과 같이 root만
+수정할 수 있게 유지한다. 예약 실행은 계속 비활성 상태로 둔다. 다음 명령은
+추적 중인 입력 파일을 읽기 전용 경로에 설치하고, 결과 TSV를 쓸 경로를
+`geupjido` 사용자에게 마련한다.
+
+```sh
+sudo bash /home/ec2-user/install-dev-trade-inputs.sh \
+  /home/ec2-user/location-mapping.json \
+  /home/ec2-user/legal-dongs-20260917.tsv
+sudo bash /home/ec2-user/run-dev-weekly-trade-smoke.sh \
+  /home/ec2-user/geupjido-backend-0.0.1-SNAPSHOT.jar 11140 202610
+```
+
+검증 스크립트는 입력 파일과 키 설정을 확인하고, RDS 데이터베이스를
+`pg_dump -Fc`로 `/var/backups/geupjido/`에 백업한 뒤 실행한다. 1GiB EC2의
+메모리를 위해 검증하는 동안 개발 API를 잠시 중지하고 종료 시 다시
+시작해 health를 확인한다. 실행 전후 대상 거래·연결 거래 수와 전체 단지
+가격 집계를 출력한다. 한 조합 결과는 `/var/lib/geupjido/trade/weekly-dev.tsv`
+및 실행 로그에서 확인한다. 오류나 `NEEDS_REVIEW`는 성공으로 처리하지
+않으며, 검증 실패 시에도 API 재시작을 시도한다. 백업 덤프의 보관·삭제는
+검증 결과와 복구 필요 여부를 확인한 뒤 결정한다. JAR 롤백으로는 이미
+변경된 DB 데이터가 복구되지 않는다.
+
+2026-11-20 개발 RDS 첫 시험은 앱 시작 단계에서 중단됐다. 실거래가 범위
+필터가 `app.apartment-trade-match.reference-path`를 별도로 사용하는데,
+`dev` 프로필에 그 경로가 없었다. 수집 전 종료되어 거래·가격 집계가
+26건·22건·5,609곳·569,117,448만원으로 유지됐고 개발 API도 다시
+`UP`이었다. `dev` 프로필에 참조·매핑 경로를 추가한 JAR로 재실행한 결과,
+중구 `11140`·`202610` 수집은 `SUCCESS`(원본 46건·신규 20건·갱신 4건·
+충돌 0건), 전체 흐름은 `COMPLETE`(신규 연결 19건)였다. 대상 거래는
+26→46건, 연결 거래는 22→41건, 가격 있는 단지는 5,609곳으로 유지됐고
+가격 합계는 569,117,448→569,130,248만원이었다. 이번 조합의 법정동
+미확인과 권역 불일치는 각각 0건이다. 결과 TSV를 확인했고, 개발 API
+서비스와 외부 health는 다시 `UP`이었다. 검증 전 전체 DB 덤프는 EC2의
+root 전용 경로에 보존했다. 개발 RDS의 한 조합 검증 결과이며 전체 주간
+대상이나 예약 실행은 아직 검증하지 않았다.
+
 2026-11-01 로컬 시험에서는 서비스 범위 거래 42건 중 신규 2건을 저장하고
 모두 단지·권역에 연결했다. 문배동 `리첸시아용산B`의 동일 계약일·가격·면적·층
 원본 2행은 정상 1행과 2026-10-08 해제 1행으로 함께 반환되어 `PARTIAL`로
@@ -210,6 +297,17 @@ python3 -B scripts/trade/run_weekly_refresh.py --months-to-collect 3
 `WEEKLY_TRADE_REFRESH_SCHEDULE_ENABLED=true`를 명시적으로 설정한다.
 권역 매핑·법정동 참조 파일 경로와 결과 파일 경로는 서버의 실제 접근
 가능한 위치로 지정해야 한다. 예약 시각의 실행 확인은 배포 후 진행한다.
+
+개발 서버의 `dev` 프로필에는 실거래 API·주간 갱신 설정을 기본 비활성으로
+추가했다. 자동 배포 아티팩트에는 아직 입력 파일이 포함되지 않으므로,
+`install-dev-trade-inputs.sh`로 버전 관리 중인 권역 매핑과 법정동 참조 파일을
+서버에 설치해야 한다. 공공데이터포털 인증키는 서버의 비밀 환경 파일에만
+둔다. 로컬의 한 조합 검증만으로 개발 서버 예약을 켜지 않는다. 서버의
+API 인증·한 조합 결과·전체 실행 결과를 차례로 확인해야 한다.
+전체 실행에서 `NEEDS_REVIEW` 또는 `FAILED`가 나오면 결과 TSV와 로그의
+해당 조합을 확인하고 예약 실행을 중단한다. 공개된 가격을 이전 값으로
+복원해야 한다면 DB 스냅샷 복원 계획이 필요하며 JAR 롤백만으로는
+되돌아가지 않는다.
 
 2026-11-01 전체 시험에서는 62개 시군구의 2026-09~11월 총 186조합을
 조회했다. `SUCCESS` 104조합, `PARTIAL` 82조합, `FAILED` 0조합이었다.
