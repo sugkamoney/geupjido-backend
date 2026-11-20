@@ -56,4 +56,6 @@
 
 `GET /api/v1/reports/{reportId}`는 발행본의 주간 참여자·유효표·변경 권역 수와 요약, 상승·하락·경계 근접·수집 중·구별 변화 목록, `previousReportId`·`nextReportId`를 제공한다. 첫 리포트의 `changedGradeZoneCount`는 `null`이고 비교 목록은 빈 배열이다. 초안·없는 번호는 `REPORT_NOT_FOUND` 404이며, 두 조회 응답 모두 `Cache-Control: no-store`다. 권역 행을 누른 뒤 지도 상세는 기존 `GET /api/v1/map/zones/{zoneId}`를 사용하고, 구 행은 기존 `GET /api/v1/map/cities`의 `bounds`로 확대한다. `[비교하러 가기]`는 기존 월드컵 시작 흐름으로 연결한다.
 
+로컬 PostgreSQL·PostGIS 복제 DB에서 가상 투표를 4주 누적해 두 API와 발행 스냅샷을 검증하는 절차 및 결과는 [한 달치 주간 리포트 검증](../../scripts/test/weekly-report-month-smoke.md)에 기록한다. 이 검증은 발행 시각과 마감 경계를 주입식 `Clock`으로 재현한다.
+
 리포트 API는 Swagger의 **리포트** 그룹에 랭킹 다음으로 놓는다. 개인별 선택 기록과 공개 주간 집계 결과를 같은 응답이나 이름으로 섞지 않는다.
