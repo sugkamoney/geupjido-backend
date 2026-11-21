@@ -125,6 +125,11 @@ public class ApartmentTradeBackfillPersistenceService {
 				normal, canceled)) {
 				return "SOURCE_STATUS_CONFLICT";
 			}
+			if (stored.stream().anyMatch(existing -> !existing.isCanceled()
+				&& !ApartmentTradeSourceIdentity.isRegisteredAfterCancellation(
+					existing, canceled))) {
+				return "SOURCE_STATUS_CONFLICT";
+			}
 		}
 		Set<LocalDate> cancellationDates = group.stream()
 			.map(item -> item.entity().getCancellationDate())

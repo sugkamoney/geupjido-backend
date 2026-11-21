@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Geupjido development apartment trade refresh on Monday
+
+[Timer]
+OnCalendar=Mon *-*-* 03:00:00 Asia/Seoul
+AccuracySec=1min
+Persistent=false
+Unit=geupjido-dev-weekly-trade.service
+
+[Install]
+WantedBy=timers.target
