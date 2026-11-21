@@ -5,7 +5,7 @@ container=geupjido-postgres
 source_db=geupjido
 smoke_db=${2:-geupjido_worldcup_browser_smoke}
 case "$smoke_db" in
-  geupjido_worldcup_browser_smoke|geupjido_worldcup_virtual_voters|geupjido_weekly_trade_smoke|geupjido_weekly_report_month_smoke) ;;
+  geupjido_worldcup_browser_smoke|geupjido_worldcup_virtual_voters|geupjido_weekly_trade_smoke|geupjido_weekly_trade_full_smoke|geupjido_weekly_report_month_smoke) ;;
   *)
     echo "허용되지 않은 검증 DB 이름입니다: $smoke_db" >&2
     exit 2
@@ -40,7 +40,7 @@ case "${1:-}" in
     echo "검증 DB 정리 완료: $smoke_db"
     ;;
   *)
-    echo "사용법: $0 create|drop [geupjido_worldcup_browser_smoke|geupjido_worldcup_virtual_voters|geupjido_weekly_trade_smoke|geupjido_weekly_report_month_smoke]" >&2
+    echo "사용법: $0 create|drop [geupjido_worldcup_browser_smoke|geupjido_worldcup_virtual_voters|geupjido_weekly_trade_smoke|geupjido_weekly_trade_full_smoke|geupjido_weekly_report_month_smoke]" >&2
     exit 2
     ;;
 esac

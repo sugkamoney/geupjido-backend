@@ -283,6 +283,32 @@ V13은 API의 `rgstDate`를 `apartment_trade.registration_date`와
 
 ## 전체 주간 갱신의 로컬 실행
 
+### 원본 DB를 보존하는 전체 대상 검증
+
+한 조합 검증을 마친 다음에는 전체 실행의 대상 수를 먼저 확인한다. 아래 첫
+명령은 DB나 외부 API를 사용하지 않는다. 2026년 11월 현재 매핑에는
+62개 시군구가 있어 최근 3개월 기준 186개 조합이다.
+
+```sh
+python3 -B scripts/trade/run_weekly_full_isolated.py --plan-only
+docker compose up -d postgres
+python3 -B scripts/trade/run_weekly_full_isolated.py --months-to-collect 3
+```
+
+전체 검증은 로컬 `geupjido`를 전용 `geupjido_weekly_trade_full_smoke`로
+복제한다. 같은 이름의 DB가 있으면 기존 데이터를 덮어쓰지 않고 중단한다.
+실행 환경에서 복제 DB 주소를 고정하고 예약 작업을 끈다. 조합별 결과는
+Git에서 제외되는 `data/trade/import-runs/weekly-full-*.tsv`에 남긴다.
+전체 실행 로그는 같은 위치의 `weekly-full-*-runN.log`에 권한 `0600`으로
+보관하며 저장소에 올리지 않는다.
+결과 파일의 조합 수·중복 여부와 실행 전후 거래·연결·충돌·대표 가격
+집계를 확인한 후 복제 DB를 삭제하고 원본 DB 집계 유지 여부를 확인한다.
+
+재실행 중복 검증이 필요하면 `--verify-rerun`을 추가한다. 이 옵션은 같은
+복제 DB에서 전체 외부 API 호출을 한 번 더 수행하므로 호출량과 소요 시간이
+두 배 가까이 늘어난다. `FAILED`나 연결 검토 상태가 있으면 결과 TSV와
+실행 로그를 검토하고, 이 결과만으로 개발 서버의 주간 예약을 켜지 않는다.
+
 로컬 DB를 백업한 뒤 아래 명령으로 현재 월을 포함한 최근 3개월의
 서비스 대상 시군구를 한 번씩 수집한다. 이 스크립트는 예약 실행을 켜지
 않으며, 조합별 결과는 Git 제외 경로
@@ -304,10 +330,87 @@ python3 -B scripts/trade/run_weekly_refresh.py --months-to-collect 3
 서버에 설치해야 한다. 공공데이터포털 인증키는 서버의 비밀 환경 파일에만
 둔다. 로컬의 한 조합 검증만으로 개발 서버 예약을 켜지 않는다. 서버의
 API 인증·한 조합 결과·전체 실행 결과를 차례로 확인해야 한다.
+
+전체 수동 실행용 [`run-dev-weekly-trade-full.sh`](../../scripts/deploy/run-dev-weekly-trade-full.sh)는
+실행 전 RDS 덤프를 root 전용 디렉터리에 만들고 개발 API를 잠시 중지한다.
+JVM 최대 힙을 448MiB로 제한한 별도 프로세스에서 최근 지정 개월의 전체
+조합을 한 번 처리한 뒤 API를 재시작하고 내부 health를 확인한다. 전체 실행
+중에는 개발 API를 사용할 수 없으므로 실행 시간과 사용자를 먼저 확인한다.
+실행 전 EC2의 디스크 여유 공간과 메모리를 확인하고, 실행 중에는 별도
+세션에서 메모리와 서비스 상태를 관측한다. 한 조합 검증에서 입력 파일과
+인증키 설정을 마친 서버에 JAR와 이 스크립트를 전송한 뒤 실행한다.
+
+```sh
+df -h /var/backups/geupjido
+free -m
+sudo bash /home/ec2-user/run-dev-weekly-trade-full.sh \
+  /home/ec2-user/geupjido-backend-0.0.1-SNAPSHOT.jar 3
+```
+
+스크립트는 전체 대상 수와 결과 TSV 행 수를 대조하고 거래·연결·충돌·가격
+집계를 실행 전후에 출력한다. 상세 조합은 `/var/lib/geupjido/trade/`의
+`weekly-full-*.tsv`, 전체 실행 로그와 백업은 `/var/backups/geupjido/`에
+남긴다. 결과가 `FAILED` 또는 `NEEDS_REVIEW`이거나 API 복구가 실패하면
+예약을 활성화하지 않는다. `COMPLETE_WITH_CONFLICTS`는 충돌 원본을
+보류한 완료 상태이므로 그 자체가 예약 실행의 실패 조건은 아니다.
+다만 수동 실행은 1GiB EC2에서 API를 중지했으므로, 예약 활성화 전에
+API 동시 실행의 메모리·응답 영향을 검증하거나 별도 예약 배치의 API
+중지·재시작 절차를 정한다.
+
 전체 실행에서 `NEEDS_REVIEW` 또는 `FAILED`가 나오면 결과 TSV와 로그의
 해당 조합을 확인하고 예약 실행을 중단한다. 공개된 가격을 이전 값으로
 복원해야 한다면 DB 스냅샷 복원 계획이 필요하며 JAR 롤백만으로는
 되돌아가지 않는다.
+
+### 개발 서버의 주간 자동 실행
+
+검증된 전체 실행 방식을 기존 EC2의 systemd 타이머로 예약한다. 별도
+AWS 서비스는 사용하지 않는다. 한국 시간 월요일 03:00에 실행되며,
+현재 매핑의 62개 시군구 × 최근 3개월을 매번 새로 수집한다. 수동 검증처럼
+RDS 백업을 만든 다음 개발 API를 잠시 중지하고 448MiB 힙의 별도 JVM으로
+처리한다. API는 성공·실패에 관계없이 재시작을 시도하고 내부 health를
+확인한다. 기존 배포·롤백과 잠금을 공유하며, 배치 JVM은 최대 5분 뒤
+종료된다. 셸의 복구 트랩이 완료되지 못해도 systemd 서비스의
+`ExecStopPost`가 API 시작을 다시 시도한다. API 중지 시간은 평소 약
+3분이었지만 외부 API와 서버 상태에
+따라 더 길 수 있다. 타이머의 `Persistent=false`는 서버가 꺼져 있어
+예약 시각을 놓쳤을 때 부팅 직후 예기치 않은 API 중지를 막는다.
+
+[`install-dev-weekly-trade-timer.sh`](../../scripts/deploy/install-dev-weekly-trade-timer.sh)의
+`install` 모드는 서비스·타이머 파일만 설치한다. 이 이슈의 저장 경계
+수정이 `main`에 병합되고 자동 배포가 성공한 뒤 `enable` 모드로 예약을
+활성화한다. API 프로세스의 Spring 예약 플래그와 외부 수집 플래그는
+기본값 `false`로 유지한다.
+
+로컬에서 네 파일을 EC2로 전송한다. `SSH_KEY_PATH`와 `EC2_TARGET`의
+의미는 [개발 서버 배포 문서](../../docs/architecture/dev-server-deployment.md)의
+수동 배포 절차와 같다.
+
+```sh
+ssh -i "$SSH_KEY_PATH" "$EC2_TARGET" 'mkdir -p ~/weekly-trade-timer'
+scp -i "$SSH_KEY_PATH" \
+  scripts/deploy/run-dev-weekly-trade-full.sh \
+  scripts/deploy/install-dev-weekly-trade-timer.sh \
+  scripts/deploy/geupjido-dev-weekly-trade.service \
+  scripts/deploy/geupjido-dev-weekly-trade.timer \
+  "$EC2_TARGET:~/weekly-trade-timer/"
+```
+
+EC2에서 먼저 설치하고, `main` 자동 배포가 끝난 뒤 활성화한다.
+
+```sh
+sudo bash /home/ec2-user/weekly-trade-timer/install-dev-weekly-trade-timer.sh install
+systemctl list-timers --all geupjido-dev-weekly-trade.timer
+sudo bash /home/ec2-user/weekly-trade-timer/install-dev-weekly-trade-timer.sh enable
+systemctl list-timers --all geupjido-dev-weekly-trade.timer
+```
+
+다음 실행 뒤에는 `systemctl status geupjido-dev-weekly-trade.service`와
+`journalctl -u geupjido-dev-weekly-trade.service -n 100 --no-pager`로
+결과를 확인한다. 결과 TSV·백업·로그 위치는 전체 수동 실행과 같다.
+백업은 자동 삭제하지 않으므로 디스크 사용량을 정기적으로 확인한다.
+향후 예약을 끌 때는
+`sudo systemctl disable --now geupjido-dev-weekly-trade.timer`를 실행한다.
 
 2026-11-01 전체 시험에서는 62개 시군구의 2026-09~11월 총 186조합을
 조회했다. `SUCCESS` 104조합, `PARTIAL` 82조합, `FAILED` 0조합이었다.

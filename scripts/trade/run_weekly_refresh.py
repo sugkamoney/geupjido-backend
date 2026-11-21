@@ -17,6 +17,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--months-to-collect", type=int, default=3)
     parser.add_argument("--timeout", type=int, default=7200)
+    parser.add_argument("--log-file", type=Path)
     args = parser.parse_args()
     if args.months_to_collect < 1 or args.timeout < 1:
         parser.error("months-to-collect and timeout must be positive")
@@ -49,10 +50,14 @@ def main():
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             timeout=args.timeout, check=False,
         )
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired as error:
+        if args.log_file and error.stdout:
+            save_log(args.log_file, error.stdout)
         print("전체 실행 시간이 초과되었습니다. 결과 TSV와 DB를 확인하세요.",
               file=sys.stderr)
         return 124
+    if args.log_file:
+        save_log(args.log_file, completed.stdout)
     for line in completed.stdout.splitlines():
         if ("실거래가 주간 갱신 시작" in line
                 or "실거래가 주간 갱신 미완료" in line
@@ -61,8 +66,16 @@ def main():
             print(line)
     if completed.returncode:
         print(f"전체 실행이 종료 코드 {completed.returncode}으로 끝났습니다. "
-              "결과 TSV와 DB를 확인하세요.", file=sys.stderr)
+              "결과 TSV와 실행 로그를 확인하세요.", file=sys.stderr)
     return completed.returncode
+
+
+def save_log(path, output):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+        stream.write(output.decode("utf-8", errors="replace")
+                     if isinstance(output, bytes) else output)
 
 
 if __name__ == "__main__":
