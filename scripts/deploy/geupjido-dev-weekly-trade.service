@@ -1,0 +1,12 @@
+[Unit]
+Description=Refresh Geupjido development apartment trades
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/geupjido/run-dev-weekly-trade-full.sh /opt/geupjido/geupjido-backend.jar 3
+# 셸이 제한 시간에 종료돼 EXIT 트랩을 완료하지 못해도 API 시작을 재시도한다.
+ExecStopPost=/usr/bin/systemctl start geupjido-dev.service
+TimeoutStartSec=8min
+UMask=0077

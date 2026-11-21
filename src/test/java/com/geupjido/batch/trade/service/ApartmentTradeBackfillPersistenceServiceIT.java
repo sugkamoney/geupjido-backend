@@ -202,6 +202,39 @@ class ApartmentTradeBackfillPersistenceServiceIT {
 	}
 
 	@Test
+	void 기존_정상_거래에_동_정보가_없으면_새_응답의_정상_해제_쌍을_보류한다() {
+		String name = "IT100-" + UUID.randomUUID().toString().substring(0, 8);
+		service.persist("11170", "202609", List.of(
+			new ApartmentTradeData(
+				"11170", "한남동", name, "810", null, 2011,
+				LocalDate.of(2026, 9, 15), 250_000L,
+				new BigDecimal("59.98"), 12, "중개거래",
+				false, null, null
+			)
+		));
+		List<ApartmentTradeData> source = List.of(
+			trade(name, false, null, LocalDate.of(2026, 10, 15)),
+			trade(name, true, LocalDate.of(2026, 10, 8))
+		);
+
+		var result = service.persist("11170", "202609", source);
+		var repeated = service.persist("11170", "202609", source);
+
+		assertThat(result.conflictRecords()).isEqualTo(2);
+		assertThat(result.imported().updatedCount()).isZero();
+		assertThat(repeated.newConflictRecords()).isZero();
+		assertThat(count("apartment_trade", name)).isEqualTo(1);
+		assertThat(count("apartment_trade_conflict", name)).isEqualTo(2);
+		assertThat(jdbcTemplate.queryForObject("""
+			SELECT count(*) FROM apartment_trade_conflict
+			WHERE raw_apartment_name = ? AND conflict_reason = 'SOURCE_STATUS_CONFLICT'
+			""", Long.class, name)).isEqualTo(2);
+		assertThat(jdbcTemplate.queryForObject("""
+			SELECT registration_date FROM apartment_trade WHERE raw_apartment_name = ?
+			""", LocalDate.class, name)).isNull();
+	}
+
+	@Test
 	void 응답_순서가_바뀌어도_분리된_정상_거래를_저장하고_검토_행을_닫는다() {
 		String name = "IT100-" + UUID.randomUUID().toString().substring(0, 8);
 		LocalDate cancellation = LocalDate.of(2026, 10, 8);
